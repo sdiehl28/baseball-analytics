@@ -7,7 +7,6 @@ __author__ = 'Stephen Diehl'
 import os
 import shutil
 import argparse
-import datetime
 import wget
 from pathlib import Path
 import zipfile
@@ -21,7 +20,7 @@ def get_parser():
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument("--data-dir", type=str, help="lahman download directory", default='../data')
+    parser.add_argument("--data-dir", type=str, help="baseball data directory", default='../data')
     parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
 
     return parser
@@ -39,7 +38,7 @@ def mk_dirs(data_dir, verbose):
 
     if verbose:
         dirs = os.listdir(p_lahman)
-        print('Data Directories')
+        print('Lahman Data Directories')
         print(f'{p_lahman}/{dirs[0]}')
         print(f'{p_lahman}/{dirs[1]}')
 
@@ -47,7 +46,7 @@ def mk_dirs(data_dir, verbose):
 
 
 def download_data(raw_dir, verbose):
-    """download Lahman zip file"""
+    """download, unzip Lahman zip file"""
     os.chdir(raw_dir)
     baseball_zip = raw_dir.joinpath('baseballdatabank-master.zip')
 
@@ -60,15 +59,15 @@ def download_data(raw_dir, verbose):
 
         # unzip it
         with zipfile.ZipFile('baseballdatabank-master.zip', "r") as zip_ref:
-            zip_ref.extractall()
+            zip_ref.extractall('.')
 
     if verbose:
-        dirs = os.listdir()
-        print('files:', *dirs)
+        files = os.listdir()
+        print('files:', *files)
 
 
 def reorg_files(raw_dir, verbose):
-    """move the unzipped files to the current directory and remove the extract directory"""
+    """move the unzipped files to the raw directory and remove the extract directory"""
     os.chdir(raw_dir)
     people_csv = raw_dir.joinpath('People.csv')
 
@@ -86,6 +85,7 @@ def reorg_files(raw_dir, verbose):
     if verbose:
         files = os.listdir()
         print('files:', *files)
+
 
 def main():
     """Perform the actions

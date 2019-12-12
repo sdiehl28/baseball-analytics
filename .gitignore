@@ -1,2 +1,3 @@
 .idea
 data/lahman/raw/*
+data/retrosheet/raw/*
