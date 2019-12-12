@@ -1,5 +1,5 @@
 # Baseball Analytics
-<span style="color:red">Under Construction - not ready for use</span>
+&#x1F534; Under Construction - might be ready by 12/15/19  
 
 Scripts to download, parse, and prepare baseball data for Pandas analysis.
 
