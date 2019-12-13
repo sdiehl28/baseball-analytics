@@ -1,3 +1,5 @@
 .idea
 data/lahman/raw/*
 data/retrosheet/raw/*
+__pycache__
+data/lahman/wrangled/*

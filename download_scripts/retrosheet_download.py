@@ -6,9 +6,7 @@ __author__ = 'Stephen Diehl'
 
 import os
 import glob
-import shutil
 import argparse
-import datetime
 import wget
 from pathlib import Path
 import zipfile
@@ -24,8 +22,9 @@ def get_parser():
 
     parser.add_argument("--data-dir", type=str, help="baseball data directory", default='../data')
 
-    # Note: prior to 1955, sacrifice flies were not recorded properly in both leagues.
-    # See: http://research.sabr.org/journals/sacrifice-fly
+    # Note: prior to 1955, sacrifice flies, sacrifice bunts and intentional walks were
+    # were not recorded for both leagues.
+    # See for example: http://research.sabr.org/journals/sacrifice-fly
     parser.add_argument("--start-year", type=int, help="start year", default='1955')
 
     # Retrosheet Data for 2019 became available in December 2019
