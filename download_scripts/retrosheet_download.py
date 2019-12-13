@@ -23,7 +23,12 @@ def get_parser():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument("--data-dir", type=str, help="baseball data directory", default='../data')
+
+    # Note: prior to 1955, sacrifice flies were not recorded properly in both leagues.
+    # See: http://research.sabr.org/journals/sacrifice-fly
     parser.add_argument("--start-year", type=int, help="start year", default='1955')
+
+    # Retrosheet Data for 2019 became available in December 2019
     parser.add_argument("--end-year", type=int, help="end year", default='2019')
     parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
 
@@ -51,9 +56,8 @@ def mk_dirs(data_dir, verbose):
 
 def download_data(raw_dir, start_year, end_year, verbose):
     """download and unzip retrosheet event files
-
-    Note: prior to 1955, sacrafice flies were not recorded.
     """
+
     os.chdir(raw_dir)
     for year in range(start_year, end_year + 1):
         # download each event file, if it doesn't exist locally
