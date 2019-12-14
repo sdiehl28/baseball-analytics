@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+
+"""Use the Retrosheet parsers to generate their Data Dictionaries."""
+
+__author__ = 'Stephen Diehl'
+
 import csv
 import subprocess
 import os
