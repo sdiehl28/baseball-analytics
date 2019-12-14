@@ -86,6 +86,7 @@ def wrangle_batting(p_raw, p_wrangled, verbose):
     retro_names = {
         'playerID': 'player_id',
         'yearID': 'year_id',
+        'stint': 'stint',
         'teamID': 'team_id',
         'lgID': 'lg_id',
         'G': 'g',
@@ -134,6 +135,7 @@ def wrangle_pitching(p_raw, p_wrangled, verbose):
     retro_names = {
         'playerID': 'player_id',
         'yearID': 'year_id',
+        'stint': 'sting',
         'teamID': 'team_id',
         'lgID': 'lg_id',
         'W': 'w',
@@ -145,7 +147,7 @@ def wrangle_pitching(p_raw, p_wrangled, verbose):
         'SV': 'sv',
         'IPouts': 'ip_outs',
         'H': 'h',
-        'ER': 'e',
+        'ER': 'er',
         'HR': 'hr',
         'BB': 'bb',
         'SO': 'so',
