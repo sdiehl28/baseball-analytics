@@ -28,7 +28,7 @@ def get_parser():
 
 
 def check_for_retrosheet_parsers():
-    """Assume failure as these parsers are not common"""
+    """Check that parsers can be executed."""
     p1 = subprocess.run(['cwdaily', '-h'], shell=False, capture_output=True)
     if p1.returncode != 0:
         raise FileNotFoundError('could not execute cwdaily')
