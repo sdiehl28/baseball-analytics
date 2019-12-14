@@ -12,6 +12,8 @@ import argparse
 from pathlib import Path
 import baseball_functions as bb
 
+# http://www.seanlahman.com/files/database/
+# data dictionary: readme2017.txt
 
 def get_parser():
     """Args Description"""

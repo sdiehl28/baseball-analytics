@@ -1,5 +1,5 @@
 .idea
-data/lahman/raw/*
+data/lahman/raw
+data/lahman/wrangled
 data/retrosheet/raw/*
 __pycache__
-data/lahman/wrangled/*
