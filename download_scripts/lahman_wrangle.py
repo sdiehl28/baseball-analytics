@@ -12,6 +12,7 @@ import argparse
 from pathlib import Path
 import baseball_functions as bb
 
+
 # http://www.seanlahman.com/files/database/
 # data dictionary: readme2017.txt
 
@@ -83,7 +84,7 @@ def wrangle_batting(p_raw, p_wrangled, verbose):
     batting = pd.read_csv('Batting.csv')
 
     # use same column names in both Lahman and Retrosheet
-    retro_names = {
+    new_names = {
         'playerID': 'player_id',
         'yearID': 'year_id',
         'stint': 'stint',
@@ -107,7 +108,7 @@ def wrangle_batting(p_raw, p_wrangled, verbose):
         'SF': 'sf',
         'GIDP': 'gdp'
     }
-    batting = batting.rename(columns=retro_names)
+    batting = batting.rename(columns=new_names)
 
     # downcast integers and convert float to Int64, if data permits
     batting = bb.optimize_df_dtypes(batting)
@@ -132,7 +133,7 @@ def wrangle_pitching(p_raw, p_wrangled, verbose):
     pitching = pd.read_csv('Pitching.csv')
 
     # use same column names in both Lahman and Retrosheet
-    retro_names = {
+    new_names = {
         'playerID': 'player_id',
         'yearID': 'year_id',
         'stint': 'sting',
@@ -165,7 +166,7 @@ def wrangle_pitching(p_raw, p_wrangled, verbose):
         'GIDP': 'gdp'
     }
 
-    pitching = pitching.rename(columns=retro_names)
+    pitching = pitching.rename(columns=new_names)
     pitching = bb.optimize_df_dtypes(pitching)
 
     # df.info() goes to stdout by default, capture it
@@ -188,7 +189,7 @@ def wrangle_fielding(p_raw, p_wrangled, verbose):
     fielding = pd.read_csv('Fielding.csv')
 
     # use same column names in both Lahman and Retrosheet
-    retro_names = {
+    new_names = {
         'playerID': 'player_id',
         'yearID': 'year_id',
         'teamID': 'team_id',
@@ -210,7 +211,7 @@ def wrangle_fielding(p_raw, p_wrangled, verbose):
     drop_cols = fielding.columns[filt]
     fielding = fielding.drop(drop_cols, axis=1)
 
-    fielding = fielding.rename(columns=retro_names)
+    fielding = fielding.rename(columns=new_names)
     fielding = bb.optimize_df_dtypes(fielding)
 
     # df.info() goes to stdout by default, capture it
@@ -232,15 +233,58 @@ def wrangle_teams(p_raw, p_wrangled, verbose):
     os.chdir(p_raw)
     teams = pd.read_csv('Teams.csv')
 
-    # convert column names from CamelCase to snake_case
-    teams.columns = [bb.convert_camel_case(name) for name in teams.columns]
+    new_names = {
+        'yearID': 'year_id',
+        'lgID': 'lg_id',
+        'teamID': 'team_id',
+        'franchID': 'franch_id',
+        'divID': 'div_id',
+        'Rank': 'team_rank',
+        'G': 'g',
+        'Ghome': 'g_home',
+        'W': 'w',
+        'L': 'l',
+        'DivWin': 'div_win',
+        'WCWin': 'wc_win',
+        'LgWin': 'lg_win',
+        'WSWin': 'ws_win',
+        'R': 'r',
+        'AB': 'ab',
+        'H': 'h',
+        '2B': 'b_2b',
+        '3B': 'b_3b',
+        'HR': 'hr',
+        'BB': 'bb',
+        'SO': 'so',
+        'SB': 'sb',
+        'CS': 'cs',
+        'HBP': 'hbp',
+        'SF': 'sf',
+        'RA': 'ra',
+        'ER': 'er',
+        'ERA': 'era',
+        'CG': 'cg',
+        'SHO': 'sho',
+        'SV': 'sv',
+        'IPouts': 'ip_outs',
+        'HA': 'ha',
+        'HRA': 'hra',
+        'BBA': 'bba',
+        'SOA': 'soa',
+        'E': 'e',
+        'DP': 'dp',
+        'FP': 'fp',
+        'name': 'team_name',
+        'park': 'park',
+        'attendance': 'attendance',
+        'BPF': 'bpf',
+        'PPF': 'ppf',
+        'teamIDBR': 'team_id_br',
+        'teamIDlahman45': 'team_id_lahman45',
+        'teamIDretro': 'team_id_retro',
+    }
 
-    # convert_camel_case did not work well enough and keywords should be avoided for col names
-    fix_names = {'2_b': 'b_2b', '3_b': 'b_3b', 'i_pouts': 'ip_outs',
-                 'team_idbr': 'team_id_br', 'team_i_dlahman45': 'team_id_lahman45',
-                 'team_i_dretro': 'team_id_retro', 'rank': 'team_rank', 'name': 'team_name'}
-
-    teams = teams.rename(columns=fix_names)
+    teams = teams.rename(columns=new_names)
     teams = bb.optimize_df_dtypes(teams)
 
     # df.info() goes to stdout by default, capture it
