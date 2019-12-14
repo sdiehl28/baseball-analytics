@@ -27,9 +27,7 @@ As of December 2019, Lahman has data through the 2018 season whereas Retrosheet 
 
 The field names in both datasets are based on standard baseball statistic abbreviations.  See for example: https://en.wikipedia.org/wiki/Baseball_statistics
 
-The field names in both datasets will be converted from CamelCase to snake_case.  Also Lahman's "gidp" will be renamed to "gdp" to match the abbreviation used in Retrosheet.
-
-Although the use of Postgres is optional, field names which require double quotes in Postgres will be renamed so that double quotes are not required.  Some Lahman fields that will be renamed include: 2b, 3b, year, last, first, name, rank, start and end.
+The field names in both datasets will be converted from CamelCase to snake_case.  Also Lahman's "gidp" will be renamed to "gdp" to match the abbreviation used in Retrosheet.  There are two field names that are not valid identifiers and these be modified: 2B -> b_2b and 3B -> b_3b.
 
 ### Data Wrangling
 
