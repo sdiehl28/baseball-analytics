@@ -1,31 +1,27 @@
 # Baseball Analytics
-&#x1F534; Under Construction - might be ready for use by 12/18/19  
+&#x1F534; Under Construction - may be ready for use by 12/21/19  
 
-Scripts to download, parse, and prepare baseball data for Pandas analysis.
+Scripts to download, parse, and prepare baseball data for analysis with Pandas.
 
-Additional scripts to optionally load data into Postgres for analysis using SQL.
+Additional scripts to optionally load data into Postgres for analysis with SQL.
 
 ## Summary
 
-Retrosheet has Major League Baseball data for each game.  Lahman has Major League Baseball data summed for each year.
+Retrosheet has play-by-play data for almost every Major League Baseball (MLB) game.  Lahman has MLB data summarized per year.
 
-For games in the last 50 years or so, the Lahman data is very close to Retrosheet data, summed per year.  Lahman also has some data not available in Retrosheet, such as a player's salary.
+The Lahman data is very close to the Retrosheet data, summed per year.  The older the data is, the more games that are missing from Retrosheet, with almost no games missing since 1975, and less than 1% of the games missing since 1955.
 
-The Lahman data is tidy and has several csv files.  The data dictionary (the mapping between field name and field description) for each csv file is in http://www.seanlahman.com/files/database/ and is called readme2017.txt
+The Lahman data is tidy and has several csv files.  The latest available description of each csv file has been copied to the data/lahman directory.
 
-Retrosheet is not distributed as csv files, but as text files which have play-by-play information.  This data must be parsed to create csv files.  The parsing will be done with open source parsers from Dr. T. L. Turocy described below.  The data dictionary can be generated from the parsers.
+Retrosheet is not distributed as csv files, but as text files which have play-by-play information.  This data must be parsed to create csv files.  The parsing will be done with open source parsers from Dr. T. L. Turocy described below.  The description of the generated csv files can itself be generated from the parsers.  These descriptions have been generated and copied to the data/retrosheet directory.
 
 As of December 2019, Lahman has data through the 2018 season whereas Retrosheet has data through the 2019 season.
 
-The scripts will allow for data analysis using either Pandas or SQL.  It is not necessary to use both Pandas and SQL.
+The scripts allow for data analysis using either Pandas or SQL.  It is not necessary to use both Pandas and SQL.
 
-The field names in both datasets will be changed to:
+The field names in both datasets will be changed to lowercase, with words separated by underscores.  A few additional name changes will be made, such as Lahman's "gidp" being renamed to "gdp" to match what is used in Retrosheet.
 
-* lowercase, with words separated by underscores
-* use gdp rather than gdip for ground-into-double-play
-* 2B and 3B will become b_2b and b_3b respectively
-
-Although Postgres is optional for this analysis, field names which require double quotes in Postgres will be renamed so that double quotes are not required.  Some fields which must be renamed include: year, last, first, name, rank, start and end.
+Although use of Postgres is optional, field names which require double quotes in Postgres will be renamed so that double quotes are not required.  Some fields which must be renamed include: 2b, 3b, year, last, first, name, rank, start and end.
 
 The scripts were tested using all data for Lahman and the data from 1955 onward for Retrosheet, although the scripts should work fine for all data.  The year 1955 was chosen as this is the first year in which both the National and American League recorded statistics for sacrifice flies, sacrifice bunts, and intentional walks.
 
@@ -35,18 +31,31 @@ A baseball player may have several roles during the same game, such as batter, f
 
 There are nine fielding roles.  A player can make a put-out in the role of second baseman and later make a put-out in the role of first baseman.
 
+#### Script Summary
+
+All scripts have help.  For example: python lahman_download.py --help
+
+* **lahman_download.py** -- downloads the Lahman data
+* **retrosheet_download.py** -- downloads the Retrosheet data
+* **lahman_wrangle.py** -- convert to lowercase fieldnames with underscores, custom parse dates, etc.
+* **retrosheet_datadictionary.py** -- generate a description of the generated csv files from the parsers
+* **retrosheet_parse.py** -- generate the csv files
+* **retrosheet_wrangle.py** -- convert to lowercase fieldnames with underscores, custom parse time, etc.
+* and more ...
+
 
 
 ## Data Sources
 
 ### Lahman
 
-Most recent data at: https://github.com/chadwickbureau/baseballdatabank/archive/master.zip
+The most recent data will be downloaded from:  https://github.com/chadwickbureau/baseballdatabank/archive/master.zip
 
 #### Lahman Data Dictionary
 
-Most recent data dictionary is: http://www.seanlahman.com/files/database/readme2017.txt  
-This file is copied to this repo at: data/lahman/readme2017.txt
+The most recent data dictionary is:  http://www.seanlahman.com/files/database/readme2017.txt  
+
+This file is also copied to this repo at: data/lahman/readme2017.txt
 
 #### CSV Data Files
 
@@ -64,24 +73,24 @@ The csv files for Lahman are tidy.
 
 ### Retrosheet
 
-Play-by-play data for each year: http://www.retrosheet.org/events/{year}eve.zip
+The play-by-play data will be downloaded from: http://www.retrosheet.org/events/{year}eve.zip
 
 #### CSV Data Files
 
-The csv files must be generated by parsing the play-by-play event data files.
+The csv files must be generated by parsing the play-by-play data files.
 
 The **cwdaily** parser generates statistics per player per game.  Attributes are prefixed by b for batter, p for pitcher and f_{pos} for fielder where position is one of P, C, 1B, 2B, 3B, SS, LF, CF, RF.
 
 The **cwgame** parser generates statistics per team per game.
 
-The cwgame produced csv file will be made tidy to create 2 csv files:
+The cwgame produced csv file will be made tidy by creating 2 csv files from it:
 
 - game.csv: game attributes (time, attendance, etc.)
 - team_game.csv: batting/pitching/fielding attributes per team per game
 
 ##### Parsers
 
-Use the open source parsers created by Dr. T. L. Turocy.
+The open source parsers created by Dr. T. L. Turocy will be used.
 
 Parser Description: http://chadwick.sourceforge.net/doc/cwtools.html  
 Parser Executables and Source: https://sourceforge.net/projects/chadwick/  
@@ -111,7 +120,9 @@ To allow the command line tools to find the shared libraries, add the following 
 
 #### Retrosheet Data Dictionary
 
-A Python script was created to generate the data dictionary for the cwdaily parser and the cwgame parser.  The results of running this script are at:  data/retrosheet
+The retrosheet_datadictionary.py script will generate a description of the output of the cwdaily and cwgame parsers.
+
+This script has been run and the descriptions have been saved to:  data/retrosheet
 
 * cwdaily_datadictionary.txt
 * cwgame_datadictionary.txt
