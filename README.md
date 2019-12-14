@@ -7,33 +7,43 @@ Additional scripts to optionally load data into Postgres for analysis with SQL.
 
 ## Summary
 
+Scripts have been created to download and wrangle the Lahman and Retrosheet MLB datasets to make analysis with Pandas or SQL using a database such as Postgres, easier.  It is not necessary to use both Pandas and SQL.
+
+Examples of data analysis will be provide later in the form of Jupyter Notebooks.
+
+### MLB Data
+
 Retrosheet has play-by-play data for almost every Major League Baseball (MLB) game.  Lahman has MLB data summarized per year.
 
-The Lahman data is very close to the Retrosheet data, summed per year.  The older the data is, the more games that are missing from Retrosheet, with almost no games missing since 1975, and less than 1% of the games missing since 1955.
+The Lahman data is tidy and has several csv files.  The latest available description of each csv file has been copied to the `data/lahman` directory.
 
-The Lahman data is tidy and has several csv files.  The latest available description of each csv file has been copied to the data/lahman directory.
-
-Retrosheet is not distributed as csv files, but as text files which have play-by-play information.  This data must be parsed to create csv files.  The parsing will be done with open source parsers from Dr. T. L. Turocy described below.  The description of the generated csv files can itself be generated from the parsers.  These descriptions have been generated and copied to the data/retrosheet directory.
+Retrosheet is not distributed as csv files, but as text files which have play-by-play information.  This data must be parsed to create csv files.  The parsing will be done with open source parsers from Dr. T. L. Turocy described below.  The description of the generated csv files can itself be generated from the parsers.  These descriptions have been generated and copied to the `data/retrosheet` directory.
 
 As of December 2019, Lahman has data through the 2018 season whereas Retrosheet has data through the 2019 season.
 
-The scripts allow for data analysis using either Pandas or SQL.  It is not necessary to use both Pandas and SQL.
+### Field Names
 
-The field names in both datasets will be changed to lowercase, with words separated by underscores.  A few additional name changes will be made, such as Lahman's "gidp" being renamed to "gdp" to match what is used in Retrosheet.
+The field names in both datasets are based on standard baseball statistic abbreviations.  See for example: https://en.wikipedia.org/wiki/Baseball_statistics
 
-Although use of Postgres is optional, field names which require double quotes in Postgres will be renamed so that double quotes are not required.  Some fields which must be renamed include: 2b, 3b, year, last, first, name, rank, start and end.
+The field names in both datasets will be converted from upper case to lower case.  Also Lahman's "gidp" will be renamed to "gdp" to match the abbreviation used in Retrosheet.
 
-The scripts were tested using all data for Lahman and the data from 1955 onward for Retrosheet, although the scripts should work fine for all data.  The year 1955 was chosen as this is the first year in which both the National and American League recorded statistics for sacrifice flies, sacrifice bunts, and intentional walks.
+Although the use of Postgres is optional, field names which require double quotes in Postgres will be renamed so that double quotes are not required.  Some Lahman fields which will be renamed include: 2b, 3b, year, last, first, name, rank, start and end.
 
-#### Statistics per Role
+### Data Consistency
 
-A baseball player may have several roles during the same game, such as batter, fielder, and pitcher.  Most statistics are unique to the role, but some are not.  A player can both hit a home run in the role of batter and allow a home run in the role of pitcher.
+Much of the Lahman data can be derived from the Retrosheet data by summing it per year.  The results are not an exact match in part because Retrosheet is missing some games.  No games are missing from Retrosheet since 1974 and less than 1% of all games are missing since 1955.
 
-There are nine fielding roles.  As an example, a player may make a put-out in the role of second baseman and later make a put-out in the role of first baseman.
+Data consistency unit tests are provided to validate that Retrosheet data aggregated per year is very close to the corresponding Lahman data.  Most data unit tests are for the period 1955 through 2018 (the last available data from Lahman).  The year 1955 was chosen as this is the first year in which both the National and American League recorded statistics for sacrifice flies, sacrifice bunts, and intentional walks.
 
-#### Script Summary
+### Statistics per Player Role
 
-All scripts have help.  For example: python lahman_download.py --help
+A baseball player may have several roles during the course of a game, such as batter, fielder, and pitcher.  Most attributes are unique to the role, but some are not.  The same player can hit a home run as a batter and allow a home run as a pitcher.
+
+There are nine fielding roles.  For example, the same player could make a put-out while playing second base and later make a put-out while playing first base.
+
+### Script Summary
+
+All scripts have help.  For example: `python lahman_download.py --help`
 
 * **lahman_download.py** -- downloads the Lahman data
 * **retrosheet_download.py** -- downloads the Retrosheet data
@@ -45,11 +55,19 @@ All scripts have help.  For example: python lahman_download.py --help
 
 
 
-## MLB Data
+## MLB Data Details
 
 ### Lahman
 
 The most recent data will be downloaded from:  https://github.com/chadwickbureau/baseballdatabank/archive/master.zip
+
+As per https://github.com/chadwickbureau/baseballdatabank readme.txt, regarding the Lahman data license:
+
+```
+This work is licensed under a Creative Commons Attribution-ShareAlike
+3.0 Unported License.  For details see:
+http://creativecommons.org/licenses/by-sa/3.0/
+```
 
 #### Lahman Data Dictionary
 
@@ -75,11 +93,19 @@ The csv files for Lahman are tidy.
 
 The play-by-play data will be downloaded from: http://www.retrosheet.org/events/{year}eve.zip
 
+As per: https://www.retrosheet.org/notice.txt regarding the Retrosheet data license:
+
+```
+     The information used here was obtained free of
+     charge from and is copyrighted by Retrosheet.  Interested
+     parties may contact Retrosheet at "www.retrosheet.org".
+```
+
 #### Create CSV Data Files
 
 The csv files must be generated by parsing the play-by-play data files.
 
-The **cwdaily** parser generates statistics per player per game.  Attributes are prefixed by b for batter, p for pitcher and f_{pos} for fielder where position is one of P, C, 1B, 2B, 3B, SS, LF, CF, RF.
+The **cwdaily** parser generates statistics per player per game.  Attributes are prefixed by b for batter, p for pitcher and f_{pos} for fielder where pos is one of P, C, 1B, 2B, 3B, SS, LF, CF, RF.
 
 The **cwgame** parser generates statistics per team per game.
 
@@ -97,7 +123,7 @@ This script has been run and the descriptions have been saved to:  data/retroshe
 * cwdaily_datadictionary.txt
 * cwgame_datadictionary.txt
 
-#### CSV Data Files
+#### Generated CSV Data Files
 
 * **per player per game**
   * player_game.csv.gz
@@ -107,9 +133,19 @@ This script has been run and the descriptions have been saved to:  data/retroshe
   * people.csv
   * and more ...
 
-### Parsers
+### Parsers for Retrosheet
 
 The open source parsers created by Dr. T. L. Turocy will be used.
+
+As per https://github.com/chadwickbureau/chadwick README, regarding the parser license:
+
+```
+This is Chadwick, a library and toolset for baseball play-by-play
+and statistics.
+
+Chadwick is Open Source software, distributed under the terms of the 
+GNU General Public License (GPL).
+```
 
 Parser Description: http://chadwick.sourceforge.net/doc/cwtools.html  
 Parser Executables and Source: https://sourceforge.net/projects/chadwick/  
