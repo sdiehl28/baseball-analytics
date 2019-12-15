@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Wrangle Lahman Data from {data_dir}/lahman/raw to {data_dir}/lahman/wrangled"""
+"""Parse all event files in {data_dir}/retrosheet/raw and put result in {data_dir}/retrosheet/parsed"""
 
 __author__ = 'Stephen Diehl'
 
@@ -36,34 +36,74 @@ def check_for_retrosheet_parsers():
         raise FileNotFoundError('could not execute cwgame')
 
 
-def process_cwdaily(year, verbose):
-    """Parse event data into player stats per game.
+def process_cwdaily(verbose):
+    """Parse all downloaded event data into player stats per game.
     """
-    files = glob.glob(f'{year}*.EV*')
-    first = True
 
-    if verbose:
-        print(f'cwdaily parsing {len(files)} teams for {year} ...')
+    years = glob.glob('TEAM*')
+    years = sorted([year[4:] for year in years])
 
-    for file in files:
-        out = f'../parsed/daily{year}.csv'
-        if first:
-            # print header using -n
-            cmd = f'cwdaily -f 0-153 -n -y {year} {file}'
-            cmd = cmd.split(' ')
+    for year in years:
+        files = sorted(glob.glob(f'{year}*.EV*'))
+        first = True
 
-            # overwrite any existing file
-            with open(out, "w+") as outfile:
-                result = subprocess.run(cmd, shell=False, stdout=outfile, stderr=subprocess.DEVNULL)
-            first = False
-        else:
-            # no header
-            cmd = f'cwdaily -f 0-153 -y {year} {file}'
-            cmd = cmd.split(' ')
+        if verbose:
+            print(f'cwdaily parsing {len(files)} teams for {year} ...')
 
-            # append to existing file
-            with open(out, "a+") as outfile:
-                result = subprocess.run(cmd, shell=False, stdout=outfile, stderr=subprocess.DEVNULL)
+        for file in files:
+            out = f'../parsed/daily{year}.csv'
+            if first:
+                # print header using -n
+                cmd = f'cwdaily -f 0-153 -n -y {year} {file}'
+                cmd = cmd.split(' ')
+
+                # overwrite any existing file
+                with open(out, "w+") as outfile:
+                    result = subprocess.run(cmd, shell=False, stdout=outfile, stderr=subprocess.DEVNULL)
+                first = False
+            else:
+                # no header
+                cmd = f'cwdaily -f 0-153 -y {year} {file}'
+                cmd = cmd.split(' ')
+
+                # append to existing file
+                with open(out, "a+") as outfile:
+                    result = subprocess.run(cmd, shell=False, stdout=outfile, stderr=subprocess.DEVNULL)
+
+
+def process_cwgame(verbose):
+    """Parse all downloaded event data into team stats per game.
+    """
+
+    years = glob.glob('TEAM*')
+    years = sorted([year[4:] for year in years])
+
+    for year in years:
+        files = sorted(glob.glob(f'{year}*.EV*'))
+        first = True
+
+        if verbose:
+            print(f'cwgame parsing {len(files)} teams for {year} ...')
+
+        for file in files:
+            out = f'../parsed/game{year}.csv'
+            if first:
+                # print header using -n
+                cmd = f'cwgame -f 0-83 -x 0-94 -n -y {year} {file}'
+                cmd = cmd.split(' ')
+
+                # overwrite any existing file
+                with open(out, "w+") as outfile:
+                    result = subprocess.run(cmd, shell=False, stdout=outfile, stderr=subprocess.DEVNULL)
+                first = False
+            else:
+                # no header
+                cmd = f'cwgame -f 0-83 -x 0-94 -y {year} {file}'
+                cmd = cmd.split(' ')
+
+                # append to existing file
+                with open(out, "a+") as outfile:
+                    result = subprocess.run(cmd, shell=False, stdout=outfile, stderr=subprocess.DEVNULL)
 
 
 def main():
@@ -78,7 +118,8 @@ def main():
     p_data_raw = p_data.joinpath('retrosheet/raw')
     os.chdir(p_data_raw)
 
-    process_cwdaily('2019', args.verbose)
+    process_cwdaily(args.verbose)
+    process_cwgame(args.verbose)
 
 
 if __name__ == '__main__':
