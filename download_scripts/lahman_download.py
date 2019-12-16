@@ -1,15 +1,20 @@
 #!/usr/bin/env python
 
-"""Download and Unzip Lahman Data to {data_dir}/lahman/raw"""
+"""Download and Unzip Lahman Data to {data_dir}/lahman/raw
+
+Will not download data if it has already been downloaded.
+"""
 
 __author__ = 'Stephen Diehl'
 
 import os
 import shutil
 import argparse
-import wget
+import requests
 from pathlib import Path
 import zipfile
+import logging
+import sys
 
 
 def get_parser():
@@ -26,7 +31,7 @@ def get_parser():
     return parser
 
 
-def mk_dirs(data_dir, verbose):
+def mk_dirs(data_dir):
     """Make data directories"""
     p_lahman = Path(data_dir).joinpath('lahman')
     p_lahman_raw = p_lahman.joinpath('raw')
@@ -36,37 +41,48 @@ def mk_dirs(data_dir, verbose):
     p_lahman_raw.mkdir(parents=True, exist_ok=True)
     p_lahman_wrangled.mkdir(parents=True, exist_ok=True)
 
-    if verbose:
-        dirs = os.listdir(p_lahman)
-        print('Lahman Data Directories')
-        print(f'{p_lahman}/{dirs[0]}')
-        print(f'{p_lahman}/{dirs[1]}')
+    msg = " ".join(os.listdir(p_lahman))
+    logging.info(f'{p_lahman} files: {msg}')
 
     return p_lahman_raw.resolve()
 
 
-def download_data(raw_dir, verbose):
-    """download, unzip Lahman zip file"""
+def download_data(raw_dir):
+    """download and unzip Lahman zip file"""
     os.chdir(raw_dir)
-    baseball_zip = raw_dir.joinpath('baseballdatabank-master.zip')
+
+    # download most recent data dictionary (accurate for 2019)
+    url = 'http://www.seanlahman.com/files/database/readme2017.txt'
+    dd_filename = '../readme2017.txt'
+    if not Path(dd_filename).is_file():
+        r = requests.get(url)
+        r.raise_for_status()
+        with open(dd_filename, 'wb') as f:
+            f.write(r.content)
+
+    # download most recent Lahman data
+    # most recent data is not from www.seanlahman.com.  It is from chadwickbureau on github.
+    zip_filename = 'baseballdatabank-master.zip'
+    baseball_zip = raw_dir.joinpath(zip_filename)
 
     if not baseball_zip.is_file():
-        if verbose:
-            print('Downloading Data ...')
+        logging.info('Downloading Data ...')
 
         url = 'https://github.com/chadwickbureau/baseballdatabank/archive/master.zip'
-        wget.download(url)
+        r = requests.get(url)
+        r.raise_for_status()
+        with open(zip_filename, 'wb') as f:
+            f.write(r.content)
 
         # unzip it
-        with zipfile.ZipFile('baseballdatabank-master.zip', "r") as zip_ref:
+        with zipfile.ZipFile(zip_filename, "r") as zip_ref:
             zip_ref.extractall('.')
 
-    if verbose:
-        files = os.listdir()
-        print('files:', *files)
+    msg = ' '.join(os.listdir())
+    logging.info(f'{raw_dir} contents: {msg}')
 
 
-def reorg_files(raw_dir, verbose):
+def reorg_files(raw_dir):
     """move the unzipped files to the raw directory and remove the extract directory"""
     os.chdir(raw_dir)
     people_csv = raw_dir.joinpath('People.csv')
@@ -82,20 +98,26 @@ def reorg_files(raw_dir, verbose):
         # rm the extract directory
         shutil.rmtree('baseballdatabank-master')
 
-    if verbose:
-        files = os.listdir()
-        print('files:', *files)
+    msg = ' '.join(os.listdir())
+    logging.info(f'{raw_dir} contents: {msg}')
 
 
 def main():
-    """Perform the actions
-    """
-    # adding command line argument
+    """Download and Unzip Lahman Data to {data_dir}/lahman/raw"""
     parser = get_parser()
     args = parser.parse_args()
-    raw_dir = mk_dirs(args.data_dir, args.verbose)
-    download_data(raw_dir, args.verbose)
-    reorg_files(raw_dir, args.verbose)
+
+    if args.verbose:
+        level = logging.INFO
+    else:
+        level = logging.WARNING
+
+    # log to stdout
+    logging.basicConfig(stream=sys.stdout, level=level, format='%(levelname)s: %(message)s')
+
+    raw_dir = mk_dirs(args.data_dir)
+    download_data(raw_dir)
+    reorg_files(raw_dir)
 
 
 if __name__ == '__main__':

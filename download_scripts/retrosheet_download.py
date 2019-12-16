@@ -1,15 +1,20 @@
 #!/usr/bin/env python
 
-"""Download and Unzip Retrosheet Data to {data_dir}/retrosheet/raw"""
+"""Download and Unzip Retrosheet Data to {data_dir}/retrosheet/raw
+
+Will not download data if it has already been downloaded.
+"""
 
 __author__ = 'Stephen Diehl'
 
 import os
 import glob
 import argparse
-import wget
+import requests
 from pathlib import Path
 import zipfile
+import logging
+import sys
 
 
 def get_parser():
@@ -22,9 +27,10 @@ def get_parser():
 
     parser.add_argument("--data-dir", type=str, help="baseball data directory", default='../data')
 
-    # Note: prior to 1955, sacrifice flies, sacrifice bunts and intentional walks were
-    # were not recorded for both leagues.
-    # See for example: http://research.sabr.org/journals/sacrifice-fly
+    # Some Key MLB Data Dates
+    # 1955: sacrifice files, sacrifice bunts and intentional walks are recorded for the first time
+    # 1969: divisional play begins
+    # 1974: Retrosheet is missing no games from 1974 to present
     parser.add_argument("--start-year", type=int, help="start year", default='1955')
 
     # Retrosheet Data for 2019 became available in December 2019
@@ -34,7 +40,7 @@ def get_parser():
     return parser
 
 
-def mk_dirs(data_dir, verbose):
+def mk_dirs(data_dir):
     """Make data directories"""
     p_retrosheet = Path(data_dir).joinpath('retrosheet')
     p_retrosheet_raw = p_retrosheet.joinpath('raw')
@@ -44,16 +50,13 @@ def mk_dirs(data_dir, verbose):
     p_retrosheet_raw.mkdir(parents=True, exist_ok=True)
     p_retrosheet_wrangled.mkdir(parents=True, exist_ok=True)
 
-    if verbose:
-        dirs = os.listdir(p_retrosheet)
-        print('Retrosheet Data Directories')
-        print(f'{p_retrosheet}/{dirs[0]}')
-        print(f'{p_retrosheet}/{dirs[1]}')
+    msg = " ".join(os.listdir(p_retrosheet))
+    logging.info(f'{p_retrosheet} contents: {msg}')
 
     return p_retrosheet_raw.resolve()
 
 
-def download_data(raw_dir, start_year, end_year, verbose):
+def download_data(raw_dir, start_year, end_year):
     """download and unzip retrosheet event files
     """
 
@@ -63,13 +66,12 @@ def download_data(raw_dir, start_year, end_year, verbose):
         filename = f'{year}eve.zip'
         path = Path(filename)
         if not path.exists():
-            try:
-                print(f'Downloading data for {year}')
-                url = f'http://www.retrosheet.org/events/{year}eve.zip'
-                wget.download(url)
-            except Exception:
-                print(f'{year} data not available')
-                break
+            url = f'http://www.retrosheet.org/events/{year}eve.zip'
+            logging.info(f'Downloading {url}')
+            r = requests.get(url)
+            r.raise_for_status()
+            with open(filename, 'wb') as f:
+                f.write(r.content)
 
         # unzip each zip file, if its contents don't exist locally
         # {year}BOS.EVA is in all zip files
@@ -80,27 +82,27 @@ def download_data(raw_dir, start_year, end_year, verbose):
             with zipfile.ZipFile(filename, "r") as zip_ref:
                 zip_ref.extractall(".")
 
-    if verbose:
-        # list the 2019 files
-        ros_files = sorted(glob.glob('*2019.ROS'))
-        eva_files = sorted(glob.glob('2019*.EVA'))
-        evn_files = sorted(glob.glob('2019*.EVN'))
-        team_files = glob.glob('TEAM2019')
-        print('2019 ROS files\n', *ros_files, sep=' ')
-        print('2019 EVA files\n', *eva_files, sep=' ')
-        print('2019 EVN files\n', *evn_files, sep=' ')
-        print('2019 TEAM files\n', *team_files, sep=' ')
+    years = glob.glob('TEAM*')
+    years = sorted([year[4:] for year in years])
+    logging.info(f'Data downloaded for years: {years[0]} thru {years[-1]}')
 
 
 def main():
-    """Perform the actions
+    """Download Retrosheet Event Files
     """
-    # adding command line argument
     parser = get_parser()
     args = parser.parse_args()
-    raw_dir = mk_dirs(args.data_dir, args.verbose)
-    download_data(raw_dir, args.start_year, args.end_year, args.verbose)
-    # reorg_files(raw_dir, args.verbose)
+
+    if args.verbose:
+        level = logging.INFO
+    else:
+        level = logging.WARNING
+
+    # log to stdout
+    logging.basicConfig(stream=sys.stdout, level=level, format='%(levelname)s: %(message)s')
+
+    raw_dir = mk_dirs(args.data_dir)
+    download_data(raw_dir, args.start_year, args.end_year)
 
 
 if __name__ == '__main__':

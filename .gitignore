@@ -3,4 +3,6 @@ data/lahman/raw
 data/lahman/wrangled
 data/retrosheet/raw/*
 data/retrosheet/parsed/*
+data/retrosheet/collected/*
+tmp.py
 __pycache__

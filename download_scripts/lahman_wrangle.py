@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-"""Wrangle Lahman Data from {data_dir}/lahman/raw to {data_dir}/lahman/wrangled"""
+"""Wrangle Lahman Data from {data_dir}/lahman/raw to {data_dir}/lahman/wrangled
+
+Wrangles: people, batting, pitching, fielding, and teams
+"""
 
 __author__ = 'Stephen Diehl'
 
@@ -10,11 +13,10 @@ import io
 import os
 import argparse
 from pathlib import Path
+import logging
+import sys
 import baseball_functions as bb
 
-
-# http://www.seanlahman.com/files/database/
-# data dictionary: readme2017.txt
 
 def get_parser():
     """Args Description"""
@@ -51,7 +53,14 @@ def to_date(row, prefix):
     return pd.datetime(int(y), int(m), int(d))
 
 
-def wrangle_people(p_raw, p_wrangled, verbose):
+def df_info(df):
+    """Use buffer to capture output from df.info()"""
+    buffer = io.StringIO()
+    df.info(buf=buffer)
+    return buffer.getvalue()
+
+
+def wrangle_people(p_raw, p_wrangled):
     os.chdir(p_raw)
     people = pd.read_csv('People.csv', parse_dates=['debut', 'finalGame'])
 
@@ -64,11 +73,8 @@ def wrangle_people(p_raw, p_wrangled, verbose):
         ['birth_year', 'birth_month', 'birth_day',
          'death_year', 'death_month', 'death_day'], axis=1)
 
-    # df.info() goes to stdout by default, capture it
-    buffer = io.StringIO()
-    people.info(buf=buffer)
-    if verbose:
-        print('people\n', buffer.getvalue())
+    msg = df_info(people)
+    logging.info('people\n{}'.format(msg))
 
     # persist as a csv file with data types
     os.chdir(p_wrangled)
@@ -79,7 +85,7 @@ def wrangle_people(p_raw, p_wrangled, verbose):
     assert (df2.dtypes == people.dtypes).all()
 
 
-def wrangle_batting(p_raw, p_wrangled, verbose):
+def wrangle_batting(p_raw, p_wrangled):
     os.chdir(p_raw)
     batting = pd.read_csv('Batting.csv')
 
@@ -113,11 +119,8 @@ def wrangle_batting(p_raw, p_wrangled, verbose):
     # downcast integers and convert float to Int64, if data permits
     batting = bb.optimize_df_dtypes(batting)
 
-    # df.info() goes to stdout by default, capture it
-    buffer = io.StringIO()
-    batting.info(buf=buffer)
-    if verbose:
-        print('batting\n', buffer.getvalue())
+    msg = df_info(batting)
+    logging.info('batting\n{}'.format(msg))
 
     # persist with optimized datatypes
     os.chdir(p_wrangled)
@@ -128,7 +131,7 @@ def wrangle_batting(p_raw, p_wrangled, verbose):
     assert (df2.dtypes == batting.dtypes).all()
 
 
-def wrangle_pitching(p_raw, p_wrangled, verbose):
+def wrangle_pitching(p_raw, p_wrangled):
     os.chdir(p_raw)
     pitching = pd.read_csv('Pitching.csv')
 
@@ -169,11 +172,8 @@ def wrangle_pitching(p_raw, p_wrangled, verbose):
     pitching = pitching.rename(columns=new_names)
     pitching = bb.optimize_df_dtypes(pitching)
 
-    # df.info() goes to stdout by default, capture it
-    buffer = io.StringIO()
-    pitching.info(buf=buffer)
-    if verbose:
-        print('pitching\n', buffer.getvalue())
+    msg = df_info(pitching)
+    logging.info('pitching\n{}'.format(msg))
 
     # persist
     os.chdir(p_wrangled)
@@ -184,7 +184,7 @@ def wrangle_pitching(p_raw, p_wrangled, verbose):
     assert (df2.dtypes == pitching.dtypes).all()
 
 
-def wrangle_fielding(p_raw, p_wrangled, verbose):
+def wrangle_fielding(p_raw, p_wrangled):
     os.chdir(p_raw)
     fielding = pd.read_csv('Fielding.csv')
 
@@ -214,11 +214,8 @@ def wrangle_fielding(p_raw, p_wrangled, verbose):
     fielding = fielding.rename(columns=new_names)
     fielding = bb.optimize_df_dtypes(fielding)
 
-    # df.info() goes to stdout by default, capture it
-    buffer = io.StringIO()
-    fielding.info(buf=buffer)
-    if verbose:
-        print('fielding\n', buffer.getvalue())
+    msg = df_info(fielding)
+    logging.info('fielding\n{}'.format(msg))
 
     # persist
     os.chdir(p_wrangled)
@@ -229,7 +226,7 @@ def wrangle_fielding(p_raw, p_wrangled, verbose):
     assert (df2.dtypes == fielding.dtypes).all()
 
 
-def wrangle_teams(p_raw, p_wrangled, verbose):
+def wrangle_teams(p_raw, p_wrangled):
     os.chdir(p_raw)
     teams = pd.read_csv('Teams.csv')
 
@@ -287,11 +284,8 @@ def wrangle_teams(p_raw, p_wrangled, verbose):
     teams = teams.rename(columns=new_names)
     teams = bb.optimize_df_dtypes(teams)
 
-    # df.info() goes to stdout by default, capture it
-    buffer = io.StringIO()
-    teams.info(buf=buffer)
-    if verbose:
-        print('teams\n', buffer.getvalue())
+    msg = df_info(teams)
+    logging.info('teams\n{}'.format(msg))
 
     # persist
     os.chdir(p_wrangled)
@@ -305,18 +299,25 @@ def wrangle_teams(p_raw, p_wrangled, verbose):
 def main():
     """Perform the data transformations
     """
-    # adding command line argument
     parser = get_parser()
     args = parser.parse_args()
+
+    if args.verbose:
+        level = logging.INFO
+    else:
+        level = logging.WARNING
+
+    # log to stdout
+    logging.basicConfig(stream=sys.stdout, level=level, format='%(levelname)s: %(message)s')
 
     p_lahman_raw = Path(args.data_dir).joinpath('lahman/raw').resolve()
     p_lahman_wrangled = Path(args.data_dir).joinpath('lahman/wrangled').resolve()
 
-    wrangle_people(p_lahman_raw, p_lahman_wrangled, args.verbose)
-    wrangle_batting(p_lahman_raw, p_lahman_wrangled, args.verbose)
-    wrangle_pitching(p_lahman_raw, p_lahman_wrangled, args.verbose)
-    wrangle_fielding(p_lahman_raw, p_lahman_wrangled, args.verbose)
-    wrangle_teams(p_lahman_raw, p_lahman_wrangled, args.verbose)
+    wrangle_people(p_lahman_raw, p_lahman_wrangled)
+    wrangle_batting(p_lahman_raw, p_lahman_wrangled)
+    wrangle_pitching(p_lahman_raw, p_lahman_wrangled)
+    wrangle_fielding(p_lahman_raw, p_lahman_wrangled)
+    wrangle_teams(p_lahman_raw, p_lahman_wrangled)
 
 
 if __name__ == '__main__':
