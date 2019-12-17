@@ -75,86 +75,53 @@ def parse_event_files(raw_dir, parser, fields):
                     result = subprocess.run(cmd_full, shell=False, stdout=outfile, stderr=subprocess.DEVNULL)
 
 
-def collect_cwdaily_files(parse_dir, collect_dir, use_data_types):
+def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
     """Collect all parsed cwdaily files and optimize datatypes.
     """
 
     os.chdir(parse_dir)
-    dailyfiles = glob.glob('cwdaily*.csv')
+    dailyfiles = glob.glob(f'{parser}*.csv')
     dailyfiles.sort()
 
-    logging.info(f'Collecting {len(dailyfiles)} cwdaily parsed csv files into single dataframe ...')
+    logging.info(f'Collecting {len(dailyfiles)} {parser} parsed csv files into single dataframe ...')
 
     if use_data_types:
+        # this uses 3 time less memory for cwdaily but relies on precomputed data types
         logging.info('Using precomputed data types')
-        filename_types = '../player_game_types.csv'
-        dates, dtypes = bb.read_types(filename_types)
+        if parser == 'cwdaily':
+            filename = '../player_game_types.csv'
+        elif parser == 'cwgame':
+            filename = '../team_game_types.csv'
 
-        player_game = pd.concat((pd.read_csv(f, parse_dates=dates, dtype=dtypes) for f in dailyfiles), ignore_index=True, copy=False)
-        logging.info(f'Optimized Memory Usage:   {bb.mem_usage(player_game)}')
-    else:
-        # for cwdaily, for all fields, from 1955 thru 2019, player_game will be 5.2GB
-        # pandas operations will require as least twice the size of cwdaily for RAM
-        player_game = pd.concat((pd.read_csv(f) for f in dailyfiles), ignore_index=True, copy=False)
-
-        logging.info(f'Unoptimized Memory Usage: {bb.mem_usage(player_game)}')
-        logging.info('Optimizing Data Types to reduce memory ...')
-
-        # for cwdaily, optimize_df_dtypes reduces the size of the dataframe by a factor of 3
-        player_game = bb.optimize_df_dtypes(player_game)
-        logging.info(f'Optimized Memory Usage:   {bb.mem_usage(player_game)}')
-
-    player_game.columns = player_game.columns.str.lower()
-
-    # persist optimized dataframe
-    # gzip chosen over xy because this runs on client computer and gzip is faster
-    logging.info('persisting dataframe using compression - this could take several minutes ...')
-    os.chdir(collect_dir)
-    bb.to_csv_with_types(player_game, 'player_game.csv.gz')
-    logging.info('cwdaily data persisted')
-
-
-def collect_cwgame_files(parse_dir, collect_dir, use_data_types):
-    """Collect all parsed cwgame files and optimize datatypes.
-    """
-    os.chdir(parse_dir)
-    dailyfiles = glob.glob('cwgame*.csv')
-    dailyfiles.sort()
-
-    logging.info(f'Collecting {len(dailyfiles)} cwgame parsed csv files into single dataframe ...')
-
-    if use_data_types:
-        logging.info('Using precomputed data types')
-        filename_types = '../team_game_types.csv'
-        types = pd.read_csv(filename_types).set_index('index').to_dict()
-        dtypes = types['dtypes']
+        dates, dtypes = bb.read_types(filename)
         dtypes = {key.upper(): value for key, value in dtypes.items()}
 
-        dates = [key for key, value in dtypes.items() if value.startswith('datetime')]
-        for field in dates:
-            dtypes.pop(field)
-
-        team_game = pd.concat((pd.read_csv(f, parse_dates=dates, dtype=dtypes) for f in dailyfiles),
-                                ignore_index=True, copy=False)
-        logging.info(f'Optimized Memory Usage:   {bb.mem_usage(team_game)}')
+        df = pd.concat((pd.read_csv(f, parse_dates=dates, dtype=dtypes) for f in dailyfiles), ignore_index=True,
+                       copy=False)
+        logging.info(f'Optimized Memory Usage:   {bb.mem_usage(df)}')
     else:
-        team_game = pd.concat((pd.read_csv(f) for f in dailyfiles), ignore_index=True, copy=False)
+        # this could use twice the memory of the largest dataframe
+        df = pd.concat((pd.read_csv(f) for f in dailyfiles), ignore_index=True, copy=False)
 
-        logging.info(f'Unoptimized Memory Usage: {bb.mem_usage(team_game)}')
+        logging.info(f'Unoptimized Memory Usage: {bb.mem_usage(df)}')
         logging.info('Optimizing Data Types to reduce memory ...')
 
         # for cwdaily, optimize_df_dtypes reduces the size of the dataframe by a factor of 3
-        team_game = bb.optimize_df_dtypes(team_game)
-        logging.info(f'Optimized Memory Usage:   {bb.mem_usage(team_game)}')
+        df = bb.optimize_df_dtypes(df)
+        logging.info(f'Optimized Memory Usage:   {bb.mem_usage(df)}')
 
-    team_game.columns = team_game.columns.str.lower()
+    df.columns = df.columns.str.lower()
 
     # persist optimized dataframe
     # gzip chosen over xy because this runs on client computer and gzip is faster
     logging.info('persisting dataframe using compression - this could take several minutes ...')
     os.chdir(collect_dir)
-    bb.to_csv_with_types(team_game, 'team_game.csv.gz')
-    logging.info('cwgame data persisted')
+    if parser == 'cwdaily':
+        filename = 'player_game.csv.gz'
+    elif parser == 'cwgame':
+        filename = 'team_game.csv.gz'
+    bb.to_csv_with_types(df, filename)
+    logging.info(f'{parser} data persisted')
 
 
 def main():
@@ -183,8 +150,8 @@ def main():
     # parse_event_files(p_data_raw, 'cwdaily', '-f 0-153')
     # parse_event_files(p_data_raw, 'cwgame', '-f 0-83 -x 0-94')
 
-    collect_cwdaily_files(p_data_parsed, p_data_collected, args.data_type)
-    collect_cwgame_files(p_data_parsed, p_data_collected, args.data_type)
+    collect_parsed_files(p_data_parsed, p_data_collected, 'cwdaily', args.data_type)
+    collect_parsed_files(p_data_parsed, p_data_collected, 'cwgame', args.data_type)
 
 
 if __name__ == '__main__':
