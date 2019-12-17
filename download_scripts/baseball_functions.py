@@ -10,6 +10,7 @@ import re
 from sqlalchemy.types import SmallInteger, Integer, BigInteger
 from IPython.display import HTML, display
 
+
 def to_csv_with_types(df, filename):
     """
     Save df to csv file and save df.dtypes to csv file.
@@ -36,15 +37,23 @@ def from_csv_with_types(filename, nrows=None):
     """
 
     filename_types = filename.split('.')[0] + '_types.csv'
+    dates, dtypes = read_types(filename_types)
 
-    types = pd.read_csv(filename_types).set_index('index').to_dict()
+    return pd.read_csv(filename, parse_dates=dates, dtype=dtypes, nrows=nrows)
+
+
+def read_types(filename):
+    """Read data types file to get list of date fields and a dictionary mapping of types
+
+    """
+    types = pd.read_csv(filename).set_index('index').to_dict()
     dtypes = types['dtypes']
 
     dates = [key for key, value in dtypes.items() if value.startswith('datetime')]
     for field in dates:
         dtypes.pop(field)
 
-    return pd.read_csv(filename, parse_dates=dates, dtype=dtypes, nrows=nrows)
+    return dates, dtypes
 
 
 def optimize_df_dtypes(df, ignore=None):
@@ -60,8 +69,6 @@ def optimize_df_dtypes(df, ignore=None):
         df (pd.DataFrame): optimized DataFrame.
     """
 
-    df = df.copy()
-
     # columns to consider for downcasting
     process_cols = df.columns
     if ignore and len(ignore) > 0:
@@ -75,8 +82,7 @@ def optimize_df_dtypes(df, ignore=None):
 
     # downcast integer columns to smallest unsigned int that will hold the values
     if len(df_int.columns) > 0:
-        df_int = df_int.apply(pd.to_numeric, downcast='unsigned')
-        df[df_int.columns] = df_int
+        df[df_int.columns] = df_int.apply(pd.to_numeric, downcast='unsigned')
 
     # convert float columns that are integers with nans to Int64
     df_float = df.select_dtypes(include=['float'])
@@ -86,17 +92,6 @@ def optimize_df_dtypes(df, ignore=None):
 
     # automated conversion to categories can be problematic
     # if a category is warranted, probably a CategoryDType should be created
-
-    # get the object columns, if any
-    # df_obj = df[process_cols].select_dtypes(include=['object'])
-    #
-    # # if there are some object columns, convert to category if less than 10% unique
-    # if len(df_obj.columns) > 0:
-    #     s = df_obj.nunique() / df.shape[0]
-    #     columns = s.index[s <= cutoff].values
-    #     if len(columns) > 0:
-    #         df_cat = df[columns].astype('category')
-    #         df[columns] = df_cat
 
     return df
 
@@ -120,6 +115,7 @@ def optimize_db_dtypes(df):
     dtypes = {**small_int, **integer, **big_int}
 
     return dtypes
+
 
 def mem_usage(df):
     """Returns a string representing df memory usage in MB."""
@@ -149,16 +145,19 @@ def convert_camel_case(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
+
 def is_unique(df, cols):
     """Fast determination of multi-column uniqueness."""
     return not (df.duplicated(subset=cols)).any()
+
 
 def game_id_to_url(game_id):
     home = game_id[:3]
     url = 'https://www.baseball-reference.com/boxes/' + home + '/' + game_id + '.shtml'
     display(HTML(f'<a href="{url}">{game_id}</a>'))
 
-def order_cols(df,cols):
+
+def order_cols(df, cols):
     """Put columns in cols first, followed by rest of columns"""
     rest = [col for col in df.columns if col not in cols]
     df = df[cols + rest]
