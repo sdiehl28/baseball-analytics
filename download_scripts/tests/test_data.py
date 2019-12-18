@@ -1,5 +1,5 @@
 import pytest
-import os
+import sys
 import subprocess
 from pathlib import Path
 import zipfile
@@ -16,6 +16,11 @@ def download_data():
     subprocess.run(cmd, shell=False)
 
     return Path('./test_data')
+
+
+def test_python_version():
+    assert sys.version_info.major == 3
+    assert sys.version_info.minor >= 7
 
 
 def test_lahman_download(download_data):
@@ -53,3 +58,26 @@ def test_retrosheet_download(download_data):
     assert retrosheet_dir.exists()
     assert wrangled_dir.exists()
     assert raw_dir.exists()
+
+    # 3 event files were downloaded by the fixture
+    zip2017 = raw_dir.joinpath('2017eve.zip')
+    zip2018 = raw_dir.joinpath('2018eve.zip')
+    zip2019 = raw_dir.joinpath('2019eve.zip')
+
+    assert zip2017.exists()
+    assert zip2018.exists()
+    assert zip2019.exists()
+
+    # should be same number of files in raw_dir as in zipfile
+    files_2017 = [file for file in raw_dir.glob('*2017*') if not file.name.endswith('.zip')]
+    zipped = zipfile.ZipFile(zip2017)
+    assert len(files_2017) == len(zipped.namelist())
+
+    files_2018 = [file for file in raw_dir.glob('*2018*') if not file.name.endswith('.zip')]
+    zipped = zipfile.ZipFile(zip2018)
+    assert len(files_2018) == len(zipped.namelist())
+
+    files_2019 = [file for file in raw_dir.glob('*2019*') if not file.name.endswith('.zip')]
+    zipped = zipfile.ZipFile(zip2019)
+    assert len(files_2019) == len(zipped.namelist())
+
