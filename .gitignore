@@ -1,8 +1,9 @@
 .idea
 data/lahman/raw
 data/lahman/wrangled
-data/retrosheet/raw/*
-data/retrosheet/parsed/*
-data/retrosheet/collected/*
+data/retrosheet/raw
+data/retrosheet/parsed
+data/retrosheet/collected
+test_data
 tmp.py
 __pycache__
