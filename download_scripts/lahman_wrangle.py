@@ -129,7 +129,7 @@ def wrangle_basic(p_raw, p_wrangled, filename):
 
 def wrangle_people(p_raw, p_wrangled):
     if p_wrangled.joinpath('people.csv').exists():
-        logging.info('Skipping wrangle of people - already performed')
+        logging.info('Skipping wrangle of People.csv - already performed')
         return
 
     os.chdir(p_raw)
@@ -154,7 +154,7 @@ def wrangle_people(p_raw, p_wrangled):
 
 def wrangle_fielding(p_raw, p_wrangled):
     if p_wrangled.joinpath('fielding.csv').exists():
-        logging.info('Skipping wrangle of fielding - already performed')
+        logging.info('Skipping wrangle of Fielding.csv - already performed')
         return
 
     os.chdir(p_raw)

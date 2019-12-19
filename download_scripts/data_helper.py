@@ -154,8 +154,10 @@ def convert_camel_case(name):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
-def is_unique(df, cols):
+def is_unique(df, cols, ignore_null=False):
     """Fast determination of multi-column uniqueness."""
+    if ignore_null:
+        df.dropna(subset=cols, inplace=True)
     return not (df.duplicated(subset=cols)).any()
 
 

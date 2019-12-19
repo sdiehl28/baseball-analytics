@@ -12,7 +12,7 @@ from .. import data_helper as dh
 
 @pytest.fixture(scope="session")
 def download_data():
-    """Will download data, if it does not already exist."""
+    """Runs Scripts"""
 
     # relative paths are used so be sure we start in the right directory
     curr_dir = Path(os.getcwd())
@@ -41,20 +41,20 @@ def test_python_version():
 
 def test_lahman_download(download_data):
     data_dir = download_data
-    lahman_dir = data_dir.joinpath('lahman')
-    wrangled_dir = lahman_dir.joinpath('wrangled')
-    raw_dir = lahman_dir.joinpath('raw')
+    lahman_dir = data_dir / 'lahman'
+    raw_dir = lahman_dir / 'raw'
+    wrangled_dir = lahman_dir / 'wrangled'
 
-    assert lahman_dir.exists()
-    assert wrangled_dir.exists()
-    assert raw_dir.exists()
+    assert lahman_dir.is_dir()
+    assert wrangled_dir.is_dir()
+    assert raw_dir.is_dir()
 
     # 2 directories and 1 file
     assert len(list(lahman_dir.iterdir())) == 3
 
     # zip from master branch of https://github.com/chadwickbureau/baseballdatabank
     zipfilename = raw_dir.joinpath('baseballdatabank-master.zip')
-    assert zipfilename.exists()
+    assert zipfilename.is_file()
 
     zipped = zipfile.ZipFile(zipfilename)
     zip_core_files = [file for file in zipped.namelist()
@@ -67,13 +67,13 @@ def test_lahman_download(download_data):
 
 def test_retrosheet_download(download_data):
     data_dir = download_data
-    retrosheet_dir = data_dir.joinpath('retrosheet')
-    wrangled_dir = retrosheet_dir.joinpath('wrangled')
-    raw_dir = retrosheet_dir.joinpath('raw')
+    retrosheet_dir = data_dir / 'retrosheet'
+    raw_dir = retrosheet_dir / 'raw'
+    wrangled_dir = retrosheet_dir / 'wrangled'
 
-    assert retrosheet_dir.exists()
-    assert wrangled_dir.exists()
-    assert raw_dir.exists()
+    assert retrosheet_dir.is_dir()
+    assert wrangled_dir.is_dir()
+    assert raw_dir.is_dir()
 
     # 3 event files were downloaded by the fixture
     zip2017 = raw_dir.joinpath('2017eve.zip')
@@ -102,15 +102,16 @@ def test_lahman_wrangle_people(download_data):
     data_dir = download_data
     filename = data_dir / 'lahman' / 'wrangled' / 'people.csv'
 
+    # check for duplicate IDs
     people = dh.from_csv_with_types(filename)
-    assert 'player_id' in people.columns
-    assert 'retro_id' in people.columns
+    assert dh.is_unique(people, ['player_id'])  # lahman player id
+    assert dh.is_unique(people, ['retro_id'], ignore_null=True)  # retrosheet player id
 
-    # assert no capitals in column names
-    assert np.all([col.islower() for col in people.columns])
 
-    s = people.dtypes.value_counts()
-    assert s[np.dtype('O')] == 14
-    assert s[np.dtype('<M8[ns]')] == 4
-    assert s[np.dtype('float64')] == 2
+def test_lahman_wrangle_fielding(download_data):
+    data_dir = download_data
+    filename = data_dir / 'lahman' / 'wrangled' / 'fielding.csv'
 
+    # check for duplicate IDs
+    people = dh.from_csv_with_types(filename)
+    assert dh.is_unique(people, ['player_id', 'year_id', 'stint', 'team_id', 'pos'])
