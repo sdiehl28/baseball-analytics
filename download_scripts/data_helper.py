@@ -93,9 +93,10 @@ def optimize_df_dtypes(df, ignore=None):
 
     # convert float columns that are integers with nans to Int64
     df_float = df.select_dtypes(include=['float'])
-    filt = df_float.apply(is_int)
-    int_col_names = df_float.columns[filt]
-    df[int_col_names] = df[int_col_names].astype('Int64')
+    if len(df_float.columns) > 0:
+        filt = df_float.apply(is_int)
+        int_col_names = df_float.columns[filt]
+        df[int_col_names] = df[int_col_names].astype('Int64')
 
     # automated conversion to categories can be problematic
     # if a category is warranted, probably a CategoryDType should be created

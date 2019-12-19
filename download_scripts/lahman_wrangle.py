@@ -100,6 +100,33 @@ def to_date(row, prefix):
     return pd.datetime(int(y), int(m), int(d))
 
 
+def wrangle_basic(p_raw, p_wrangled, filename):
+    """Basic Wrangle:  converts fieldnames, optimizes datatypes and persists data
+    """
+    filename_lower = str(filename).lower()
+    wrangled_file = p_wrangled.joinpath(filename_lower)
+
+    if wrangled_file.exists():
+        logging.info(f'Skipping wrangle of {filename} - already performed')
+        return
+
+    os.chdir(p_raw)
+    df = pd.read_csv(filename)
+
+    df.rename(columns=get_fieldname_mapping(), inplace=True)
+    df.columns = df.columns.str.lower()
+
+    # downcast integers and convert float to Int64, if data permits
+    df = dh.optimize_df_dtypes(df)
+
+    msg = dh.df_info(df)
+    logging.info('{}\n{}'.format(filename, msg))
+
+    # persist with optimized datatypes
+    os.chdir(p_wrangled)
+    dh.to_csv_with_types(df, wrangled_file)
+
+
 def wrangle_people(p_raw, p_wrangled):
     if p_wrangled.joinpath('people.csv').exists():
         logging.info('Skipping wrangle of people - already performed')
@@ -123,49 +150,6 @@ def wrangle_people(p_raw, p_wrangled):
     # persist as a csv file with data types
     os.chdir(p_wrangled)
     dh.to_csv_with_types(people, 'people.csv')
-
-
-def wrangle_batting(p_raw, p_wrangled):
-    if p_wrangled.joinpath('batting.csv').exists():
-        logging.info('Skipping wrangle of batting - already performed')
-        return
-
-    os.chdir(p_raw)
-    batting = pd.read_csv('Batting.csv')
-
-    batting.rename(columns=get_fieldname_mapping(), inplace=True)
-    batting.columns = batting.columns.str.lower()
-
-    # downcast integers and convert float to Int64, if data permits
-    batting = dh.optimize_df_dtypes(batting)
-
-    msg = dh.df_info(batting)
-    logging.info('batting\n{}'.format(msg))
-
-    # persist with optimized datatypes
-    os.chdir(p_wrangled)
-    dh.to_csv_with_types(batting, 'batting.csv')
-
-
-def wrangle_pitching(p_raw, p_wrangled):
-    if p_wrangled.joinpath('pitching.csv').exists():
-        logging.info('Skipping wrangle of pitching - already performed')
-        return
-
-    os.chdir(p_raw)
-    pitching = pd.read_csv('Pitching.csv')
-
-    pitching.rename(columns=get_fieldname_mapping(), inplace=True)
-    pitching.columns = pitching.columns.str.lower()
-
-    pitching = dh.optimize_df_dtypes(pitching)
-
-    msg = dh.df_info(pitching)
-    logging.info('pitching\n{}'.format(msg))
-
-    # persist
-    os.chdir(p_wrangled)
-    dh.to_csv_with_types(pitching, 'pitching.csv')
 
 
 def wrangle_fielding(p_raw, p_wrangled):
@@ -194,27 +178,6 @@ def wrangle_fielding(p_raw, p_wrangled):
     dh.to_csv_with_types(fielding, 'fielding.csv')
 
 
-def wrangle_teams(p_raw, p_wrangled):
-    if p_wrangled.joinpath('teams.csv').exists():
-        logging.info('Skipping wrangle of teams - already performed')
-        return
-
-    os.chdir(p_raw)
-    teams = pd.read_csv('Teams.csv')
-
-    teams.rename(columns=get_fieldname_mapping(), inplace=True)
-    teams.columns = teams.columns.str.lower()
-
-    teams = dh.optimize_df_dtypes(teams)
-
-    msg = dh.df_info(teams)
-    logging.info('teams\n{}'.format(msg))
-
-    # persist
-    os.chdir(p_wrangled)
-    dh.to_csv_with_types(teams, 'teams.csv')
-
-
 def main():
     """Perform the data transformations
     """
@@ -233,10 +196,13 @@ def main():
     p_lahman_wrangled = Path(args.data_dir).joinpath('lahman/wrangled').resolve()
 
     wrangle_people(p_lahman_raw, p_lahman_wrangled)
-    wrangle_batting(p_lahman_raw, p_lahman_wrangled)
-    wrangle_pitching(p_lahman_raw, p_lahman_wrangled)
     wrangle_fielding(p_lahman_raw, p_lahman_wrangled)
-    wrangle_teams(p_lahman_raw, p_lahman_wrangled)
+
+    wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'Batting.csv')
+    wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'Pitching.csv')
+    wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'Teams.csv')
+    wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'Salaries.csv')
+    wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'Parks.csv')
 
 
 if __name__ == '__main__':
