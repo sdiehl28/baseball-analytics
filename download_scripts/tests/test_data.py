@@ -4,22 +4,32 @@ import sys
 import subprocess
 from pathlib import Path
 import zipfile
+import pandas as pd
+import numpy as np
+
+from .. import baseball_functions as bb
 
 
 @pytest.fixture(scope="session")
 def download_data():
     """Will download data, if it does not already exist."""
 
-    # change to the download_script directory, if we are not already there
-    if 'download_scripts' in [file.name for file in Path(os.getcwd()).iterdir()]:
+    # relative paths are used so be sure we start in the right directory
+    curr_dir = Path(os.getcwd())
+    if curr_dir.joinpath('./download_scripts/baseball_functions.py').exists():
         os.chdir('./download_scripts')
+    elif curr_dir.joinpath('../baseball_functions.py').exists():
+        os.chdir('..')
 
-    cmd = ['python', './lahman_download.py', '--data-dir', './test_data']
-    subprocess.run(cmd, shell=False)
-
-    cmd = ['python', './retrosheet_download.py', '--data-dir', './test_data',
-           '--start-year', '2017', '--end-year', '2019']
-    subprocess.run(cmd, shell=False)
+    # cmd = ['python', './lahman_download.py', '--data-dir', './test_data']
+    # subprocess.run(cmd, shell=False)
+    #
+    # cmd = ['python', './retrosheet_download.py', '--data-dir', './test_data',
+    #        '--start-year', '2017', '--end-year', '2019']
+    # subprocess.run(cmd, shell=False)
+    #
+    # cmd = ['python', './lahman_wrangle.py', '--data-dir', './test_data']
+    # subprocess.run(cmd, shell=False)
 
     return Path('./test_data')
 
@@ -86,4 +96,19 @@ def test_retrosheet_download(download_data):
     files_2019 = [file for file in raw_dir.glob('*2019*') if not file.name.endswith('.zip')]
     zipped = zipfile.ZipFile(zip2019)
     assert len(files_2019) == len(zipped.namelist())
+
+
+def test_lahman_wrangle_people(download_data):
+    data_dir = download_data
+    wrangled_dir = data_dir.joinpath('lahman/wrangled')
+
+    filename = str(wrangled_dir.joinpath('people.csv'))
+    people = bb.from_csv_with_types(filename)
+    assert 'player_id' in people.columns
+    assert 'retro_id' in people.columns
+
+    s = people.dtypes.value_counts()
+    assert s[np.dtype('O')] == 14
+    assert s[np.dtype('<M8[ns]')] == 4
+    assert s[np.dtype('float64')] == 2
 
