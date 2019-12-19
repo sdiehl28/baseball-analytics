@@ -33,9 +33,9 @@ def get_parser():
 
 def mk_dirs(data_dir):
     """Make data directories"""
-    p_lahman = Path(data_dir).joinpath('lahman')
-    p_lahman_raw = p_lahman.joinpath('raw')
-    p_lahman_wrangled = p_lahman.joinpath('wrangled')
+    p_lahman = Path(data_dir) / 'lahman'
+    p_lahman_raw = p_lahman / 'raw'
+    p_lahman_wrangled = p_lahman / 'wrangled'
 
     # create directories from these path objects
     p_lahman_raw.mkdir(parents=True, exist_ok=True)
@@ -63,9 +63,8 @@ def download_data(raw_dir):
     # download most recent Lahman data
     # most recent data is not from www.seanlahman.com.  It is from chadwickbureau on github.
     zip_filename = 'baseballdatabank-master.zip'
-    baseball_zip = raw_dir.joinpath(zip_filename)
 
-    if not baseball_zip.is_file():
+    if not Path(zip_filename).is_file():
         logging.info('Downloading Data ...')
 
         url = 'https://github.com/chadwickbureau/baseballdatabank/archive/master.zip'
@@ -78,17 +77,16 @@ def download_data(raw_dir):
         with zipfile.ZipFile(zip_filename, "r") as zip_ref:
             zip_ref.extractall('.')
 
-    msg = ' '.join(os.listdir())
+    msg = ' '.join(os.listdir('.'))
     logging.info(f'{raw_dir} contents: {msg}')
 
 
 def reorg_files(raw_dir):
     """move the unzipped files to the raw directory and remove the extract directory"""
     os.chdir(raw_dir)
-    people_csv = raw_dir.joinpath('People.csv')
 
-    if not people_csv.is_file():
-        unzip_dir = raw_dir.joinpath('baseballdatabank-master/core')
+    if not Path('People.csv').is_file():
+        unzip_dir = raw_dir / 'baseballdatabank-master' / 'core'
 
         # move the unzipped csv files to the current working directory
         for root, dirs, files in os.walk(unzip_dir):
@@ -98,7 +96,7 @@ def reorg_files(raw_dir):
         # rm the extract directory
         shutil.rmtree('baseballdatabank-master')
 
-    msg = ' '.join(os.listdir())
+    msg = ' '.join(os.listdir('.'))
     logging.info(f'{raw_dir} contents: {msg}')
 
 

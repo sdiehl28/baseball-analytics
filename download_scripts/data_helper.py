@@ -8,7 +8,10 @@ import pandas as pd
 import numpy as np
 import re
 import io
+from pathlib import Path
 from sqlalchemy.types import SmallInteger, Integer, BigInteger
+
+
 # from IPython.display import HTML, display
 
 
@@ -22,11 +25,13 @@ def to_csv_with_types(df, filename):
     Read back with: from_csv_with_types()
     """
 
-    filename_types = filename.split('.')[0] + '_types.csv'
+    p = Path(filename)
+    p_types = p.parent / p.name.replace('.csv', '_types.csv')
+
     dtypes = df.dtypes.to_frame('dtypes').reset_index()
 
-    dtypes.to_csv(filename_types, index=False)
-    df.to_csv(filename, index=False)
+    dtypes.to_csv(p_types, index=False)
+    df.to_csv(p, index=False)
 
 
 def from_csv_with_types(filename, nrows=None):
@@ -37,10 +42,11 @@ def from_csv_with_types(filename, nrows=None):
     This is the complement of to_csv_with_types().
     """
 
-    filename_types = filename.split('.')[0] + '_types.csv'
-    dates, dtypes = read_types(filename_types)
+    p = Path(filename)
+    p_types = p.parent / p.name.replace('.csv', '_types.csv')
+    dates, dtypes = read_types(p_types)
 
-    return pd.read_csv(filename, parse_dates=dates, dtype=dtypes, nrows=nrows)
+    return pd.read_csv(p, parse_dates=dates, dtype=dtypes, nrows=nrows)
 
 
 def read_types(filename):

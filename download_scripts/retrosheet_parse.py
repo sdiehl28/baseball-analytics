@@ -92,6 +92,8 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
             filename = '../player_game_types.csv'
         elif parser == 'cwgame':
             filename = '../team_game_types.csv'
+        else:
+            raise ValueError(f'Unrecognized parser: {parser}')
 
         dates, dtypes = dh.read_types(filename)
         dtypes = {key.upper(): value for key, value in dtypes.items()}
@@ -120,6 +122,9 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
         filename = 'player_game.csv.gz'
     elif parser == 'cwgame':
         filename = 'team_game.csv.gz'
+    else:
+        raise ValueError(f'Unrecognized parser: {parser}')
+
     dh.to_csv_with_types(df, filename)
     logging.info(f'{parser} data persisted')
 
@@ -139,6 +144,11 @@ def main():
     logging.basicConfig(stream=sys.stdout, level=level, format='%(levelname)s: %(message)s')
 
     p_data = Path(args.data_dir).resolve()
+    if p_data.joinpath('retrosheet', 'collected', 'player_game.csv.gz').exists() and \
+            p_data.joinpath('retrosheet', 'collected', 'team_game.csv.gz').exists():
+        logging.info('Skipping parsing -- already performed')
+        return
+
     p_data_raw = p_data.joinpath('retrosheet/raw')
     p_data_parsed = p_data.joinpath('retrosheet/parsed')
     p_data_collected = p_data.joinpath('retrosheet/collected')
@@ -147,8 +157,8 @@ def main():
     p_data_parsed.mkdir(parents=True, exist_ok=True)
     p_data_collected.mkdir(parents=True, exist_ok=True)
 
-    # parse_event_files(p_data_raw, 'cwdaily', '-f 0-153')
-    # parse_event_files(p_data_raw, 'cwgame', '-f 0-83 -x 0-94')
+    parse_event_files(p_data_raw, 'cwdaily', '-f 0-153')
+    parse_event_files(p_data_raw, 'cwgame', '-f 0-83 -x 0-94')
 
     collect_parsed_files(p_data_parsed, p_data_collected, 'cwdaily', args.data_type)
     collect_parsed_files(p_data_parsed, p_data_collected, 'cwgame', args.data_type)

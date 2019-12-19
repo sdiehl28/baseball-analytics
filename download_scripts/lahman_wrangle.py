@@ -101,6 +101,10 @@ def to_date(row, prefix):
 
 
 def wrangle_people(p_raw, p_wrangled):
+    if p_wrangled.joinpath('people.csv').exists():
+        logging.info('Skipping wrangle of people - already performed')
+        return
+
     os.chdir(p_raw)
     people = pd.read_csv('People.csv', parse_dates=['debut', 'finalGame'])
 
@@ -122,6 +126,10 @@ def wrangle_people(p_raw, p_wrangled):
 
 
 def wrangle_batting(p_raw, p_wrangled):
+    if p_wrangled.joinpath('batting.csv').exists():
+        logging.info('Skipping wrangle of batting - already performed')
+        return
+
     os.chdir(p_raw)
     batting = pd.read_csv('Batting.csv')
 
@@ -140,6 +148,10 @@ def wrangle_batting(p_raw, p_wrangled):
 
 
 def wrangle_pitching(p_raw, p_wrangled):
+    if p_wrangled.joinpath('pitching.csv').exists():
+        logging.info('Skipping wrangle of pitching - already performed')
+        return
+
     os.chdir(p_raw)
     pitching = pd.read_csv('Pitching.csv')
 
@@ -157,6 +169,10 @@ def wrangle_pitching(p_raw, p_wrangled):
 
 
 def wrangle_fielding(p_raw, p_wrangled):
+    if p_wrangled.joinpath('fielding.csv').exists():
+        logging.info('Skipping wrangle of fielding - already performed')
+        return
+
     os.chdir(p_raw)
     fielding = pd.read_csv('Fielding.csv')
 
@@ -179,6 +195,10 @@ def wrangle_fielding(p_raw, p_wrangled):
 
 
 def wrangle_teams(p_raw, p_wrangled):
+    if p_wrangled.joinpath('teams.csv').exists():
+        logging.info('Skipping wrangle of teams - already performed')
+        return
+
     os.chdir(p_raw)
     teams = pd.read_csv('Teams.csv')
 

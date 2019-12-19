@@ -21,15 +21,15 @@ def download_data():
     elif curr_dir.joinpath('../data_helper.py').exists():
         os.chdir('..')
 
-    # cmd = ['python', './lahman_download.py', '--data-dir', './test_data']
-    # subprocess.run(cmd, shell=False)
-    #
-    # cmd = ['python', './retrosheet_download.py', '--data-dir', './test_data',
-    #        '--start-year', '2017', '--end-year', '2019']
-    # subprocess.run(cmd, shell=False)
-    #
-    # cmd = ['python', './lahman_wrangle.py', '--data-dir', './test_data']
-    # subprocess.run(cmd, shell=False)
+    cmd = ['python', './lahman_download.py', '--data-dir', './test_data']
+    subprocess.run(cmd, shell=False)
+
+    cmd = ['python', './retrosheet_download.py', '--data-dir', './test_data',
+           '--start-year', '2017', '--end-year', '2019']
+    subprocess.run(cmd, shell=False)
+
+    cmd = ['python', './lahman_wrangle.py', '--data-dir', './test_data']
+    subprocess.run(cmd, shell=False)
 
     return Path('./test_data')
 
@@ -100,9 +100,8 @@ def test_retrosheet_download(download_data):
 
 def test_lahman_wrangle_people(download_data):
     data_dir = download_data
-    wrangled_dir = data_dir.joinpath('lahman/wrangled')
+    filename = data_dir / 'lahman' / 'wrangled' / 'people.csv'
 
-    filename = str(wrangled_dir.joinpath('people.csv'))
     people = dh.from_csv_with_types(filename)
     assert 'player_id' in people.columns
     assert 'retro_id' in people.columns
