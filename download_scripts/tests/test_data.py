@@ -1,4 +1,5 @@
 import pytest
+import os
 import sys
 import subprocess
 from pathlib import Path
@@ -8,6 +9,11 @@ import zipfile
 @pytest.fixture(scope="session")
 def download_data():
     """Will download data, if it does not already exist."""
+
+    # change to the download_script directory, if we are not already there
+    if 'download_scripts' in [file.name for file in Path(os.getcwd()).iterdir()]:
+        os.chdir('./download_scripts')
+
     cmd = ['python', './lahman_download.py', '--data-dir', './test_data']
     subprocess.run(cmd, shell=False)
 
