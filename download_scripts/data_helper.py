@@ -7,8 +7,9 @@ __author__ = 'Stephen Diehl'
 import pandas as pd
 import numpy as np
 import re
+import io
 from sqlalchemy.types import SmallInteger, Integer, BigInteger
-from IPython.display import HTML, display
+# from IPython.display import HTML, display
 
 
 def to_csv_with_types(df, filename):
@@ -151,10 +152,17 @@ def is_unique(df, cols):
     return not (df.duplicated(subset=cols)).any()
 
 
-def game_id_to_url(game_id):
-    home = game_id[:3]
-    url = 'https://www.baseball-reference.com/boxes/' + home + '/' + game_id + '.shtml'
-    display(HTML(f'<a href="{url}">{game_id}</a>'))
+def df_info(df):
+    """Use buffer to capture output from df.info()"""
+    buffer = io.StringIO()
+    df.info(buf=buffer)
+    return buffer.getvalue()
+
+
+# def game_id_to_url(game_id):
+#     home = game_id[:3]
+#     url = 'https://www.baseball-reference.com/boxes/' + home + '/' + game_id + '.shtml'
+#     display(HTML(f'<a href="{url}">{game_id}</a>'))
 
 
 def order_cols(df, cols):

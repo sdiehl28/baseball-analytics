@@ -7,7 +7,7 @@ import zipfile
 import pandas as pd
 import numpy as np
 
-from .. import baseball_functions as bb
+from .. import data_helper as dh
 
 
 @pytest.fixture(scope="session")
@@ -16,9 +16,9 @@ def download_data():
 
     # relative paths are used so be sure we start in the right directory
     curr_dir = Path(os.getcwd())
-    if curr_dir.joinpath('./download_scripts/baseball_functions.py').exists():
+    if curr_dir.joinpath('./download_scripts/data_helper.py').exists():
         os.chdir('./download_scripts')
-    elif curr_dir.joinpath('../baseball_functions.py').exists():
+    elif curr_dir.joinpath('../data_helper.py').exists():
         os.chdir('..')
 
     # cmd = ['python', './lahman_download.py', '--data-dir', './test_data']
@@ -103,9 +103,12 @@ def test_lahman_wrangle_people(download_data):
     wrangled_dir = data_dir.joinpath('lahman/wrangled')
 
     filename = str(wrangled_dir.joinpath('people.csv'))
-    people = bb.from_csv_with_types(filename)
+    people = dh.from_csv_with_types(filename)
     assert 'player_id' in people.columns
     assert 'retro_id' in people.columns
+
+    # assert no capitals in column names
+    assert np.all([col.islower() for col in people.columns])
 
     s = people.dtypes.value_counts()
     assert s[np.dtype('O')] == 14

@@ -11,7 +11,7 @@ from pathlib import Path
 import os
 import glob
 import pandas as pd
-import baseball_functions as bb
+import data_helper as dh
 import logging
 
 
@@ -93,22 +93,22 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
         elif parser == 'cwgame':
             filename = '../team_game_types.csv'
 
-        dates, dtypes = bb.read_types(filename)
+        dates, dtypes = dh.read_types(filename)
         dtypes = {key.upper(): value for key, value in dtypes.items()}
 
         df = pd.concat((pd.read_csv(f, parse_dates=dates, dtype=dtypes) for f in dailyfiles), ignore_index=True,
                        copy=False)
-        logging.info(f'Optimized Memory Usage:   {bb.mem_usage(df)}')
+        logging.info(f'Optimized Memory Usage:   {dh.mem_usage(df)}')
     else:
         # this could use twice the memory of the largest dataframe
         df = pd.concat((pd.read_csv(f) for f in dailyfiles), ignore_index=True, copy=False)
 
-        logging.info(f'Unoptimized Memory Usage: {bb.mem_usage(df)}')
+        logging.info(f'Unoptimized Memory Usage: {dh.mem_usage(df)}')
         logging.info('Optimizing Data Types to reduce memory ...')
 
         # for cwdaily, optimize_df_dtypes reduces the size of the dataframe by a factor of 3
-        df = bb.optimize_df_dtypes(df)
-        logging.info(f'Optimized Memory Usage:   {bb.mem_usage(df)}')
+        df = dh.optimize_df_dtypes(df)
+        logging.info(f'Optimized Memory Usage:   {dh.mem_usage(df)}')
 
     df.columns = df.columns.str.lower()
 
@@ -120,7 +120,7 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
         filename = 'player_game.csv.gz'
     elif parser == 'cwgame':
         filename = 'team_game.csv.gz'
-    bb.to_csv_with_types(df, filename)
+    dh.to_csv_with_types(df, filename)
     logging.info(f'{parser} data persisted')
 
 
