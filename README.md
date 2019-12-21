@@ -70,6 +70,7 @@ All scripts have help.  For example: `python lahman_download.py --help`
 * **retrosheet_datadictionary.py** -- generate a description of the generated csv files from the parsers
 * **retrosheet_parse.py** -- generate the csv files
 * **retrosheet_wrangle.py** -- convert to lowercase fieldnames with underscores, custom parse time, etc.
+* **tests/test_data.py** -- data integrity tests
 * and more ...
 
 
