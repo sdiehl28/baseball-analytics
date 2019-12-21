@@ -23,8 +23,6 @@ def get_parser():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # TODO: allow user to specify fields created by each parser
-    # TODO: For example, no fielding attributes from cwdaily
-    # TODO: For example, no starting lineup from cwgame
     parser.add_argument("--data-dir", type=str, help="baseball data directory", default='../data')
     parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
     parser.add_argument("-d", "--data-type", help="use precomputed datatypes", action="store_true")

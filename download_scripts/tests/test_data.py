@@ -12,7 +12,11 @@ from .. import data_helper as dh
 
 @pytest.fixture(scope="session")
 def download_data():
-    """Runs Scripts"""
+    """Runs Scripts
+
+    Data is persisted so next time this fixture is run, it will run much faster.
+    To recreate the test data, remove ./test_data
+    """
 
     # relative paths are used so be sure we start in the right directory
     curr_dir = Path(os.getcwd())
@@ -29,6 +33,9 @@ def download_data():
     subprocess.run(cmd, shell=False)
 
     cmd = ['python', './lahman_wrangle.py', '--data-dir', './test_data']
+    subprocess.run(cmd, shell=False)
+
+    cmd = ['python', './retrosheet_parse.py', '--data-dir', './test_data']
     subprocess.run(cmd, shell=False)
 
     return Path('./test_data')
@@ -98,7 +105,7 @@ def test_retrosheet_download(download_data):
     assert len(files_2019) == len(zipped.namelist())
 
 
-def test_lahman_wrangle_people(download_data):
+def test_lahman_people_pkey(download_data):
     data_dir = download_data
     filename = data_dir / 'lahman' / 'wrangled' / 'people.csv'
 
@@ -108,10 +115,88 @@ def test_lahman_wrangle_people(download_data):
     assert dh.is_unique(people, ['retro_id'], ignore_null=True)  # retrosheet player id
 
 
-def test_lahman_wrangle_fielding(download_data):
+def test_lahman_fielding_pkey(download_data):
     data_dir = download_data
     filename = data_dir / 'lahman' / 'wrangled' / 'fielding.csv'
 
     # check for duplicate IDs
-    people = dh.from_csv_with_types(filename)
-    assert dh.is_unique(people, ['player_id', 'year_id', 'stint', 'team_id', 'pos'])
+    fielding = dh.from_csv_with_types(filename)
+    assert dh.is_unique(fielding, ['player_id', 'year_id', 'stint', 'team_id', 'pos'])
+
+
+def test_lahman_batting_pkey(download_data):
+    data_dir = download_data
+    filename = data_dir / 'lahman' / 'wrangled' / 'batting.csv'
+
+    # check for duplicate IDs
+    batting = dh.from_csv_with_types(filename)
+    assert dh.is_unique(batting, ['player_id', 'year_id', 'stint', 'team_id'])
+
+def test_lahman_pitching_pkey(download_data):
+    data_dir = download_data
+    filename = data_dir / 'lahman' / 'wrangled' / 'pitching.csv'
+
+    # check for duplicate IDs
+    pitching = dh.from_csv_with_types(filename)
+    assert dh.is_unique(pitching, ['player_id', 'year_id', 'stint', 'team_id'])
+
+def test_lahman_salaries_pkey(download_data):
+    data_dir = download_data
+    filename = data_dir / 'lahman' / 'wrangled' / 'salaries.csv'
+
+    # check for duplicate IDs
+    salaries = dh.from_csv_with_types(filename)
+    assert dh.is_unique(salaries, ['player_id', 'year_id', 'team_id'])
+
+def test_lahman_teams_pkey(download_data):
+    data_dir = download_data
+    filename = data_dir / 'lahman' / 'wrangled' / 'teams.csv'
+
+    # check for duplicate IDs
+    teams = dh.from_csv_with_types(filename)
+    assert dh.is_unique(teams, ['team_id', 'year_id'])  # lahman team_id
+    assert dh.is_unique(teams, ['team_id_retro', 'year_id'])  # retrosheet team_id
+
+def test_lahman_parks_pkey(download_data):
+    data_dir = download_data
+    filename = data_dir / 'lahman' / 'wrangled' / 'parks.csv'
+
+    # check for duplicate IDs
+    parks = dh.from_csv_with_types(filename)
+    assert dh.is_unique(parks, ['park_key'])
+
+    # park_name is not unique
+    # assert dh.is_unique(parks, ['park_name']
+
+def test_optimize_df():
+    data = {'a': [1, 100, 1000], 'b':[0,1,0], 'c':[-1, 0, 1]}
+    df = pd.DataFrame(data=data)
+
+    df2 = df.copy()
+    dh.optimize_df_dtypes(df)
+    assert (df.dtypes.values == [np.uint16, np.uint8, np.int8]).all()
+
+def test_rw_with_types(download_data):
+    data_dir = download_data
+    data = {'a': [1, 100, 1000], 'b':[0,1,0], 'c':[-1, 0, 1]}
+    df = pd.DataFrame(data=data)
+
+    df2 = df.copy()
+    dh.optimize_df_dtypes(df)
+    dh.to_csv_with_types(df, data_dir / 'tmp.csv.gz')
+    df = dh.from_csv_with_types(data_dir / 'tmp.csv.gz')
+
+    assert not (df.dtypes == df2.dtypes).all()
+    assert (data_dir / 'tmp.csv.gz').is_file()
+    assert (data_dir / 'tmp_types.csv').is_file()
+    os.remove(data_dir / 'tmp.csv.gz')
+    os.remove(data_dir / 'tmp_types.csv')
+
+@pytest.mark.skip(reason="data must be cleaned before this test passes")
+def test_player_game_pkey(download_data):
+    data_dir = download_data
+    filename = data_dir / 'retrosheet' / 'collected' / 'player_game.csv.gz'
+
+    player_game = dh.from_csv_with_types(filename)
+    assert dh.is_unique(player_game, ['game_id'])
+    assert dh.is_unique(player_game, ['game_dt', 'game_ct', 'team_id'])

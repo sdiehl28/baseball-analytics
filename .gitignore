@@ -4,6 +4,7 @@ data/lahman/wrangled
 data/retrosheet/raw
 data/retrosheet/parsed
 data/retrosheet/collected
+*.log
 test_data
-tmp.py
+tmp*
 __pycache__

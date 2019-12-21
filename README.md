@@ -1,25 +1,34 @@
 # Baseball Analytics
-&#x1F534; Under Construction - may be ready for use by 12/21/19  
+&#x1F534; Under Construction - may be ready for use by 12/25/19  
 
-Scripts to download, parse, and prepare baseball data for analysis with Pandas.
+Scripts are provided to:
 
-Additional scripts to optionally load data into Postgres for analysis with SQL.
+- download
+- parse
+- structure
+- validate and clean
 
-## Summary
+Major League Baseball (MLB) data in preparation for easy analysis with Pandas or SQL.
 
-Scripts have been created to download and wrangle the Lahman and Retrosheet MLB datasets to make analysis with Pandas easier.
+The end result will be a set of csv files, with data types per column in associated csv files, which can be loaded into Pandas or any database.
 
-Additionally, optional scripts to load data into Postgres are provided.  It is not necessary to use both Pandas and SQL.
-
-Examples of data analysis will be provide later in the form of Jupyter Notebooks.
+Examples of baseball data analysis will be provided later in the form of Jupyter Notebooks.
 
 ### MLB Data
 
-Retrosheet has play-by-play data for almost every Major League Baseball (MLB) game.  Lahman has MLB data summarized per year.
+Lahman has MLB statistics summarized by **player per year** and by **team per year**.
+
+Retrosheet has play-by-play data for every MLB game since 1974.  Data is available since 1918 with older years having somewhat more missing data.  This data can be parsed to summarize statistics by **player per game** and **team per game**.
 
 The Lahman data is tidy and has several csv files.  The latest available description of each csv file has been copied to the `data/lahman` directory.
 
-Retrosheet is not distributed as csv files, but as text files which have play-by-play information.  This data must be parsed to create csv files.  The parsing will be done with open source parsers from Dr. T. L. Turocy described below.  The description of the generated csv files can itself be generated from the parsers.  These descriptions have been generated and copied to the `data/retrosheet` directory.
+Data is tidy if:
+
+1. Each variable forms a column.
+2. Each observation forms a row.
+3. Each type of observational unit forms a table (or csv file).
+
+The Retorsheet data is not distributed as csv files, but as text files which have play-by-play information.  This data will be parsed and aggregated to the game level, using open source parsers from Dr. T. L. Turocy as described below.  The description of the generated csv files can itself be generated from the parsers.  These descriptions have been generated and copied to the `data/retrosheet` directory.
 
 As of December 2019, Lahman has data through the 2018 season whereas Retrosheet has data through the 2019 season.
 
@@ -31,17 +40,19 @@ The field names in both datasets will be converted from CamelCase to snake_case.
 
 ### Data Wrangling
 
-Non-standard parsing of dates and times will be performed.  
+Non-standard parsing of dates and times will be performed.  A heuristic to determine game start time will be used (as am/pm is missing).  Other custom data processing will be performed as needed.
 
-Pandas datatypes will be optimized to save space and more accurately describe the attribute.  For example, the number of hits in a game is always between 0 and 255, so a uint8 can be used rather than an int64.  Likewise, for integer fields with missing values, the new Pandas Int64 can be used instead of requiring a float datatype.  A similar discussion applies to Postgres column data types.
+Pandas datatypes will be optimized to save space and more accurately describe the attribute.  For example, the number of hits in a game is always between 0 and 255, so a uint8 can be used rather than an int64.  Likewise, for integer fields with missing values, the new Pandas Int64 can be used instead of requiring a float datatype.
 
-Datatype optimizations are persisted to disk for each corresponding csv file with the suffix `_types.csv`.
+Datatype optimizations per column are persisted to disk for each corresponding csv file with the suffix `_types.csv`.
+
+### Data Validation
+
+pytest will be used to automate the running of data integrity tests, such as validating that the unique identifying fields are in fact, unique.
 
 ### Data Consistency
 
-Much of the Lahman data can be derived from the Retrosheet data by summing it per year.  The results are not an exact match in part because Retrosheet is missing some games.  No games are missing from Retrosheet since 1974 and less than 1% of all games are missing since 1955.
-
-Data consistency unit tests are provided to validate that the Retrosheet data aggregated per year is very close to the corresponding Lahman data.  Most data unit tests are for the period 1955 through 2018 (the last available data from Lahman).  The year 1955 was chosen as this is the first year in which both the National and American League recorded statistics for sacrifice flies, sacrifice bunts, and intentional walks.
+To verify that the scripts worked correctly, the Retrosheet player per game and team per game data will be summarized to the yearly level and compared with Lahman.  This verification will be part of the supplied pytest test suite.
 
 ### Statistics per Player Role
 
@@ -144,7 +155,7 @@ Parser Executables and Source: https://sourceforge.net/projects/chadwick/
 
 At the time of this writing, version 0.7.2 is the latest version.  Executable versions of the parsers are available for Windows.  Source code is available for Linux and MacOS.
 
-#### How to Build Parsers on Linux
+#### How to Build Retrosheet Parsers on Linux
 
 If you do not already have a build environment:
 

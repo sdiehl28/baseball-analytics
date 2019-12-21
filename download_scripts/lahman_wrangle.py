@@ -59,7 +59,10 @@ def get_fieldname_mapping():
         'nameGiven': 'name_given',
         'finalGame': 'final_game',
         'retroID': 'retro_id',
-        'bbrefID': 'bb_ref_id'
+        'bbrefID': 'bb_ref_id',
+        'park.key': 'park_key',
+        'park.name': 'park_name',
+        'park.alias': 'park_alias'
     }
 
     return new_names

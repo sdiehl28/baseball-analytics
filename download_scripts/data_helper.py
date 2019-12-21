@@ -26,7 +26,8 @@ def to_csv_with_types(df, filename):
     """
 
     p = Path(filename)
-    p_types = p.parent / p.name.replace('.csv', '_types.csv')
+    types_name = p.name.split('.')[0] + '_types.csv'
+    p_types = p.parent / types_name
 
     dtypes = df.dtypes.to_frame('dtypes').reset_index()
 
@@ -43,7 +44,8 @@ def from_csv_with_types(filename, nrows=None):
     """
 
     p = Path(filename)
-    p_types = p.parent / p.name.replace('.csv', '_types.csv')
+    types_name = p.name.split('.')[0] + '_types.csv'
+    p_types = p.parent / types_name
     dates, dtypes = read_types(p_types)
 
     return pd.read_csv(p, parse_dates=dates, dtype=dtypes, nrows=nrows)
@@ -67,13 +69,12 @@ def optimize_df_dtypes(df, ignore=None):
     """
     Downcasts DataFrame Column Types based on values.
 
+    Modification is inplace.
+
     Parameters:
         df (pd.DataFrame): reduce size of datatypes as appropriate for values.
 
        ignore (list): column names to exclude from downcasting.
-
-    return:
-        df (pd.DataFrame): optimized DataFrame.
     """
 
     # columns to consider for downcasting
@@ -91,6 +92,11 @@ def optimize_df_dtypes(df, ignore=None):
     if len(df_int.columns) > 0:
         df[df_int.columns] = df_int.apply(pd.to_numeric, downcast='unsigned')
 
+    # if there were any negative values, the above creates int64, downcast int64 as well
+    df_int64 = df[process_cols].select_dtypes(include=[np.int64])
+    if len(df_int64.columns) > 0:
+        df[df_int64.columns] = df_int64.apply(pd.to_numeric, downcast='signed')
+
     # convert float columns that are integers with nans to Int64
     df_float = df.select_dtypes(include=['float'])
     if len(df_float.columns) > 0:
@@ -100,8 +106,6 @@ def optimize_df_dtypes(df, ignore=None):
 
     # automated conversion to categories can be problematic
     # if a category is warranted, probably a CategoryDType should be created
-
-    return df
 
 
 def optimize_db_dtypes(df):
