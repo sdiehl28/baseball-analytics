@@ -192,7 +192,7 @@ def test_rw_with_types(download_data):
     os.remove(data_dir / 'tmp.csv.gz')
     os.remove(data_dir / 'tmp_types.csv')
 
-@pytest.mark.skip(reason="data must be cleaned before this test passes")
+@pytest.mark.skip(reason="data must be cleaned before this test passes ")
 def test_player_game_pkey(download_data):
     data_dir = download_data
     filename = data_dir / 'retrosheet' / 'collected' / 'player_game.csv.gz'

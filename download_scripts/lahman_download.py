@@ -16,6 +16,9 @@ import zipfile
 import logging
 import sys
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 
 def get_parser():
     """Args Description"""
@@ -27,6 +30,8 @@ def get_parser():
 
     parser.add_argument("--data-dir", type=str, help="baseball data directory", default='../data')
     parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
+    parser.add_argument("--log", dest="log_level", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                        help="Set the logging level")
 
     return parser
 
@@ -42,7 +47,7 @@ def mk_dirs(data_dir):
     p_lahman_wrangled.mkdir(parents=True, exist_ok=True)
 
     msg = " ".join(os.listdir(p_lahman))
-    logging.info(f'{p_lahman} files: {msg}')
+    logger.info(f'{p_lahman} contents: {msg}')
 
     return p_lahman_raw.resolve()
 
@@ -65,7 +70,7 @@ def download_data(raw_dir):
     zip_filename = 'baseballdatabank-master.zip'
 
     if not Path(zip_filename).is_file():
-        logging.info('Downloading Data ...')
+        logger.info('Downloading Data ...')
 
         url = 'https://github.com/chadwickbureau/baseballdatabank/archive/master.zip'
         r = requests.get(url)
@@ -78,7 +83,7 @@ def download_data(raw_dir):
             zip_ref.extractall('.')
 
     msg = ' '.join(os.listdir('.'))
-    logging.info(f'{raw_dir} contents: {msg}')
+    logger.info(f'{raw_dir} contents: {msg}')
 
 
 def reorg_files(raw_dir):
@@ -97,7 +102,7 @@ def reorg_files(raw_dir):
         shutil.rmtree('baseballdatabank-master')
 
     msg = ' '.join(os.listdir('.'))
-    logging.info(f'{raw_dir} contents: {msg}')
+    logger.info(f'{raw_dir} contents: {msg}')
 
 
 def main():
@@ -105,13 +110,20 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    if args.verbose:
-        level = logging.INFO
-    else:
-        level = logging.WARNING
+    if args.log_level:
+        fh = logging.FileHandler('download.log')
+        formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s')
+        fh.setFormatter(formatter)
+        fh.setLevel(args.log_level)
+        logger.addHandler(fh)
 
-    # log to stdout
-    logging.basicConfig(stream=sys.stdout, level=level, format='%(levelname)s: %(message)s')
+    if args.verbose:
+        # send INFO level logging to stdout
+        sh = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s')
+        sh.setFormatter(formatter)
+        sh.setLevel(logging.INFO)
+        logger.addHandler(sh)
 
     raw_dir = mk_dirs(args.data_dir)
     download_data(raw_dir)

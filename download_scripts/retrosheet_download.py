@@ -16,6 +16,9 @@ import zipfile
 import logging
 import sys
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 
 def get_parser():
     """Args Description"""
@@ -36,6 +39,8 @@ def get_parser():
     # Retrosheet Data for 2019 became available in December 2019
     parser.add_argument("--end-year", type=int, help="end year", default='2019')
     parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
+    parser.add_argument("--log", dest="log_level", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                        help="Set the logging level")
 
     return parser
 
@@ -51,7 +56,7 @@ def mk_dirs(data_dir):
     p_retrosheet_wrangled.mkdir(parents=True, exist_ok=True)
 
     msg = " ".join(os.listdir(p_retrosheet))
-    logging.info(f'{p_retrosheet} contents: {msg}')
+    logger.info(f'{p_retrosheet} contents: {msg}')
 
     return p_retrosheet_raw.resolve()
 
@@ -67,7 +72,7 @@ def download_data(raw_dir, start_year, end_year):
         path = Path(filename)
         if not path.exists():
             url = f'http://www.retrosheet.org/events/{year}eve.zip'
-            logging.info(f'Downloading {url}')
+            logger.info(f'Downloading {url}')
             r = requests.get(url)
             r.raise_for_status()
             with open(filename, 'wb') as f:
@@ -84,7 +89,7 @@ def download_data(raw_dir, start_year, end_year):
 
     years = glob.glob('TEAM*')
     years = sorted([year[4:] for year in years])
-    logging.info(f'Data downloaded for years: {years[0]} thru {years[-1]}')
+    logger.info(f'Data downloaded for years: {years[0]} thru {years[-1]}')
 
 
 def main():
@@ -93,13 +98,20 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    if args.verbose:
-        level = logging.INFO
-    else:
-        level = logging.WARNING
+    if args.log_level:
+        fh = logging.FileHandler('download.log')
+        formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s')
+        fh.setFormatter(formatter)
+        fh.setLevel(args.log_level)
+        logger.addHandler(fh)
 
-    # log to stdout
-    logging.basicConfig(stream=sys.stdout, level=level, format='%(levelname)s: %(message)s')
+    if args.verbose:
+        # send INFO level logging to stdout
+        sh = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s')
+        sh.setFormatter(formatter)
+        sh.setLevel(logging.INFO)
+        logger.addHandler(sh)
 
     raw_dir = mk_dirs(args.data_dir)
     download_data(raw_dir, args.start_year, args.end_year)

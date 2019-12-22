@@ -17,7 +17,7 @@ base2_ump_id,object
 base3_ump_id,object
 lf_ump_id,object
 rf_ump_id,object
-attend_park_ct,int64
+attend_park_ct,int32
 scorer_record_id,object
 translator_record_id,object
 inputter_record_id,object
@@ -25,9 +25,9 @@ input_record_ts,object
 edit_record_ts,Int64
 method_record_cd,uint8
 pitches_record_cd,uint8
-temp_park_ct,int64
+temp_park_ct,int8
 wind_direction_park_cd,uint8
-wind_speed_park_ct,int64
+wind_speed_park_ct,int8
 field_park_cd,uint8
 precip_park_cd,uint8
 sky_park_cd,uint8

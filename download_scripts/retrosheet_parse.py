@@ -14,6 +14,9 @@ import pandas as pd
 import data_helper as dh
 import logging
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 
 def get_parser():
     """Args Description"""
@@ -26,8 +29,21 @@ def get_parser():
     parser.add_argument("--data-dir", type=str, help="baseball data directory", default='../data')
     parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
     parser.add_argument("-d", "--data-type", help="use precomputed datatypes", action="store_true")
+    parser.add_argument("--log", dest="log_level", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                        help="Set the logging level")
 
     return parser
+
+
+def check_for_retrosheet_parsers():
+    """Check that parsers can be executed."""
+    p1 = subprocess.run(['cwdaily', '-h'], shell=False, capture_output=True)
+    if p1.returncode != 0:
+        raise FileNotFoundError('could not execute cwdaily')
+
+    p1 = subprocess.run(['cwgame', '-h'], shell=False, capture_output=True)
+    if p1.returncode != 0:
+        raise FileNotFoundError('could not execute cwgame')
 
 
 def parse_event_files(raw_dir, parser, fields):
@@ -44,7 +60,7 @@ def parse_event_files(raw_dir, parser, fields):
         cmd = [parser]
         cmd.extend(fields.split(' '))
 
-        logging.info(f'{parser} parsing {len(files)} teams for {year} ...')
+        logger.info(f'{parser} parsing {len(files)} teams for {year} ...')
 
         for file in files:
             out = f'../parsed/{parser}{year}.csv'
@@ -55,7 +71,7 @@ def parse_event_files(raw_dir, parser, fields):
                 cmd.extend(['-y', year])
 
                 cmd_full = cmd + [file]
-                logging.info(f'{" ".join(cmd_full)}')
+                logger.info(f'{" ".join(cmd_full)}')
 
                 # overwrite existing file if it exists
                 with open(out, "w+") as outfile:
@@ -66,7 +82,7 @@ def parse_event_files(raw_dir, parser, fields):
                 cmd.remove('-n')
             else:
                 cmd_full = cmd + [file]
-                logging.info(f'{" ".join(cmd_full)}')
+                logger.info(f'{" ".join(cmd_full)}')
 
                 # append to existing file
                 with open(out, "a+") as outfile:
@@ -81,11 +97,11 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
     dailyfiles = glob.glob(f'{parser}*.csv')
     dailyfiles.sort()
 
-    logging.info(f'Collecting {len(dailyfiles)} {parser} parsed csv files into single dataframe ...')
+    logger.info(f'Collecting {len(dailyfiles)} {parser} parsed csv files into single dataframe ...')
 
     if use_data_types:
         # this uses 3 time less memory for cwdaily but relies on precomputed data types
-        logging.info('Using precomputed data types')
+        logger.info('Using precomputed data types')
         if parser == 'cwdaily':
             filename = '../player_game_types.csv'
         elif parser == 'cwgame':
@@ -98,23 +114,23 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
 
         df = pd.concat((pd.read_csv(f, parse_dates=dates, dtype=dtypes) for f in dailyfiles), ignore_index=True,
                        copy=False)
-        logging.info(f'Optimized Memory Usage:   {dh.mem_usage(df)}')
+        logger.info(f'Optimized Memory Usage:   {dh.mem_usage(df)}')
     else:
-        # this could use twice the memory of the largest dataframe
+        # this could use twice the RAM required to hold df
         df = pd.concat((pd.read_csv(f) for f in dailyfiles), ignore_index=True, copy=False)
 
-        logging.info(f'Unoptimized Memory Usage: {dh.mem_usage(df)}')
-        logging.info('Optimizing Data Types to reduce memory ...')
+        logger.info(f'Unoptimized Memory Usage: {dh.mem_usage(df)}')
+        logger.info('Optimizing Data Types to reduce memory ...')
 
         # for cwdaily, optimize_df_dtypes reduces the size of the dataframe by a factor of 3
-        df = dh.optimize_df_dtypes(df)
-        logging.info(f'Optimized Memory Usage:   {dh.mem_usage(df)}')
+        dh.optimize_df_dtypes(df)
+        logger.info(f'Optimized Memory Usage:   {dh.mem_usage(df)}')
 
     df.columns = df.columns.str.lower()
 
     # persist optimized dataframe
     # gzip chosen over xy because this runs on client computer and gzip is faster
-    logging.info('persisting dataframe using compression - this could take several minutes ...')
+    logger.info('persisting dataframe using compression - this could take several minutes ...')
     os.chdir(collect_dir)
     if parser == 'cwdaily':
         filename = 'player_game.csv.gz'
@@ -124,7 +140,7 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
         raise ValueError(f'Unrecognized parser: {parser}')
 
     dh.to_csv_with_types(df, filename)
-    logging.info(f'{parser} data persisted')
+    logger.info(f'{parser} data persisted')
 
 
 def main():
@@ -133,18 +149,27 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    if args.verbose:
-        level = logging.INFO
-    else:
-        level = logging.WARNING
+    if args.log_level:
+        fh = logging.FileHandler('download.log')
+        formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s')
+        fh.setFormatter(formatter)
+        fh.setLevel(args.log_level)
+        logger.addHandler(fh)
 
-    # log to stdout
-    logging.basicConfig(stream=sys.stdout, level=level, format='%(levelname)s: %(message)s')
+    if args.verbose:
+        # send INFO level logging to stdout
+        sh = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s')
+        sh.setFormatter(formatter)
+        sh.setLevel(logging.INFO)
+        logger.addHandler(sh)
+
+    check_for_retrosheet_parsers()
 
     p_data = Path(args.data_dir).resolve()
     if p_data.joinpath('retrosheet', 'collected', 'player_game.csv.gz').exists() and \
             p_data.joinpath('retrosheet', 'collected', 'team_game.csv.gz').exists():
-        logging.info('Skipping parsing -- already performed')
+        logger.info('Skipping parsing -- already performed')
         return
 
     p_data_raw = p_data.joinpath('retrosheet/raw')

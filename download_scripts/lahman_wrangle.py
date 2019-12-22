@@ -16,6 +16,9 @@ import logging
 import sys
 import data_helper as dh
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 
 def get_fieldname_mapping():
     """Dictionary of fieldnames that will be modified."""
@@ -78,6 +81,8 @@ def get_parser():
 
     parser.add_argument("--data-dir", type=str, help="baseball data directory", default='../data')
     parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
+    parser.add_argument("--log", dest="log_level", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                        help="Set the logging level")
 
     return parser
 
@@ -110,7 +115,7 @@ def wrangle_basic(p_raw, p_wrangled, filename):
     wrangled_file = p_wrangled.joinpath(filename_lower)
 
     if wrangled_file.exists():
-        logging.info(f'Skipping wrangle of {filename} - already performed')
+        logger.info(f'Skipping wrangle of {filename} - already performed')
         return
 
     os.chdir(p_raw)
@@ -120,10 +125,10 @@ def wrangle_basic(p_raw, p_wrangled, filename):
     df.columns = df.columns.str.lower()
 
     # downcast integers and convert float to Int64, if data permits
-    df = dh.optimize_df_dtypes(df)
+    dh.optimize_df_dtypes(df)
 
     msg = dh.df_info(df)
-    logging.info('{}\n{}'.format(filename, msg))
+    logger.info('{}\n{}'.format(filename, msg))
 
     # persist with optimized datatypes
     os.chdir(p_wrangled)
@@ -132,7 +137,7 @@ def wrangle_basic(p_raw, p_wrangled, filename):
 
 def wrangle_people(p_raw, p_wrangled):
     if p_wrangled.joinpath('people.csv').exists():
-        logging.info('Skipping wrangle of People.csv - already performed')
+        logger.info('Skipping wrangle of People.csv - already performed')
         return
 
     os.chdir(p_raw)
@@ -148,7 +153,7 @@ def wrangle_people(p_raw, p_wrangled):
          'death_year', 'death_month', 'death_day'], axis=1)
 
     msg = dh.df_info(people)
-    logging.info('people\n{}'.format(msg))
+    logger.info('people\n{}'.format(msg))
 
     # persist as a csv file with data types
     os.chdir(p_wrangled)
@@ -157,7 +162,7 @@ def wrangle_people(p_raw, p_wrangled):
 
 def wrangle_fielding(p_raw, p_wrangled):
     if p_wrangled.joinpath('fielding.csv').exists():
-        logging.info('Skipping wrangle of Fielding.csv - already performed')
+        logger.info('Skipping wrangle of Fielding.csv - already performed')
         return
 
     os.chdir(p_raw)
@@ -168,13 +173,14 @@ def wrangle_fielding(p_raw, p_wrangled):
 
     # drop any column that is more than 90% null
     filt = fielding.isna().mean() > 0.90
-    drop_cols = fielding.columns[filt]
-    fielding = fielding.drop(drop_cols, axis=1)
+    if filt.any():
+        drop_cols = fielding.columns[filt]
+        fielding = fielding.drop(drop_cols, axis=1)
 
-    fielding = dh.optimize_df_dtypes(fielding)
+    dh.optimize_df_dtypes(fielding)
 
     msg = dh.df_info(fielding)
-    logging.info('fielding\n{}'.format(msg))
+    logger.info('fielding\n{}'.format(msg))
 
     # persist
     os.chdir(p_wrangled)
@@ -187,13 +193,20 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    if args.verbose:
-        level = logging.INFO
-    else:
-        level = logging.WARNING
+    if args.log_level:
+        fh = logging.FileHandler('download.log')
+        formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s')
+        fh.setFormatter(formatter)
+        fh.setLevel(args.log_level)
+        logger.addHandler(fh)
 
-    # log to stdout
-    logging.basicConfig(stream=sys.stdout, level=level, format='%(levelname)s: %(message)s')
+    if args.verbose:
+        # send INFO level logging to stdout
+        sh = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s')
+        sh.setFormatter(formatter)
+        sh.setLevel(logging.INFO)
+        logger.addHandler(sh)
 
     p_lahman_raw = Path(args.data_dir).joinpath('lahman/raw').resolve()
     p_lahman_wrangled = Path(args.data_dir).joinpath('lahman/wrangled').resolve()
