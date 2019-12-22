@@ -25,20 +25,20 @@ def download_data():
     elif curr_dir.joinpath('../data_helper.py').exists():
         os.chdir('..')
 
-    cmd = ['python', './lahman_download.py', '--data-dir', './test_data']
+    data_dir = '../data'
+    cmd = ['python', './lahman_download.py', '--log', 'INFO', '--data-dir', data_dir]
     subprocess.run(cmd, shell=False)
 
-    cmd = ['python', './retrosheet_download.py', '--data-dir', './test_data',
-           '--start-year', '2017', '--end-year', '2019']
+    cmd = ['python', './retrosheet_download.py', '--log', 'INFO', '--data-dir', data_dir]
     subprocess.run(cmd, shell=False)
 
-    cmd = ['python', './lahman_wrangle.py', '--data-dir', './test_data']
+    cmd = ['python', './lahman_wrangle.py', '--log', 'INFO', '--data-dir', data_dir]
     subprocess.run(cmd, shell=False)
 
-    cmd = ['python', './retrosheet_parse.py', '--data-dir', './test_data']
+    cmd = ['python', './retrosheet_parse.py', '--log', 'INFO', '--data-dir', data_dir]
     subprocess.run(cmd, shell=False)
 
-    return Path('./test_data')
+    return Path(data_dir)
 
 
 def test_python_version():
