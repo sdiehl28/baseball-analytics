@@ -73,6 +73,7 @@ def test_lahman_download(download_data):
 
 
 def test_retrosheet_download(download_data):
+    """Verify 2017 thru 2019 were downloaded and unzipped."""
     data_dir = download_data
     retrosheet_dir = data_dir / 'retrosheet'
     raw_dir = retrosheet_dir / 'raw'
@@ -82,7 +83,6 @@ def test_retrosheet_download(download_data):
     assert wrangled_dir.is_dir()
     assert raw_dir.is_dir()
 
-    # 3 event files were downloaded by the fixture
     zip2017 = raw_dir.joinpath('2017eve.zip')
     zip2018 = raw_dir.joinpath('2018eve.zip')
     zip2019 = raw_dir.joinpath('2019eve.zip')
@@ -169,12 +169,9 @@ def test_lahman_parks_pkey(download_data):
     # assert dh.is_unique(parks, ['park_name']
 
 def test_optimize_df():
-    data = {'a': [1, 100, 1000], 'b':[0,1,0], 'c':[-1, 0, 1]}
-    df = pd.DataFrame(data=data)
-
-    df2 = df.copy()
+    df = pd.DataFrame(dh.get_dtype_range())
     dh.optimize_df_dtypes(df)
-    assert (df.dtypes.values == [np.uint16, np.uint8, np.int8]).all()
+    assert (df.dtypes.values == df.columns.values).all()
 
 def test_rw_with_types(download_data):
     data_dir = download_data
@@ -192,7 +189,16 @@ def test_rw_with_types(download_data):
     os.remove(data_dir / 'tmp.csv.gz')
     os.remove(data_dir / 'tmp_types.csv')
 
-@pytest.mark.skip(reason="data must be cleaned before this test passes ")
+@pytest.mark.skip(reason="test not ready")
+def test_player_game_id(download_data):
+    data_dir = download_data
+    filename = data_dir / 'retrosheet' / 'collected' / 'player_game.csv.gz'
+
+    player_game = dh.from_csv_with_types(filename)
+    assert dh.is_unique(player_game, ['game_id'])
+    assert dh.is_unique(player_game, ['game_dt', 'game_ct', 'team_id'])
+
+@pytest.mark.skip(reason="data must be cleaned before this test passes")
 def test_player_game_pkey(download_data):
     data_dir = download_data
     filename = data_dir / 'retrosheet' / 'collected' / 'player_game.csv.gz'

@@ -65,6 +65,24 @@ def read_types(filename):
     return dates, dtypes
 
 
+def get_optimal_data_type(s):
+    dtype_range = get_dtype_range()
+    if s.min() >= 0:
+        convert_type = 'UInt64'
+        for dtype in ['UInt8', 'UInt16', 'UInt32', 'UInt64']:
+            if s.max() <= dtype_range[dtype][2]:
+                convert_type = dtype
+                break
+    else:
+        convert_type = 'Int64'
+        for dtype in ['Int8', 'Int16', 'Int32', 'Int64']:
+            if s.max() <= dtype_range[dtype][2] and s.min() >= dtype_range[dtype][1]:
+                convert_type = dtype
+                break
+
+    return convert_type
+
+
 def optimize_df_dtypes(df, ignore=None):
     """
     Downcasts DataFrame Column Types based on values.
@@ -72,14 +90,14 @@ def optimize_df_dtypes(df, ignore=None):
     Modification is inplace.
 
     Parameters:
-        df (pd.DataFrame): reduce size of datatypes as appropriate for values.
+        df (pd.DataFrame): reduce size of datatypes as appropriate for its values.
 
        ignore (list): column names to exclude from downcasting.
     """
 
     # columns to consider for downcasting
     process_cols = df.columns
-    if ignore and len(ignore) > 0:
+    if ignore:
         process_cols = df.columns.difference(ignore)
 
         if len(process_cols) == 0:
@@ -97,15 +115,40 @@ def optimize_df_dtypes(df, ignore=None):
     if len(df_int64.columns) > 0:
         df[df_int64.columns] = df_int64.apply(pd.to_numeric, downcast='signed')
 
-    # convert float columns that are integers with nans to Int64
+    # convert float columns that are integers with nans to best nullable integer type
     df_float = df.select_dtypes(include=['float'])
     if len(df_float.columns) > 0:
         filt = df_float.apply(is_int)
         int_col_names = df_float.columns[filt]
-        df[int_col_names] = df[int_col_names].astype('Int64')
+        if filt.any():
+            for col in int_col_names:
+                convert_type = get_optimal_data_type(df[col])
+                df[col] = df[col].astype(convert_type)
 
-    # automated conversion to categories can be problematic
-    # if a category is warranted, probably a CategoryDType should be created
+
+def get_dtype_range():
+    """Create a Dictionary having min/max values per Data Type
+
+    First value is 0 or np.nan
+    Second value is min for data type
+    Third value is max for data type
+    """
+    data = []
+    for dtype in ['uint8', 'int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64']:
+        data.append([0, np.iinfo(dtype).min, np.iinfo(dtype).max])
+        data.append([np.nan, np.iinfo(dtype).min, np.iinfo(dtype).max])
+
+    keys = ['uint8', 'UInt8', 'int8', 'Int8', 'uint16', 'UInt16', 'int16', 'Int16',
+            'uint32', 'UInt32', 'int32', 'Int32', 'uint64', 'UInt64', 'int64', 'Int64']
+
+    dtype_range = dict(zip(keys, data))
+
+    # pandas nullable Uint64 and Int64 have weird min/max values (these are approximate)
+    dtype_range['UInt64'][2] //= 4
+    dtype_range['Int64'][1] //= 2
+    dtype_range['Int64'][2] //= 2
+
+    return dict(zip(keys, data))
 
 
 def optimize_db_dtypes(df):
