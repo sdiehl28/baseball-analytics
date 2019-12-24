@@ -38,7 +38,7 @@ def test_lahman_download(data_dir):
 
 
 def test_retrosheet_download(data_dir):
-    """Verify 2017 thru 2019 were downloaded and unzipped."""
+    """Verify data downloaded and unzipped."""
     retrosheet_dir = data_dir / 'retrosheet'
     raw_dir = retrosheet_dir / 'raw'
     wrangled_dir = retrosheet_dir / 'wrangled'
@@ -47,26 +47,17 @@ def test_retrosheet_download(data_dir):
     assert wrangled_dir.is_dir()
     assert raw_dir.is_dir()
 
-    zip2017 = raw_dir.joinpath('2017eve.zip')
-    zip2018 = raw_dir.joinpath('2018eve.zip')
-    zip2019 = raw_dir.joinpath('2019eve.zip')
+    teams = raw_dir.glob('TEAM*')
+    years = sorted([team.name[4:] for team in teams])
 
-    assert zip2017.exists()
-    assert zip2018.exists()
-    assert zip2019.exists()
+    for year in years:
+        zipdata = raw_dir.joinpath(f'{year}eve.zip')
+        assert zipdata.exists()
 
-    # should be same number of files in raw_dir as in zipfile
-    files_2017 = [file for file in raw_dir.glob('*2017*') if not file.name.endswith('.zip')]
-    zipped = zipfile.ZipFile(zip2017)
-    assert len(files_2017) == len(zipped.namelist())
-
-    files_2018 = [file for file in raw_dir.glob('*2018*') if not file.name.endswith('.zip')]
-    zipped = zipfile.ZipFile(zip2018)
-    assert len(files_2018) == len(zipped.namelist())
-
-    files_2019 = [file for file in raw_dir.glob('*2019*') if not file.name.endswith('.zip')]
-    zipped = zipfile.ZipFile(zip2019)
-    assert len(files_2019) == len(zipped.namelist())
+        # should be same number of files in raw_dir as in zipfile
+        files = [file for file in raw_dir.glob(f'*{year}*') if not file.name.endswith('.zip')]
+        zipped = zipfile.ZipFile(zipdata)
+        assert len(files) == len(zipped.namelist())
 
 
 def test_lahman_people_pkey(data_dir):
@@ -154,7 +145,9 @@ def test_rw_with_types(data_dir):
     os.remove(data_dir / 'tmp_types.csv')
 
 
+@pytest.mark.slow
 def test_player_game_id_values(player_game):
+    # note: test is not slow, but running the session fixture could take 30 seconds
     filt = player_game['home_fl'] == 0
     player_game['home_team_id'] = player_game['team_id']
     player_game.loc[filt, 'home_team_id'] = player_game.loc[filt, 'opponent_id']
