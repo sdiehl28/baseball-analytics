@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Baseball Data Helper Functions"""
 
 __author__ = 'Stephen Diehl'
@@ -23,6 +21,9 @@ def to_csv_with_types(df, filename):
 
     This is intended to be used after optimizing df column types.
     Read back with: from_csv_with_types()
+
+    Persistence with data types cannot currently be done with hdf5 because
+    the new Int64 and similar data types are not supported.
     """
 
     p = Path(filename)

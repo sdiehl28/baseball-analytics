@@ -42,7 +42,7 @@ The field names in Lahman will be changed from CamelCase to snake_case.  The fie
 
 Non-standard parsing of dates and times will be performed.  A heuristic to determine game start time will be used (as am/pm is missing).  Other custom data processing will be performed as needed.
 
-Pandas datatypes will be optimized to save space and more accurately describe the attribute.  For example, the number of hits in a game is always between 0 and 255, so a uint8 can be used rather than an int64.  Likewise, for integer fields with missing values, the new Pandas Int64 can be used instead of requiring a float datatype.
+Pandas datatypes will be optimized to save space and more accurately describe the attribute.  For example, the number of hits in a game is always between 0 and 255, so a uint8 can be used rather than an int64.  Likewise, for integer fields with missing values, the new Pandas Int64 (and its relatives) can be used instead of requiring a float datatype.
 
 Datatype optimizations per column are persisted to disk for each corresponding csv file with the suffix `_types.csv`.
 
@@ -53,8 +53,9 @@ pytest will be used to automate the running of data integrity tests, such as val
 pytest:
 
 * must be run from the `download_scripts` directory
-* accepts --data-dir=<data_directory>
-* accepts --runslow # to run tests that depend on a slow session fixture
+* must be run after the scripts which download and parse the data have been run
+* accepts custom option: --data-dir=<data_directory>
+* accepts custom option: --runslow  # to run tests that depend on a slow to instantiate session fixture
 
 ### Data Consistency
 
@@ -68,16 +69,62 @@ There are nine fielding roles.  For example, the same player could make a put-ou
 
 ### Script Summary
 
-All scripts have help.  For example: `python lahman_download.py --help`
+cd to the download_scripts directory.  All scripts have help.   Scripts can be run as:
 
-* **lahman_download.py** -- downloads the Lahman data
-* **retrosheet_download.py** -- downloads the Retrosheet data
-* **lahman_wrangle.py** -- convert to lowercase fieldnames with underscores, custom parse dates, etc.
-* **retrosheet_parse.py** -- generate the csv files
-* **retrosheet_datadictionary.py** -- generate a description of the generated csv files from the parsers
-* **retrosheet_wrangle.py** -- convert to lowercase fieldnames with underscores, custom parse time, etc.
-* **tests/test_data.py** -- data integrity tests
-* and more ...
+* `python lahman_download.py --help` or 
+* `lahman_download.py --help` if the script has execute permission.
+
+After the scripts have been run, pytest can be run to verify that the download succeeded and the data is fine.
+
+For all scripts:
+
+* -v for verbose: logs to stdout
+* --log INFO:  appends to download.log file (at the INFO level)
+* --data-dir ../data:   specifies that the data directory is a sibling of the download_scripts directory (or whatever directory you chose)
+
+Scripts:
+
+* **lahman_download.py** -v --log INFO --data-dir ../data
+  * downloads all the lahman data and unzips it to `../data/lahman/raw`
+
+* **lahman_wrangle.py** -v -log INFO --data-dir ../data
+  * converts field names to snake_case
+  * performs custom parsing of dates
+  * drops fielding columns that have more than 90% missing values
+  * optimizes data types
+  * persists with optimized data types to `../data/lahman/wrangle`
+* **retrosheet_download.py** -v -log INFO --data-dir ../data
+  * downloads the retrosheet data and unzips it to `../data/retrosheet/raw`
+  * by default, data is downloaded from 1955 through 2019 inclusive
+  * this can be changed by using the --start-year and --end-year flags
+* **retrosheet_parse.py** -v --log INFO --data-type --data-dir ../data
+  * with --data-type option
+    * uses the precomputed optimized data type files at provided with this repo at `data/retrosheet`
+    * this can save several Gigs of RAM, if data goes back to the 1950s or earlier
+  * without --data-type option
+    * will compute the optimized data types
+    * may require more than 16 Gig of RAM, if data goes back to the 1950s or earlier
+  * runs the cwdaily and cwgame parsers to generate csv files
+    * cwdaily creates player per game statistics
+    * cwgame creates team per game statistics
+    * see the "Parsers for Retrosheet" section below
+  * all data in the `data/retrosheet/raw` is parsed
+  * collects the results into one DataFrame for cwdaily and one DataFrame for cwgame
+  * converts the field names to lower case
+  * drops columns that have more than 95% missing values
+  * persists the results to `../data/retrosheet/collected`
+  * the DataFrame for cwdaily is compressed using gzip
+    * the compression ratio is about 18:1
+* **retrosheet_datadictionary.py**
+  * this is an optional script which produces the data dictionary for the generated csv files
+  * script results are saved in `data/retrosheet` directory and are also available in this github repo
+* **retrosheet_wrangle.py** -v --log INFO --data-type --data-dir ../data
+  *  custom parsing of game time
+  * data cleanup for non-unique (player_id, game_id)
+* **tests/test_data.py**
+  * after running the above scripts, run 'pytest' from the same (download_scripts) directory
+  * there are conftest.py and pytest.ini files for pytest
+  * the "unit tests" used for data checking are in tests/test_data.py
 
 
 

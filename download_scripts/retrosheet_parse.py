@@ -71,7 +71,7 @@ def parse_event_files(raw_dir, parser, fields):
                 cmd.extend(['-y', year])
 
                 cmd_full = cmd + [file]
-                logger.info(f'{" ".join(cmd_full)}')
+                logger.debug(f'{" ".join(cmd_full)}')
 
                 # overwrite existing file if it exists
                 with open(out, "w+") as outfile:
@@ -82,7 +82,7 @@ def parse_event_files(raw_dir, parser, fields):
                 cmd.remove('-n')
             else:
                 cmd_full = cmd + [file]
-                logger.info(f'{" ".join(cmd_full)}')
+                logger.debug(f'{" ".join(cmd_full)}')
 
                 # append to existing file
                 with open(out, "a+") as outfile:
@@ -127,6 +127,13 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
         logger.info(f'Optimized Memory Usage:   {dh.mem_usage(df)}')
 
     df.columns = df.columns.str.lower()
+
+    # drop any column that is more than 95% null
+    filt = df.isna().mean() > 0.95
+    if filt.any():
+        drop_cols = df.columns[filt]
+        logger.warning(f'Cols > 95% missing being dropped: {" ".join(drop_cols)}')
+        df.drop(drop_cols, axis=1, inplace=True)
 
     # persist optimized dataframe
     # gzip chosen over xy because this runs on client computer and gzip is faster

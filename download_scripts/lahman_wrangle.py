@@ -175,7 +175,8 @@ def wrangle_fielding(p_raw, p_wrangled):
     filt = fielding.isna().mean() > 0.90
     if filt.any():
         drop_cols = fielding.columns[filt]
-        fielding = fielding.drop(drop_cols, axis=1)
+        logger.warning(f'Cols > 90% missing being dropped: {" ".join(drop_cols)}')
+        fielding.drop(drop_cols, axis=1, inplace=True)
 
     dh.optimize_df_dtypes(fielding)
 

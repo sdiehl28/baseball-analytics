@@ -21,7 +21,6 @@ b_3b,uint8
 b_hr,uint8
 b_hr4,uint8
 b_rbi,uint8
-b_gw,Int64
 b_bb,uint8
 b_ibb,uint8
 b_so,uint8
@@ -68,8 +67,8 @@ p_ir,uint8
 p_irs,uint8
 p_go,uint8
 p_ao,uint8
-p_pitch,Int64
-p_strike,Int64
+p_pitch,UInt8
+p_strike,UInt8
 f_p_g,uint8
 f_p_gs,uint8
 f_p_out,uint8
