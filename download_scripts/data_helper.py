@@ -66,15 +66,17 @@ def read_types(filename):
 
 
 def get_optimal_data_type(s):
+    # if the integer is outside the range of values that be converted to a nullable integer type
+    # use float64
+    convert_type = 'float64'
+
     dtype_range = get_dtype_range()
     if s.min() >= 0:
-        convert_type = 'UInt64'
         for dtype in ['UInt8', 'UInt16', 'UInt32', 'UInt64']:
             if s.max() <= dtype_range[dtype][2]:
                 convert_type = dtype
                 break
     else:
-        convert_type = 'Int64'
         for dtype in ['Int8', 'Int16', 'Int32', 'Int64']:
             if s.max() <= dtype_range[dtype][2] and s.min() >= dtype_range[dtype][1]:
                 convert_type = dtype

@@ -52,7 +52,7 @@ pytest will be used to automate the running of data integrity tests, such as val
 
 ### Data Consistency
 
-To verify that the scripts worked correctly, the Retrosheet player per game and team per game data will be summarized to the yearly level and compared with Lahman.  This verification will be part of the supplied pytest test suite.
+To verify that the scripts worked correctly, the Retrosheet player per game and team per game data will be summarized to the yearly level and compared with Lahman.  This verification will be part of the supplied pytest tests.  Note that "pytest" should be run from the `download_scripts` directory.
 
 ### Statistics per Player Role
 
@@ -67,8 +67,8 @@ All scripts have help.  For example: `python lahman_download.py --help`
 * **lahman_download.py** -- downloads the Lahman data
 * **retrosheet_download.py** -- downloads the Retrosheet data
 * **lahman_wrangle.py** -- convert to lowercase fieldnames with underscores, custom parse dates, etc.
-* **retrosheet_datadictionary.py** -- generate a description of the generated csv files from the parsers
 * **retrosheet_parse.py** -- generate the csv files
+* **retrosheet_datadictionary.py** -- generate a description of the generated csv files from the parsers
 * **retrosheet_wrangle.py** -- convert to lowercase fieldnames with underscores, custom parse time, etc.
 * **tests/test_data.py** -- data integrity tests
 * and more ...
