@@ -50,9 +50,15 @@ Datatype optimizations per column are persisted to disk for each corresponding c
 
 pytest will be used to automate the running of data integrity tests, such as validating that the unique identifying fields are in fact, unique.
 
+pytest:
+
+* must be run from the `download_scripts` directory
+* accepts --data-dir=<data_directory>
+* accepts --runslow # to run tests that depend on a slow session fixture
+
 ### Data Consistency
 
-To verify that the scripts worked correctly, the Retrosheet player per game and team per game data will be summarized to the yearly level and compared with Lahman.  This verification will be part of the supplied pytest tests.  Note that "pytest" should be run from the `download_scripts` directory.
+To verify that the scripts worked correctly, the Retrosheet player per game and team per game data will be summarized to the yearly level and compared with Lahman.  This verification will be part of the supplied pytest tests.
 
 ### Statistics per Player Role
 

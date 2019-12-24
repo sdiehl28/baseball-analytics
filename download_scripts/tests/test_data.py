@@ -12,6 +12,12 @@ def test_python_version():
     assert sys.version_info.minor >= 7
 
 
+def test_data_dir(data_dir):
+    # most tests require the correct data directory to pass
+    # cd to download_scripts and then run 'pytest'
+    assert data_dir.is_dir()
+
+
 def test_lahman_download(data_dir):
     lahman_dir = data_dir / 'lahman'
     raw_dir = lahman_dir / 'raw'
