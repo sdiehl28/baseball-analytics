@@ -113,7 +113,7 @@ Scripts:
   * converts the field names to lower case
   * drops columns that have more than 95% missing values
   * persists the results to `../data/retrosheet/collected`
-  * the DataFrame for cwdaily is compressed using gzip
+  * the DataFrame are compressed using gzip
     * the compression ratio is about 18:1
 * **retrosheet_datadictionary.py**
   * this is an optional script which produces the data dictionary for the generated csv files
