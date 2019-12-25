@@ -1,5 +1,5 @@
 # Baseball Analytics
-&#x1F534; Under Construction - may be ready for use by 12/25/19  
+&#x1F534; Under Construction - may be ready for use by 12/26/19  
 
 Scripts are provided to:
 
@@ -84,20 +84,22 @@ For all scripts:
 
 Scripts:
 
-* **lahman_download.py** -v --log INFO --data-dir ../data
+* **run_all_scripts.py** --data-dir=../data
+  * convenience script to run all scripts with -v --log=INFO
+* **lahman_download.py** -v --log=INFO --data-dir=../data
   * downloads all the lahman data and unzips it to `../data/lahman/raw`
 
-* **lahman_wrangle.py** -v -log INFO --data-dir ../data
+* **lahman_wrangle.py** -v -log=INFO --data-dir=../data
   * converts field names to snake_case
   * performs custom parsing of dates
   * drops fielding columns that have more than 90% missing values
   * optimizes data types
   * persists with optimized data types to `../data/lahman/wrangle`
-* **retrosheet_download.py** -v -log INFO --data-dir ../data
+* **retrosheet_download.py** -v -log=INFO --data-dir=../data
   * downloads the retrosheet data and unzips it to `../data/retrosheet/raw`
   * by default, data is downloaded from 1955 through 2019 inclusive
   * this can be changed by using the --start-year and --end-year flags
-* **retrosheet_parse.py** -v --log INFO --data-type --data-dir ../data
+* **retrosheet_parse.py** -v --log=INFO --data-type --data-dir=../data
   * with --data-type option
     * uses the precomputed optimized data type files at provided with this repo at `data/retrosheet`
     * this can save several Gigs of RAM, if data goes back to the 1950s or earlier
@@ -118,7 +120,7 @@ Scripts:
 * **retrosheet_datadictionary.py**
   * this is an optional script which produces the data dictionary for the generated csv files
   * script results are saved in `data/retrosheet` directory and are also available in this github repo
-* **retrosheet_wrangle.py** -v --log INFO --data-type --data-dir ../data
+* **retrosheet_wrangle.py** -v --log=INFO --data-type --data-dir=../data
   *  custom parsing of game time
   * data cleanup for non-unique (player_id, game_id)
 * **tests/test_data.py**
