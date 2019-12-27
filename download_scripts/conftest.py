@@ -34,3 +34,17 @@ def player_game(data_dir):
     filename = data_dir / 'retrosheet' / 'wrangled' / 'player_game.csv.gz'
     player_game = dh.from_csv_with_types(filename)
     return player_game
+
+
+@pytest.fixture(scope='session')
+def team_game(data_dir):
+    filename = data_dir / 'retrosheet' / 'wrangled' / 'team_game.csv.gz'
+    team_game = dh.from_csv_with_types(filename)
+    return team_game
+
+
+@pytest.fixture(scope='session')
+def game(data_dir):
+    filename = data_dir / 'retrosheet' / 'wrangled' / 'game.csv.gz'
+    game = dh.from_csv_with_types(filename)
+    return game

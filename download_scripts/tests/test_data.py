@@ -133,3 +133,17 @@ def test_player_game_pkey(data_dir, player_game):
 
     player_game = dh.from_csv_with_types(filename)
     assert dh.is_unique(player_game, ['player_id', 'game_id'])
+
+
+def test_team_game_pkey(data_dir, team_game):
+    filename = data_dir / 'retrosheet' / 'wrangled' / 'team_game.csv.gz'
+
+    team_game = dh.from_csv_with_types(filename)
+    assert dh.is_unique(team_game, ['team_id', 'game_id'])
+
+
+def test_game_pkey(data_dir, game):
+    filename = data_dir / 'retrosheet' / 'wrangled' / 'game.csv.gz'
+
+    game = dh.from_csv_with_types(filename)
+    assert dh.is_unique(game, ['game_id'])
