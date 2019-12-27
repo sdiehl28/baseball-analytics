@@ -229,3 +229,35 @@ def order_cols(df, cols):
     rest = [col for col in df.columns if col not in cols]
     df = df[cols + rest]
     return df
+
+
+def sum_stats_for_dups(df, pkey, stat_cols):
+    """Sum stat columns for rows having the same primary key.
+
+    This is a "best guess" fix to rows with duplicate primary keys.
+
+    The first value for a non-pkey non-stat column will be kept.
+    """
+    # dups is true for all rows that are duplicates
+    dups = df.duplicated(subset=pkey, keep=False)
+    if len(dups) == 0:
+        return
+
+    # get the duplicated rows
+    df_dups = df.loc[dups]
+
+    # for the duplicate rows, sum the stat columns only
+    df_summed = df_dups.groupby(pkey)[stat_cols].sum()
+
+    # often, setting the index to the primary key makes data processing easier
+    df.set_index(pkey, inplace=True)
+
+    # remove all but one of each group of duplicated rows
+    df = df.loc[~df.index.duplicated(keep='first')].copy()
+
+    # set the kept row (per group) equal to the summed row computed above
+    df.loc[df_summed.index, stat_cols] = df_summed
+
+    df.reset_index(inplace=True)
+
+    return df

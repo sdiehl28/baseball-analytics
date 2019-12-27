@@ -32,7 +32,7 @@ Data is tidy if:
 
 #### Retrosheet Overview
 
-Retrosheet has play-by-play data for every MLB game since 1974.  Data is available since 1918 with older years having somewhat more missing data.  Open source parsers from Dr. T. L. Turocy will be used to parse and summarize the play-by-play data.  The **cwdaily** parser will generate a csv file **per player per game**.  This csv file is tidy.  The **cwgame** parser will generate a csv file that contains statistics for both teams per game and as well as game specific information such as attendance.  This csv file is difficult to work with and will be restructured to to **per team per game** and **per game** csv files.
+Retrosheet has play-by-play data for every MLB game since 1974.  Data is available since 1918 with older years having somewhat more missing data.  Open source parsers from Dr. T. L. Turocy will be used to parse and summarize the play-by-play data.  The **cwdaily** parser will generate a csv file **per player per game**.  This csv file is tidy.  The **cwgame** parser will generate a csv file that contains statistics for both teams per game and as well as game specific information such as attendance.  This csv file is difficult to work with and will be restructured to **per team per game** and **per game** csv files.
 
 The description of the column headings for the parser generated csv files has been created and copied to `data/retrosheet` as cwdaily_datadictionary.txt and cwgame_datadictionary.txt.
 
@@ -50,11 +50,11 @@ There are two acceptable abbreviations for "grounded into double play", gidp and
 
 ### Data Wrangling
 
-Custom parsing of dates and times will be performed.  The cwgame output will be made tidy.
+Custom parsing of dates and times will be performed.  The cwgame output will be restructured.
 
 Data will be cleaned so that "primary keys" are unique.  Extremely few records require modification, but as most data processing relies on having a set of fields which uniquely identify a record, this cleaning is required.
 
-Pandas datatypes will be optimized to save space and more accurately describe the attribute.  For example, the number of hits in a game is always between 0 and 255, so a uint8 can be used rather than an int64.  Likewise, for integer fields with missing values, the new Pandas Int64 (and its relatives) can be used instead of requiring a float datatype.
+Pandas datatypes will be optimized to save space and more accurately describe the attribute.  For example, the number of hits in a game is always between 0 and 255, so a uint8 can be used rather than an int64.  Likewise, for integer fields with missing values, the new Pandas Int64 (and similar) can be used instead of requiring a float datatype.
 
 Datatype optimizations per column are persisted to disk for each corresponding csv file with the suffix `_types.csv`.  The Python functions **from_csv_with_types()** and **to_csv_with_types()** have been written to  allow persistence of data to csv files without losing data type information.
 
@@ -64,6 +64,7 @@ pytest will be used to automate the running of data integrity tests, such as val
 
 pytest:
 
+* recommend: 'pytest -v --runslow'
 * must be run from the `download_scripts` directory
 * must be run after the scripts which download and parse the data have been run
 * accepts custom option: --data-dir=<data_directory>

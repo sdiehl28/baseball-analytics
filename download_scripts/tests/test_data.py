@@ -1,21 +1,9 @@
 import pytest
-import os
-import sys
 import zipfile
-import pandas as pd
+
+__author__ = 'Stephen Diehl'
 
 from .. import data_helper as dh
-
-
-def test_python_version():
-    assert sys.version_info.major == 3
-    assert sys.version_info.minor >= 7
-
-
-def test_data_dir(data_dir):
-    # most tests require the correct data directory to pass
-    # cd to download_scripts and then run 'pytest'
-    assert data_dir.is_dir()
 
 
 def test_lahman_download(data_dir):
@@ -127,30 +115,6 @@ def test_lahman_parks_pkey(data_dir):
     # assert dh.is_unique(parks, ['park_name']
 
 
-def test_optimize_df():
-    df = pd.DataFrame(dh.get_dtype_range())
-    dh.optimize_df_dtypes(df)
-    assert (df.dtypes.values == df.columns.values).all()
-
-
-def test_rw_with_types(data_dir):
-    dtype_range = dh.get_dtype_range()
-    df = pd.DataFrame(dtype_range)
-    dtypes_orig = df.dtypes
-
-    dh.optimize_df_dtypes(df)
-    dh.to_csv_with_types(df, data_dir / 'tmp.csv.gz')
-    df = dh.from_csv_with_types(data_dir / 'tmp.csv.gz')
-
-    assert (df.dtypes == list(dtype_range.keys())).all()
-    assert not (df.dtypes == dtypes_orig).all()
-
-    assert (data_dir / 'tmp.csv.gz').is_file()
-    assert (data_dir / 'tmp_types.csv').is_file()
-    os.remove(data_dir / 'tmp.csv.gz')
-    os.remove(data_dir / 'tmp_types.csv')
-
-
 @pytest.mark.slow
 def test_player_game_id_values(player_game):
     # note: test is not slow, but running the session fixture could take 30 seconds
@@ -162,9 +126,10 @@ def test_player_game_id_values(player_game):
             player_game['game_dt'].astype(str) + player_game['game_ct'].astype(str)).all()
 
 
-@pytest.mark.skip(reason="data must be cleaned before this test passes")
-def test_player_game_pkey(data_dir):
-    filename = data_dir / 'retrosheet' / 'collected' / 'player_game.csv.gz'
+@pytest.mark.slow
+def test_player_game_pkey(data_dir, player_game):
+    # note: test is not slow, but running the session fixture could take 30 seconds
+    filename = data_dir / 'retrosheet' / 'wrangled' / 'player_game.csv.gz'
 
     player_game = dh.from_csv_with_types(filename)
     assert dh.is_unique(player_game, ['player_id', 'game_id'])
