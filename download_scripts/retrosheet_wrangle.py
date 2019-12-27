@@ -233,7 +233,7 @@ def main():
     p_retrosheet_collected = Path(args.data_dir).joinpath('retrosheet/collected').resolve()
     p_retrosheet_wrangled = Path(args.data_dir).joinpath('retrosheet/wrangled').resolve()
 
-    # wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled)
+    wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled)
     wrangle_game(p_retrosheet_collected, p_retrosheet_wrangled)
 
 
