@@ -16,11 +16,13 @@ Examples of baseball data analysis will be provided later in the form of Jupyter
 
 ### MLB Data
 
+#### Lahman Overview
+
 Lahman has MLB statistics summarized by **player per year** and by **team per year**.
 
-Retrosheet has play-by-play data for every MLB game since 1974.  Data is available since 1918 with older years having somewhat more missing data.  This data can be parsed to summarize statistics by **player per game** and **team per game**.
+The Lahman data is tidy and has several csv files.  The latest description of each csv file has been copied to the `data/lahman` directory and is called readme2017.txt.  Loosely speaking, a description of data might be called "readme" or "data dictionary" or "code book".
 
-The Lahman data is tidy and has several csv files.  The latest available description of each csv file has been copied to the `data/lahman` directory.
+As of December 2019, Lahman has data through the end of the 2018 season.  
 
 Data is tidy if:
 
@@ -28,23 +30,33 @@ Data is tidy if:
 2. Each observation forms a row.
 3. Each type of observational unit forms a table (or csv file).
 
-The Retorsheet data is not distributed as csv files, but as text files which have play-by-play information.  This data will be parsed and aggregated to the game level, using open source parsers from Dr. T. L. Turocy as described below.  The description of the generated csv files can also be generated from the parsers.  These descriptions have been generated and copied to the `data/retrosheet` directory.
+#### Retrosheet Overview
 
-As of December 2019, Lahman has data through the 2018 season whereas Retrosheet has data through the 2019 season.
+Retrosheet has play-by-play data for every MLB game since 1974.  Data is available since 1918 with older years having somewhat more missing data.  Open source parsers from Dr. T. L. Turocy will be used to parse and summarize the play-by-play data.  The **cwdaily** parser will generate a csv file **per player per game**.  This csv file is tidy.  The **cwgame** parser will generate a csv file that contains statistics for both teams per game and as well as game specific information such as attendance.  This csv file is difficult to work with and will be restructured to to **per team per game** and **per game** csv files.
+
+The description of the column headings for the parser generated csv files has been created and copied to `data/retrosheet` as cwdaily_datadictionary.txt and cwgame_datadictionary.txt.
+
+As of December 2019, Retrosheet has data through the 2019 season.
 
 ### Field Names
 
 The field names in both datasets are based on standard baseball statistic abbreviations.  See for example: https://en.wikipedia.org/wiki/Baseball_statistics
 
-The field names in Lahman will be changed from CamelCase to snake_case.  The field names in both datasets will be changed to lowercase.  Lahman's "gidp" will be renamed to "gdp" to match the abbreviation used in Retrosheet.  There are two Lahman field names that are not valid identifiers and these will be modified: 2B -> b_2b and 3B -> b_3b.
+The field names have been changed as little as possible in order to meet Pandas and SQL naming conventions.
+
+The field names in Lahman are changed from CamelCase to all lowercase snake_case.  The field names created by the Retrosheet parsers are changed from upper case to lower case.  Invalid identifiers, such as 2B and 3B are changed to b_2B and b_3B.
+
+There are two acceptable abbreviations for "grounded into double play", gidp and gdp.  Lahman's "gidp" will be renamed to "gdp" to match Retrosheet.
 
 ### Data Wrangling
 
-Non-standard parsing of dates and times will be performed.  A heuristic to determine game start time will be used (as am/pm is missing).  Other custom data processing will be performed as needed.
+Custom parsing of dates and times will be performed.  The cwgame output will be made tidy.
+
+Data will be cleaned so that "primary keys" are unique.  Extremely few records require modification, but as most data processing relies on having a set of fields which uniquely identify a record, this cleaning is required.
 
 Pandas datatypes will be optimized to save space and more accurately describe the attribute.  For example, the number of hits in a game is always between 0 and 255, so a uint8 can be used rather than an int64.  Likewise, for integer fields with missing values, the new Pandas Int64 (and its relatives) can be used instead of requiring a float datatype.
 
-Datatype optimizations per column are persisted to disk for each corresponding csv file with the suffix `_types.csv`.  The function **from_csv_with_types()** and **to_csv_with_types()** are supplied to use the csv files with Pandas data types.
+Datatype optimizations per column are persisted to disk for each corresponding csv file with the suffix `_types.csv`.  The Python functions **from_csv_with_types()** and **to_csv_with_types()** have been written to  allow persistence of data to csv files without losing data type information.
 
 ### Data Validation
 
@@ -80,12 +92,12 @@ For all scripts:
 
 * -v for verbose: logs to stdout
 * --log INFO:  appends to download.log file (at the INFO level)
-* --data-dir ../data:   specifies that the data directory is a sibling of the download_scripts directory (or whatever directory you chose)
+* --data-dir ../data:   specifies that the data directory (default is sibling of download_scripts directory)
 
-Scripts:
+Scripts with example command line arguments:
 
 * **run_all_scripts.py** --data-dir=../data
-  * convenience script to run all scripts with -v --log=INFO
+  * convenience script to run all scripts with -v --log=INFO for the data directory specified
 * **lahman_download.py** -v --log=INFO --data-dir=../data
   * downloads all the lahman data and unzips it to `../data/lahman/raw`
 
@@ -101,14 +113,12 @@ Scripts:
   * this can be changed by using the --start-year and --end-year flags
 * **retrosheet_parse.py** -v --log=INFO --data-type --data-dir=../data
   * with --data-type option
-    * uses the precomputed optimized data type files at provided with this repo at `data/retrosheet`
+    * uses the precomputed optimized data type files provided with this repo at `data/retrosheet`
     * this can save several Gigs of RAM, if data goes back to the 1950s or earlier
   * without --data-type option
     * will compute the optimized data types
     * may require more than 16 Gig of RAM, if data goes back to the 1950s or earlier
   * runs the cwdaily and cwgame parsers to generate csv files
-    * cwdaily creates player per game statistics
-    * cwgame creates team per game statistics
     * see the "Parsers for Retrosheet" section below
   * all data in the `data/retrosheet/raw` is parsed
   * collects the results into one DataFrame for cwdaily and one DataFrame for cwgame
@@ -119,17 +129,16 @@ Scripts:
     * the compression ratio is about 18:1
 * **retrosheet_datadictionary.py**
   * this is an optional script which produces the data dictionary for the generated csv files
-  * script results are saved in `data/retrosheet` directory and are also available in this github repo
+  * script results are saved in `data/retrosheet` directory and are published in this github repo
 * **retrosheet_wrangle.py** -v --log=INFO --data-type --data-dir=../data
   *  custom parsing of game time
-  * data cleanup for non-unique (player_id, game_id)
+  * data cleanup for non-unique (player_id, game_id) records
   * and more ...
 * **tests/test_data.py**
   * after running the above scripts, run 'pytest' from the same directory
-  * there are conftest.py and pytest.ini files for pytest
-  * the "unit tests" used for data checking are in tests/test_data.py
-
-
+  * pytest relies on
+    * conftest.py and pytest.ini in the download_scripts directory
+    * tests/test_data.py
 
 ## MLB Data Details
 
@@ -163,6 +172,8 @@ The csv files for Lahman are tidy.  The lahman_download script will put these in
   * Teams.csv
 * **reference tables**
   * People.csv
+  * Parks.csv
+  * Salaries.csv
   * and more ...
 
 ### Retrosheet
@@ -185,7 +196,7 @@ The csv files must be generated by parsing the play-by-play data files.  The scr
 
 The **cwdaily** parser generates statistics per player per game.  Attributes are prefixed by b for batter, p for pitcher and f_{pos} for fielder where pos is one of P, C, 1B, 2B, 3B, SS, LF, CF, RF.
 
-The **cwgame** parser generates statistics per game for both teams
+The **cwgame** parser generates statistics per game for both teams.
 
 #### Retrosheet Data Dictionary
 
