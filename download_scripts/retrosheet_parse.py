@@ -142,7 +142,7 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
     if parser == 'cwdaily':
         filename = 'player_game.csv.gz'
     elif parser == 'cwgame':
-        filename = 'team_game.csv.gz'
+        filename = 'game.csv.gz'
     else:
         raise ValueError(f'Unrecognized parser: {parser}')
 
@@ -175,7 +175,7 @@ def main():
 
     p_data = Path(args.data_dir).resolve()
     if p_data.joinpath('retrosheet', 'collected', 'player_game.csv.gz').exists() and \
-            p_data.joinpath('retrosheet', 'collected', 'team_game.csv.gz').exists():
+            p_data.joinpath('retrosheet', 'collected', 'game.csv.gz').exists():
         logger.info('Skipping parsing -- already performed')
         return
 
