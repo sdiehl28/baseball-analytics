@@ -261,3 +261,11 @@ def sum_stats_for_dups(df, pkey, stat_cols):
     df.reset_index(inplace=True)
 
     return df
+
+
+def move_column_after(df, after_col, col):
+    idx = df.columns.get_loc(after_col)
+    cols = list(df.columns)
+    cols.remove(col)
+    cols.insert(idx + 1, col)
+    return df.reindex(cols, axis=1)
