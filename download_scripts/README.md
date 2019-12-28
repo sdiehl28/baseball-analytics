@@ -13,9 +13,7 @@ Major League Baseball (MLB) data in preparation for easy analysis with Pandas or
 
 The end result will be a set of csv files, with data types per column in associated csv files, which can be loaded into Pandas or any database.
 
-Examples of baseball data analysis will be provided later in the form of Jupyter Notebooks.
-
-## Script Summary
+## Script 
 
 cd to the download_scripts directory.  All scripts have help.   Scripts can be run as:
 
@@ -58,6 +56,7 @@ Scripts with example command line arguments:
     * see the "Parsers for Retrosheet" section below
   * all data in the `data/retrosheet/raw` is parsed
   * collects the results into one DataFrame for cwdaily and one DataFrame for cwgame
+  * optimizes all data types
   * converts the field names to lower case
   * drops columns that have more than 95% missing values
   * persists the results to `../data/retrosheet/collected`
