@@ -1,5 +1,5 @@
 # Baseball Analytics
-&#x1F534; Under Construction - may be ready for use by 12/29/19  
+&#x1F534; Under Construction - may be ready for use by 12/31/19  
 
 Scripts are provided to:
 
@@ -34,7 +34,7 @@ Data is tidy if:
 
 Retrosheet has play-by-play data for every MLB game since 1974.  Data is available since 1918 with older years having somewhat more missing data.  Open source parsers from Dr. T. L. Turocy will be used to parse and summarize the play-by-play data.  
 
-The **cwdaily** parser will generate a csv file **per player per game**.  This csv file is tidy.  The **cwgame** parser will generate a csv file that contains statistics for both teams per game and as well as game specific information such as attendance.  This csv file is difficult to work with and will be restructured to **per team per game** and **per game** csv files.
+The **cwdaily** parser will generate a csv file **per player per game**.  This will be restructured into 3 files along the lines of Lahman for batting, pitching and fielding.  The **cwgame** parser will generate a csv file that contains statistics for both teams per game and as well as game specific information such as attendance.  This csv file is difficult to work with and will be restructured to **per team per game** and **per game** csv files.
 
 The description of the column headings for the parser generated csv files has been created and copied to `data/retrosheet` as cwdaily_datadictionary.txt and cwgame_datadictionary.txt.
 
