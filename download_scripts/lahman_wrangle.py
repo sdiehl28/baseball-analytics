@@ -29,7 +29,6 @@ def get_fieldname_mapping():
         'yearID': 'year_id',
         'teamID': 'team_id',
         'lgID': 'lg_id',
-        'GIDP': 'gdp',  # to be consistent with retrosheet
         '2B': 'b_2b',
         '3B': 'b_3b',
         'BAOpp': 'ba_opp',

@@ -31,7 +31,7 @@ def data_dir(request):
 @pytest.fixture(scope='session')
 def player_game(data_dir):
     # depending upon the amount of data, it could take 30 seconds to decompress player_game.csv.gz
-    filename = data_dir / 'retrosheet' / 'wrangled' / 'player_game.csv.gz'
+    filename = data_dir / 'retrosheet' / 'collected' / 'player_game.csv.gz'
     player_game = dh.from_csv_with_types(filename)
     return player_game
 
@@ -48,3 +48,15 @@ def game(data_dir):
     filename = data_dir / 'retrosheet' / 'wrangled' / 'game.csv.gz'
     game = dh.from_csv_with_types(filename)
     return game
+
+@pytest.fixture(scope='session')
+def batting(data_dir):
+    filename = data_dir / 'retrosheet' / 'wrangled' / 'batting.csv.gz'
+    batting = dh.from_csv_with_types(filename)
+    return batting
+
+@pytest.fixture(scope='session')
+def pitching(data_dir):
+    filename = data_dir / 'retrosheet' / 'wrangled' / 'pitching.csv.gz'
+    pitching = dh.from_csv_with_types(filename)
+    return pitching

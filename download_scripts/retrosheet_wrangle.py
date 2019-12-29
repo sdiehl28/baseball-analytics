@@ -63,45 +63,31 @@ def wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled):
     if (player_game['game_dt'] == player_game['appear_dt']).mean() > 0.999:
         player_game.drop('appear_dt', axis=1, inplace=True)
 
-    # Add Lahman player_id to make joins with Lahman easier later
-    lahman_people_fn = p_retrosheet_collected.parent.parent / 'lahman/wrangled/people.csv'
-    lahman_people = dh.from_csv_with_types(lahman_people_fn)
+    b_cols = [col for col in stat_columns if col.startswith('b_')]
+    p_cols = [col for col in stat_columns if col.startswith('p_')]
 
-    lahman_teams_fn = p_retrosheet_collected.parent.parent / 'lahman/wrangled/teams.csv'
-    lahman_teams = dh.from_csv_with_types(lahman_teams_fn)
+    # if the entire row is zero, then the player did not bat or pitch in that game
+    b_filt = player_game[b_cols].sum(axis=1) == 0
+    p_filt = player_game[p_cols].sum(axis=1) == 0
 
-    # add player_id from Lahman to make joins on players easier
-    # retrosheet.player_game JOIN lahman.people ON player_id = retro_id
-    player_game = pd.merge(player_game, lahman_people[['player_id', 'retro_id']],
-                           left_on='player_id', right_on='retro_id',
-                           suffixes=['', '_lahman'])
+    # fields which uniquely identify a record
+    pkey = ['game_id', 'player_id']
 
-    # the retro_id from Lahman is not needed
-    player_game.drop('retro_id', axis=1, inplace=True)
+    # data with some non-zero attributes
+    batting = player_game.loc[~b_filt, pkey + b_cols].copy()
+    pitching = player_game.loc[~p_filt, pkey + p_cols].copy()
 
-    # move the new player_id_lahman column to be after player_id
-    player_game = dh.move_column_after(player_game, 'player_id', 'player_id_lahman')
+    b_cols_new = {col: col[2:] for col in b_cols if col[2] != '2' and col[2] != '3'}
+    p_cols_new = {col: col[2:] for col in p_cols if col[2] != '2' and col[2] != '3'}
 
-    # add year_id to player_game (for use with Lahman teams)
-    player_game['year_id'] = player_game['game_dt'] // 10000
-    player_game = dh.move_column_after(player_game, 'game_dt', 'year_id')
+    batting.rename(columns=b_cols_new, inplace=True)
+    pitching.rename(columns=p_cols_new, inplace=True)
 
-    # add team_id from Lahman to make joins on teams easier
-    # r.player_game JOIN l.teams ON r.year_id = l.year_id AND r.team_id = l.team_id_retro
-    player_game = pd.merge(player_game, lahman_teams[['team_id', 'year_id', 'team_id_retro']],
-                           left_on=['year_id', 'team_id'],
-                           right_on=['year_id', 'team_id_retro'],
-                           suffixes=['', '_lahman'])
+    logger.info('Writing and compressing batting.  This could take several minutes ...')
+    dh.to_csv_with_types(batting, p_retrosheet_wrangled / 'batting.csv.gz')
 
-    # the team retro_id from Lahman is not needed
-    player_game.drop('team_id_retro', axis=1, inplace=True)
-
-    # move the new team_id_lahman column to be after team_id
-    player_game = dh.move_column_after(player_game, 'team_id', 'team_id_lahman')
-
-    logger.info('Writing and compressing player_game.  This could take several minutes ...')
-    dh.to_csv_with_types(player_game, p_retrosheet_wrangled / 'player_game.csv.gz')
-    logger.info('player_game written.')
+    logger.info('Writing and compressing pitching.  This could take several minutes ...')
+    dh.to_csv_with_types(pitching, p_retrosheet_wrangled / 'pitching.csv.gz')
 
 
 def wrangle_game(p_retrosheet_collected, p_retrosheet_wrangled):
@@ -151,8 +137,9 @@ def wrangle_game(p_retrosheet_collected, p_retrosheet_wrangled):
 
     # pitcher_ct (number of pitchers) is a good name though, keep it
     names.pop('pitcher_ct')
-
     team_game = team_game.rename(columns=names)
+
+    logger.info('Writing and compressing team_game.  This could take several minutes ...')
     dh.optimize_df_dtypes(team_game)
     dh.to_csv_with_types(team_game, p_retrosheet_wrangled / 'team_game.csv.gz')
 
@@ -169,6 +156,7 @@ def wrangle_game(p_retrosheet_collected, p_retrosheet_wrangled):
     game_tidy.loc[filt, 'dh_flag'] = True
     game_tidy.drop('dh_fl', axis=1, inplace=True)
 
+    logger.info('Writing and compressing game.  This could take several minutes ...')
     dh.optimize_df_dtypes(game_tidy)
     dh.to_csv_with_types(game_tidy, p_retrosheet_wrangled / 'game.csv.gz')
 
@@ -235,6 +223,8 @@ def main():
 
     wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled)
     wrangle_game(p_retrosheet_collected, p_retrosheet_wrangled)
+
+    logger.info('Finished.')
 
 
 if __name__ == '__main__':

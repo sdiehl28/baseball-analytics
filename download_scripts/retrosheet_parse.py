@@ -25,7 +25,6 @@ def get_parser():
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    # TODO: allow user to specify fields created by each parser
     parser.add_argument("--data-dir", type=str, help="baseball data directory", default='../data')
     parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
     parser.add_argument("-d", "--data-type", help="use precomputed datatypes", action="store_true")
@@ -126,14 +125,22 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
         dh.optimize_df_dtypes(df)
         logger.info(f'Optimized Memory Usage:   {dh.mem_usage(df)}')
 
+    # convert to lower case
     df.columns = df.columns.str.lower()
 
-    # drop any column that is more than 95% null
-    filt = df.isna().mean() > 0.95
+    # drop any column that is more than 99% null
+    filt = df.isna().mean() > 0.99
     if filt.any():
         drop_cols = df.columns[filt]
-        logger.warning(f'Cols > 95% missing being dropped: {" ".join(drop_cols)}')
+        logger.warning(f'Cols > 99% missing being dropped: {" ".join(drop_cols)}')
         df.drop(drop_cols, axis=1, inplace=True)
+
+    # rename fields to match Lahman and standard MLB abbreviations
+    new_names = {
+        'b_hp': 'b_hbp',
+        'b_gdp': 'b_gidp'
+    }
+    df.rename(columns=new_names, inplace=True)
 
     # persist optimized dataframe
     # gzip chosen over xy because this runs on client computer and gzip is faster

@@ -126,13 +126,12 @@ def test_player_game_id_values(player_game):
             player_game['game_dt'].astype(str) + player_game['game_ct'].astype(str)).all()
 
 
-@pytest.mark.slow
-def test_player_game_pkey(data_dir, player_game):
-    # note: test is not slow, but running the session fixture could take 30 seconds
-    filename = data_dir / 'retrosheet' / 'wrangled' / 'player_game.csv.gz'
+def test_batting_pkey(batting):
+    assert dh.is_unique(batting, ['player_id', 'game_id'])
 
-    player_game = dh.from_csv_with_types(filename)
-    assert dh.is_unique(player_game, ['player_id', 'game_id'])
+
+def test_pitching_pkey(pitching):
+    assert dh.is_unique(pitching, ['player_id', 'game_id'])
 
 
 def test_team_game_pkey(data_dir, team_game):

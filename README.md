@@ -44,13 +44,18 @@ As of December 2019, Retrosheet has data through the 2019 season.
 
 ### Field Names
 
-The field names in both datasets are based on standard baseball statistic abbreviations.  See for example: https://en.wikipedia.org/wiki/Baseball_statistics
+The field names in both datasets are based on standard baseball statistic abbreviations.  See for example: https://en.wikipedia.org/wiki/Baseball_statistics or http://m.mlb.com/glossary/standard-stats
 
 The field names have been changed as little as possible to remain familiar and yet meet Pandas and SQL naming conventions.
 
-The field names in Lahman are changed from CamelCase to all lowercase snake_case.  The field names created by the Retrosheet parsers are changed from upper case to lower case.  Invalid identifiers, such as 2B and 3B are changed to b_2B and b_3B (for batter hitting a double or triple).
+The field names in Lahman are changed from CamelCase to snake_case.  The field names created by the Retrosheet parsers are changed from upper case to lower case.  Invalid identifiers, such as 2B and 3B are changed to b_2B and b_3B (for batter hitting a double or triple).
 
-There are two acceptable abbreviations for "grounded into double play", gidp and gdp.  Lahman's "gidp" will be renamed to "gdp" to match Retrosheet.
+Lahman and Retrosheet respectively use:
+
+* gidp and gdp: for ground into double play
+* hbp and hp: for hit by pitch
+
+The Retrosheet field names will be changed to match the Lahman field names (gidp and hbp).
 
 ### Data Wrangling
 
@@ -108,7 +113,7 @@ Scripts with example command line arguments:
 * **retrosheet_parse.py** -v --log=INFO --data-type --data-dir=../data
   * parses the play-by-play data using the cwdaily and cwgame open-source parsers
     * see [Parsers for Retrosheet](#Parsers-for-Retrosheet) below
-  * all data in the `data/retrosheet/raw` is parsed with the results placed in `data/retrosheet/parsed`
+    * all data in the `data/retrosheet/raw` is parsed with the results placed in `data/retrosheet/parsed`
   * all parsed data is collected into a one DataFrame for cwdaily and one DataFrame for cwgame and placed in `data/retrosheet/collected`
 * **retrosheet_wrangle.py** -v --log=INFO --data-type --data-dir=../data
   *  wrangles the Retrosheet data and persists it with optimized data types to `../data/retrosheet/wrange`
