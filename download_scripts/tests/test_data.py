@@ -176,3 +176,33 @@ def test_lahman_retro_batting_data(data_dir, batting):
     # verify all 16 batting attributes from 1974-2019
     # are within plus/minus 0.01% of each other when summed
     assert (np.abs(1.0 - (l_sums / r_sums)) < .0001).all()
+
+
+def test_lahman_retro_pitching_data(data_dir, pitching):
+    """Compare Aggregated Lahman data to Aggregated Retrosheet data
+
+    The scripts must have worked correctly if the 19 pitching fields
+    in common have almost exactly the same sum between 1974 and 2019
+    """
+    filename = data_dir / 'lahman' / 'wrangled' / 'pitching.csv'
+    lahman_pitching = dh.from_csv_with_types(filename)
+
+    # Retrosheet data has no missing games since 1974
+    filt = (lahman_pitching['year_id'] >= 1974) & (lahman_pitching['year_id'] <= 2019)
+    l_pitching = lahman_pitching[filt]
+
+    filt = (pitching['game_id'].str[3:7] >= '1974') & (pitching['game_id'].str[3:7] <= '2019')
+    r_pitching = pitching.loc[filt]
+
+    # columns in common -- these are the columns to compare
+    p_cols = set(l_pitching.columns) & set(r_pitching.columns)
+    p_cols -= {'player_id'}
+
+    l_pitching = l_pitching[p_cols]
+    r_pitching = r_pitching[p_cols]
+
+    l_sums = l_pitching.agg('sum').astype(int)
+    r_sums = r_pitching.agg('sum').astype(int)
+
+    # verify all values between 1974 and 2019 are within plus/minus 0.06% of each other
+    assert (np.abs(1.0 - (l_sums / r_sums)) < .0006).all()
