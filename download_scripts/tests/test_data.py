@@ -3,6 +3,7 @@ import zipfile
 
 __author__ = 'Stephen Diehl'
 
+import numpy as np
 from .. import data_helper as dh
 
 
@@ -144,3 +145,34 @@ def test_team_game_pkey(team_game):
 
 def test_game_pkey(game):
     assert dh.is_unique(game, ['game_id'])
+
+
+def test_lahman_retro_batting_data(data_dir, batting):
+    """Compare Aggregated Lahman data to Aggregated Retrosheet data
+
+    The scripts must have worked correctly if the 16 batting fields
+    in common have almost exactly the same sum between 1974 and 2019
+    """
+    filename = data_dir / 'lahman' / 'wrangled' / 'batting.csv'
+    lahman_batting = dh.from_csv_with_types(filename)
+
+    # Retrosheet data has no missing games since 1974
+    filt = (lahman_batting['year_id'] >= 1974) & (lahman_batting['year_id'] <= 2019)
+    l_batting = lahman_batting[filt]
+
+    filt = (batting['game_id'].str[3:7] >= '1974') & (batting['game_id'].str[3:7] <= '2019')
+    r_batting = batting.loc[filt]
+
+    # columns in common -- these are the columns to compare
+    b_cols = set(batting.columns) & set(lahman_batting.columns)
+    b_cols -= {'player_id'}
+
+    l_batting = l_batting[b_cols]
+    r_batting = r_batting[b_cols]
+
+    l_sums = l_batting.agg('sum').astype(int)
+    r_sums = r_batting.agg('sum').astype(int)
+
+    # verify all 16 batting attributes from 1974-2019
+    # are within plus/minus 0.01% of each other when summed
+    assert (np.abs(1.0 - (l_sums / r_sums)) < .0001).all()
