@@ -12,6 +12,7 @@ import re
 from pathlib import Path
 import logging
 import sys
+import collections
 
 import pandas as pd
 
@@ -63,6 +64,7 @@ def wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled):
     if (player_game['game_dt'] == player_game['appear_dt']).mean() > 0.999:
         player_game.drop('appear_dt', axis=1, inplace=True)
 
+    # batting and pitching
     b_cols = [col for col in stat_columns if col.startswith('b_')]
     p_cols = [col for col in stat_columns if col.startswith('p_')]
 
@@ -88,6 +90,46 @@ def wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled):
 
     logger.info('Writing and compressing pitching.  This could take several minutes ...')
     dh.to_csv_with_types(pitching, p_retrosheet_wrangled / 'pitching.csv.gz')
+
+    # fielding
+    f_cols = [col for col in stat_columns if col.startswith('f_')]
+
+    # decompose the fielding field names
+    orig_cols = collections.defaultdict(list)
+    new_cols = collections.defaultdict(list)
+    for col in f_cols:
+        match = re.search(r'f_(\w{1,2})_(\w*)', col)
+        pos = match.group(1)
+        stat = match.group(2)
+        orig_cols[pos].append(col)
+        stat = stat.replace('out', 'inn_outs')  # to match Lahman
+        new_cols[pos].append(stat)
+
+    # create 9 dfs, one per position
+    # all having the same columns
+    dfs = []
+    for key in orig_cols.keys():
+        # are all attributes for this position zero
+        f_filt = player_game[orig_cols[key]].sum(axis=1) == 0
+
+        # create a new df using new columns from the original for rows with data
+        df = pd.DataFrame()
+        df[pkey + new_cols[key]] = player_game.loc[~f_filt, pkey + orig_cols[key]].copy()
+
+        # add the position column
+        df.insert(2, 'pos', key)
+
+        # these are always zero for non-catchers
+        if key != 'c':
+            df[f'pb'] = 0
+            df[f'xi'] = 0
+
+        dfs.append(df)
+
+    fielding_new = pd.concat(dfs, ignore_index=True)
+    dh.optimize_df_dtypes(fielding_new)
+    logger.info('Writing and compressing fielding.  This could take several minutes ...')
+    dh.to_csv_with_types(fielding_new, p_retrosheet_wrangled / 'fielding.csv.gz')
 
 
 def wrangle_game(p_retrosheet_collected, p_retrosheet_wrangled):

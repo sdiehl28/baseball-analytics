@@ -134,15 +134,13 @@ def test_pitching_pkey(pitching):
     assert dh.is_unique(pitching, ['player_id', 'game_id'])
 
 
-def test_team_game_pkey(data_dir, team_game):
-    filename = data_dir / 'retrosheet' / 'wrangled' / 'team_game.csv.gz'
+def test_fielding_pkey(fielding):
+    assert dh.is_unique(fielding, ['player_id', 'game_id', 'pos'])
 
-    team_game = dh.from_csv_with_types(filename)
+
+def test_team_game_pkey(team_game):
     assert dh.is_unique(team_game, ['team_id', 'game_id'])
 
 
-def test_game_pkey(data_dir, game):
-    filename = data_dir / 'retrosheet' / 'wrangled' / 'game.csv.gz'
-
-    game = dh.from_csv_with_types(filename)
+def test_game_pkey(game):
     assert dh.is_unique(game, ['game_id'])
