@@ -81,7 +81,9 @@ pytest:
 
 ### Data Consistency
 
-Aggregating over all players, over all years from 1974 through 2019, for all 85 common attributes between Lahman and Retrosheet, for batting, pitching and each fielding position, shows that all aggregated values match to within 0.1%.  This shows that the Lahman and Retrosheet data sets are consistent with each other and that the scripts worked correctly.
+Aggregating over all players, over all years from 1974 through 2019, for all 85 common attributes between Lahman and Retrosheet (which includes batting, pitching and each fielding position), shows that Lahman's aggregated values differ by less than 1% from Retrosheet's aggregated values.
+
+This shows that the Lahman and Retrosheet data sets are consistent with each other and that the scripts worked correctly.
 
 The above tests for all 85 common attributes are part of the supplied data integrity tests kicked off by pytest.
 
