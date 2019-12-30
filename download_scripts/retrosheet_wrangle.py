@@ -38,11 +38,26 @@ def get_parser():
     return parser
 
 
-def wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled):
+def get_game(p_retrosheet_collected):
+    logger.info('Reading game.csv.gz ...')
+    filename = p_retrosheet_collected / 'game.csv.gz'
+    game = dh.from_csv_with_types(filename)
+    logger.info(f'game loaded {len(game)} records')
+    return game
+
+
+def get_player_game(p_retrosheet_collected):
     logger.info('Reading player_game.csv.gz ...')
     filename = p_retrosheet_collected / 'player_game.csv.gz'
     player_game = dh.from_csv_with_types(filename)
-    logger.info('player_game loaded')
+    logger.info(f'player_game loaded {len(player_game)} records')
+    return player_game
+
+
+def clean_player_game(player_game):
+    # Remove appear_dt as it has same values as game_dt
+    if (player_game['game_dt'] == player_game['appear_dt']).mean() > 0.999:
+        player_game.drop('appear_dt', axis=1, inplace=True)
 
     # Fix Duplicate Primary Key
     pkey = ['game_id', 'player_id']
@@ -50,7 +65,7 @@ def wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled):
         # if pkey is dup, sum the stat rows for the dups
         dups = player_game.duplicated(subset=pkey)
         df_dups = player_game.loc[dups, pkey]
-        logger.warning(f'Dup PKey Found\n{df_dups.to_string()}')
+        logger.warning(f'Dup PKey Found - summing stats for:\n{df_dups.to_string()}')
 
         # player stat columns b_ for batter, p_ for pitcher, f_ for fielder
         stat_columns = [col for col in player_game.columns if re.search(r'^[bpf]_', col)]
@@ -58,7 +73,7 @@ def wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled):
         # TODO flag fields should be ORed not summed
         # as there is only 1 dup record and summing the flags does not produce a 2
         # in any flag column, this is not currently a problem
-        """Flag Fields:
+        """Flag Fields (value is 0 or 1):
         b_g b_g_dh b_g_ph b_g_pr p_g p_gs p_cg p_sho p_gf p_w p_l p_sv f_p_g f_p_gs f_c_g 
         f_c_gs f_1b_g f_1b_gs f_2b_g f_2b_gs f_3b_g f_3b_gs f_ss_g f_ss_gs f_lf_g f_lf_gs 
         f_cf_g f_cf_gs f_rf_g f_rf_gs     
@@ -66,9 +81,12 @@ def wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled):
 
         player_game = dh.sum_stats_for_dups(player_game, pkey, stat_columns)
 
-    # Remove appear_dt as it has same values as game_dt
-    if (player_game['game_dt'] == player_game['appear_dt']).mean() > 0.999:
-        player_game.drop('appear_dt', axis=1, inplace=True)
+    return player_game
+
+
+def create_batting_pitching_fielding(player_game, p_retrosheet_wrangled):
+    # player stat columns b_ for batter, p_ for pitcher, f_ for fielder
+    stat_columns = [col for col in player_game.columns if re.search(r'^[bpf]_', col)]
 
     # batting and pitching
     b_cols = [col for col in stat_columns if col.startswith('b_')]
@@ -140,49 +158,8 @@ def wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled):
     logger.info('Writing and compressing fielding.  This could take several minutes ...')
     dh.to_csv_with_types(fielding_new, p_retrosheet_wrangled / 'fielding.csv.gz')
 
-    # create and persist dictionaries to map retrosheet player_id to lahman player_id
-    # and retrosheet team_id to lahman team_id
-    lahman_people_fn = p_retrosheet_collected.parent.parent / 'lahman/wrangled/people.csv'
-    lahman_people = dh.from_csv_with_types(lahman_people_fn)
 
-    lahman_teams_fn = p_retrosheet_collected.parent.parent / 'lahman/wrangled/teams.csv'
-    lahman_teams = dh.from_csv_with_types(lahman_teams_fn)
-
-    # from (at least) 1955 on, there are no players in Retrosheet that are missing in Lahman's People.csv
-    # Lahman uses the filed 'retro_id' to represent the Retrosheet player_id
-    r_players = player_game['player_id'].unique()
-    l_players = lahman_people['retro_id'].unique()
-
-    # only need player_ids that are in Retrosheet
-    filt = lahman_people['retro_id'].isin(r_players)
-
-    pp = lahman_people.loc[filt, ['player_id', 'retro_id']].copy()
-    pp.set_index('retro_id', inplace=True)
-    pp_dict = pp.to_dict()['player_id']
-
-    # TODO move this to test_data.py after reading it in
-    # verify dictionary keys contains all retrosheet players
-    assert set(r_players).issubset(set(pp_dict.keys()))
-
-    # same for teams
-    r_teams = player_game['team_id'].unique()
-    l_teams = lahman_teams['team_id_retro'].unique()
-
-    # only need teams that are in Retrosheet
-    filt = lahman_teams['team_id_retro'].isin(r_teams)
-
-    tt = lahman_teams.loc[filt, ['year_id', 'team_id', 'team_id_retro']].copy()
-    tt.set_index(['year_id', 'team_id_retro'], inplace=True)
-    tt_dict = tt.to_dict()['team_id']
-
-    # TODO move this to test_data.py after reading it in
-    # spot check
-    assert tt_dict[(2013, 'ANA')] == 'LAA'
-
-    # TODO write tt and pp to disk
-
-
-def wrangle_game(p_retrosheet_collected, p_retrosheet_wrangled):
+def wrangle_game(game, p_retrosheet_wrangled):
     """Tidy the Game Data
 
     There are 3 types of data:
@@ -197,8 +174,6 @@ def wrangle_game(p_retrosheet_collected, p_retrosheet_wrangled):
     1. team_game.csv with key (game_id, team_id) -- stats per team per game (e.g. runs scored)
     2. game.csv with key (game_id) -- stats per game (e.g. attendance)
     """
-    filename = p_retrosheet_collected / 'game.csv.gz'
-    game = dh.from_csv_with_types(filename)
 
     home_cols = [col for col in game.columns if col.startswith('home')]
     away_cols = [col for col in game.columns if col.startswith('away')]
@@ -289,6 +264,44 @@ def parse_datetime(row):
     return pd.to_datetime(datetime_str, format='%Y%m%d %H:%M')
 
 
+def create_retro_to_lahman_id_mappings(player_game, p_retrosheet_wrangled):
+    """ID Mappings for easy joins between Retrosheet and Lahman"""
+
+    # create and persist dictionaries to map retrosheet player_id to lahman player_id
+    # and retrosheet team_id to lahman team_id
+    lahman_people_fn = p_retrosheet_wrangled.parent.parent / 'lahman/wrangled/people.csv'
+    lahman_people = dh.from_csv_with_types(lahman_people_fn)
+
+    # Lahman uses the field 'retro_id' to represent the Retrosheet player_id
+    r_players = player_game['player_id'].unique()
+
+    # only need player_ids that are in Retrosheet
+    filt = lahman_people['retro_id'].isin(r_players)
+
+    pp = lahman_people.loc[filt, ['player_id', 'retro_id']].copy()
+    # pp.set_index('retro_id', inplace=True)
+    # pp_dict = pp.to_dict()['player_id']
+
+    fn = p_retrosheet_wrangled / 'player_id_mapping.csv'
+    pp.to_csv(fn, index=True)
+
+    # similar for teams
+    lahman_teams_fn = p_retrosheet_wrangled.parent.parent / 'lahman/wrangled/teams.csv'
+    lahman_teams = dh.from_csv_with_types(lahman_teams_fn)
+
+    r_teams = player_game['team_id'].unique()
+
+    # only need teams that are in Retrosheet
+    filt = lahman_teams['team_id_retro'].isin(r_teams)
+
+    tt = lahman_teams.loc[filt, ['year_id', 'team_id', 'team_id_retro']].copy()
+    # tt.set_index(['year_id', 'team_id_retro'], inplace=True)
+    # tt_dict = tt.to_dict()['team_id']
+
+    fn = p_retrosheet_wrangled / 'team_id_mapping.csv'
+    tt.to_csv(fn, index=True)
+
+
 def main():
     """Perform the data transformations
     """
@@ -313,8 +326,16 @@ def main():
     p_retrosheet_collected = Path(args.data_dir).joinpath('retrosheet/collected').resolve()
     p_retrosheet_wrangled = Path(args.data_dir).joinpath('retrosheet/wrangled').resolve()
 
-    wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled)
-    wrangle_game(p_retrosheet_collected, p_retrosheet_wrangled)
+    # get collected data from parsers
+    player_game = get_player_game(p_retrosheet_collected)  # cwdaily
+    game = get_game(p_retrosheet_collected)  # cwgame
+
+    player_game = clean_player_game(player_game)
+
+    create_batting_pitching_fielding(player_game, p_retrosheet_wrangled)
+    create_retro_to_lahman_id_mappings(player_game, p_retrosheet_wrangled)
+
+    wrangle_game(game, p_retrosheet_wrangled)
 
     logger.info('Finished.')
 
