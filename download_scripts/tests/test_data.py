@@ -209,9 +209,9 @@ def test_lahman_retro_batting_data(data_dir, batting):
 
     # columns in common -- these are the columns to compare
     b_cols = set(batting.columns) & set(lahman_batting.columns)
-    b_cols -= {'player_id'}
+    b_cols -= {'player_id', 'team_id'}
 
-    # there are 16 columns in common
+    # there are 17 columns in common
     assert len(b_cols) == 17
 
     l_batting = l_batting[b_cols]
@@ -251,7 +251,7 @@ def test_lahman_retro_pitching_data(data_dir, pitching):
 
     # columns in common -- these are the columns to compare
     p_cols = set(l_pitching.columns) & set(r_pitching.columns)
-    p_cols -= {'player_id'}
+    p_cols -= {'player_id', 'team_id'}
 
     # there are 19 columns in common
     assert len(p_cols) == 19
@@ -294,7 +294,7 @@ def test_lahman_retro_fielding_data(data_dir, fielding):
     l_fielding = lahman_fielding[filt]
 
     # find the common columns
-    f_cols = (set(l_fielding.columns) & set(r_fielding.columns)) - {'player_id', 'pos'}
+    f_cols = (set(l_fielding.columns) & set(r_fielding.columns)) - {'player_id', 'pos', 'team_id'}
     f_cols = list(f_cols)
 
     l_sums = l_fielding.groupby('pos')[f_cols].aggregate('sum')

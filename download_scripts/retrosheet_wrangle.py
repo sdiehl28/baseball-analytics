@@ -97,8 +97,11 @@ def create_batting(player_game, p_retrosheet_wrangled):
     # fields which uniquely identify a record
     pkey = ['game_id', 'player_id']
 
+    # fields to join to other "tables"
+    fkey = ['team_id']
+
     # just the pkey plus the batting attributes
-    batting = player_game.loc[:, pkey + b_cols].copy()
+    batting = player_game.loc[:, pkey + fkey + b_cols].copy()
 
     # remove b_ from the column names, except for b_2b and b_3b
     b_cols_new = {col: col[2:] for col in b_cols if col[2] != '2' and col[2] != '3'}
@@ -119,8 +122,11 @@ def create_pitching(player_game, p_retrosheet_wrangled):
     # fields which uniquely identify a record
     pkey = ['game_id', 'player_id']
 
+    # fields to join to other "tables"
+    fkey = ['team_id']
+
     # data with some non-zero attributes
-    pitching = player_game.loc[~p_filt, pkey + p_cols].copy()
+    pitching = player_game.loc[~p_filt, pkey + fkey + p_cols].copy()
 
     # remove p_ from the column names, except for p_2b and p_3b
     p_cols_new = {col: col[2:] for col in p_cols if col[2] != '2' and col[2] != '3'}
@@ -151,6 +157,9 @@ def create_fielding(player_game, p_retrosheet_wrangled):
     # full pkey will be: ['game_id', 'player_id', 'pos']
     pkey = ['game_id', 'player_id']
 
+    # fields to join to other "tables"
+    fkey = ['team_id']
+
     # create 9 dfs, one per position
     # each df has the same columns
     dfs = []
@@ -160,7 +169,8 @@ def create_fielding(player_game, p_retrosheet_wrangled):
         f_filt = player_game[orig_cols[pos]].sum(axis=1) == 0
 
         df = pd.DataFrame()
-        df[pkey + new_cols[pos]] = player_game.loc[~f_filt, pkey + orig_cols[pos]].copy()
+        df[pkey + fkey + new_cols[pos]] = \
+            player_game.loc[~f_filt, pkey + fkey + orig_cols[pos]].copy()
 
         # add the position column to the df
         # use upper case to match Lahman positions
@@ -179,81 +189,6 @@ def create_fielding(player_game, p_retrosheet_wrangled):
 
     logger.info('Writing and compressing fielding.  This could take several minutes ...')
     dh.to_csv_with_types(fielding, p_retrosheet_wrangled / 'fielding.csv.gz')
-
-
-# def create_batting_pitching_fielding(player_game, p_retrosheet_wrangled):
-#     # player stat columns b_ for batter, p_ for pitcher, f_ for fielder
-#     stat_columns = [col for col in player_game.columns if re.search(r'^[bpf]_', col)]
-#
-#     # batting and pitching
-#     b_cols = [col for col in stat_columns if col.startswith('b_')]
-#     p_cols = [col for col in stat_columns if col.startswith('p_')]
-#
-#     # if all attributes for a given role are 0, then the player did not take on that role
-#     # however all players have b_g = 1, even if b_pa == 0 (no plate appearances)
-#     # b_filt = player_game[b_cols].sum(axis=1) == 0  # no rows meet this criteria
-#     p_filt = player_game[p_cols].sum(axis=1) == 0
-#
-#     # fields which uniquely identify a record
-#     pkey = ['game_id', 'player_id']
-#
-#     # data with some non-zero attributes
-#     batting = player_game.loc[:, pkey + b_cols].copy()
-#     pitching = player_game.loc[~p_filt, pkey + p_cols].copy()
-#
-#     # remove b_ and p_
-#     b_cols_new = {col: col[2:] for col in b_cols if col[2] != '2' and col[2] != '3'}
-#     p_cols_new = {col: col[2:] for col in p_cols if col[2] != '2' and col[2] != '3'}
-#
-#     batting.rename(columns=b_cols_new, inplace=True)
-#     pitching.rename(columns=p_cols_new, inplace=True)
-#
-#     logger.info('Writing and compressing batting.  This could take several minutes ...')
-#     dh.to_csv_with_types(batting, p_retrosheet_wrangled / 'batting.csv.gz')
-#
-#     logger.info('Writing and compressing pitching.  This could take several minutes ...')
-#     dh.to_csv_with_types(pitching, p_retrosheet_wrangled / 'pitching.csv.gz')
-#
-#     # fielding
-#     f_cols = [col for col in stat_columns if col.startswith('f_')]
-#
-#     # decompose the fielding field names
-#     # f_{pos}_{stat}
-#     orig_cols = collections.defaultdict(list)
-#     new_cols = collections.defaultdict(list)
-#     for col in f_cols:
-#         match = re.search(r'f_(\w{1,2})_(\w*)', col)
-#         pos = match.group(1)
-#         stat = match.group(2)
-#         orig_cols[pos].append(col)
-#         stat = stat.replace('out', 'inn_outs')  # to match Lahman
-#         new_cols[pos].append(stat)
-#
-#     # create 9 dfs, one per position
-#     # all having the same columns
-#     dfs = []
-#     for key in orig_cols.keys():
-#         # are all attributes for this position zero
-#         f_filt = player_game[orig_cols[key]].sum(axis=1) == 0
-#
-#         # create a new df using new columns from the original for rows with data
-#         df = pd.DataFrame()
-#         df[pkey + new_cols[key]] = player_game.loc[~f_filt, pkey + orig_cols[key]].copy()
-#
-#         # add the position column
-#         df.insert(2, 'pos', key.upper())
-#
-#         # these are always zero for non-catchers
-#         if key != 'c':
-#             df[f'pb'] = 0
-#             df[f'xi'] = 0
-#
-#         dfs.append(df)
-#
-#     fielding_new = pd.concat(dfs, ignore_index=True)
-#     dh.optimize_df_dtypes(fielding_new)
-#     logger.info('Writing and compressing fielding.  This could take several minutes ...')
-#     dh.to_csv_with_types(fielding_new, p_retrosheet_wrangled / 'fielding.csv.gz')
 
 
 def wrangle_game(game, p_retrosheet_wrangled):
