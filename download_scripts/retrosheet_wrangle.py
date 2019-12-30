@@ -225,6 +225,9 @@ def wrangle_game(game, p_retrosheet_wrangled):
     home_team_game.rename(columns=lambda col: col[5:] if col.startswith('home_') else col, inplace=True)
     away_team_game.rename(columns=lambda col: col[5:] if col.startswith('away_') else col, inplace=True)
 
+    # include opponent team_id in each row
+    home_team_game.insert(4, 'opponent_team_id', away_team_game['team_id'])
+    away_team_game.insert(4, 'opponent_team_id', home_team_game['team_id'])
     team_game = pd.concat([home_team_game, away_team_game])
 
     # improve column names
