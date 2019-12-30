@@ -128,6 +128,44 @@ def test_player_game_id_values(player_game):
             player_game['game_dt'].astype(str) + player_game['game_ct'].astype(str)).all()
 
 
+def test_batting_flags(batting):
+    flag_cols = [
+        'g',
+        'g_dh',
+        'g_ph',
+        'g_pr'
+    ]
+
+    assert batting[flag_cols].min().min() == 0
+    assert batting[flag_cols].max().max() == 1
+
+
+def test_pitching_flags(pitching):
+    flag_cols = [
+        'g',
+        'gs',
+        'cg',
+        'sho',
+        'gf',
+        'w',
+        'l',
+        'sv'
+    ]
+
+    assert pitching[flag_cols].min().min() == 0
+    assert pitching[flag_cols].max().max() == 1
+
+
+def test_fielding_flags(fielding):
+    flag_cols = [
+        'g',
+        'gs'
+    ]
+
+    assert fielding[flag_cols].min().min() == 0
+    assert fielding[flag_cols].max().max() == 1
+
+
 def test_batting_pkey(batting):
     assert dh.is_unique(batting, ['player_id', 'game_id'])
 
@@ -292,6 +330,7 @@ def test_lahman_retro_fielding_data(data_dir, fielding):
     # relative accuracy is within 0.8% for all 49 aggregated values
     assert (np.abs(1.0 - rel_accuarcy) < 0.008).all().all()
 
+
 @pytest.mark.slow
 def test_player_id_mapping(data_dir, player_game):
     # note: test is not slow, but running the session fixture could take 30 seconds
@@ -316,6 +355,7 @@ def test_player_id_mapping(data_dir, player_game):
     pp_check.set_index('retro_id', inplace=True)
     pp_check_dict = pp_check.to_dict()['player_id']
     assert pp_dict == pp_check_dict
+
 
 @pytest.mark.slow
 def test_team_id_mapping(data_dir, player_game):

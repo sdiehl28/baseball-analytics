@@ -42,7 +42,8 @@ def get_game(p_retrosheet_collected):
     logger.info('Reading game.csv.gz ...')
     filename = p_retrosheet_collected / 'game.csv.gz'
     game = dh.from_csv_with_types(filename)
-    logger.info(f'game loaded {len(game)} records')
+    n_rows, n_cols = game.shape
+    logger.info(f'game loaded {n_rows:,d} rows with {n_cols:,d} columns')
     return game
 
 
@@ -50,7 +51,8 @@ def get_player_game(p_retrosheet_collected):
     logger.info('Reading player_game.csv.gz ...')
     filename = p_retrosheet_collected / 'player_game.csv.gz'
     player_game = dh.from_csv_with_types(filename)
-    logger.info(f'player_game loaded {len(player_game)} records')
+    n_rows, n_cols = player_game.shape
+    logger.info(f'player_game loaded {n_rows:,d} rows with {n_cols:,d} columns')
     return player_game
 
 
@@ -59,6 +61,10 @@ def clean_player_game(player_game):
     if (player_game['game_dt'] == player_game['appear_dt']).mean() > 0.999:
         player_game.drop('appear_dt', axis=1, inplace=True)
 
+    # player stat columns b_ for batter, p_ for pitcher, f_ for fielder
+    stat_columns = [col for col in player_game.columns if re.search(r'^[bpf]_', col)]
+    stat_columns.remove('b_g')  # don't sum this column
+
     # Fix Duplicate Primary Key
     pkey = ['game_id', 'player_id']
     if not dh.is_unique(player_game, pkey):
@@ -66,9 +72,6 @@ def clean_player_game(player_game):
         dups = player_game.duplicated(subset=pkey)
         df_dups = player_game.loc[dups, pkey]
         logger.warning(f'Dup PKey Found - summing stats for:\n{df_dups.to_string()}')
-
-        # player stat columns b_ for batter, p_ for pitcher, f_ for fielder
-        stat_columns = [col for col in player_game.columns if re.search(r'^[bpf]_', col)]
 
         # TODO flag fields should be ORed not summed
         # as there is only 1 dup record and summing the flags does not produce a 2
@@ -84,44 +87,57 @@ def clean_player_game(player_game):
     return player_game
 
 
-def create_batting_pitching_fielding(player_game, p_retrosheet_wrangled):
-    # player stat columns b_ for batter, p_ for pitcher, f_ for fielder
-    stat_columns = [col for col in player_game.columns if re.search(r'^[bpf]_', col)]
+def create_batting(player_game, p_retrosheet_wrangled):
+    # column names of the batting attributes
+    b_cols = [col for col in player_game.columns if col.startswith('b_')]
 
-    # batting and pitching
-    b_cols = [col for col in stat_columns if col.startswith('b_')]
-    p_cols = [col for col in stat_columns if col.startswith('p_')]
+    # Note: any player who is in a game in any role, will have b_g = 1
+    # even if b_pa == 0 (no plate appearances)
 
-    # if all attributes for a given role are 0, then the player did not take on that role
-    # however all players have b_g = 1, even if b_pa == 0 (no plate appearances)
-    # b_filt = player_game[b_cols].sum(axis=1) == 0  # no rows meet this criteria
+    # fields which uniquely identify a record
+    pkey = ['game_id', 'player_id']
+
+    # just the pkey plus the batting attributes
+    batting = player_game.loc[:, pkey + b_cols].copy()
+
+    # remove b_ from the column names, except for b_2b and b_3b
+    b_cols_new = {col: col[2:] for col in b_cols if col[2] != '2' and col[2] != '3'}
+    batting.rename(columns=b_cols_new, inplace=True)
+
+    logger.info('Writing and compressing batting.  This could take several minutes ...')
+    dh.to_csv_with_types(batting, p_retrosheet_wrangled / 'batting.csv.gz')
+
+
+def create_pitching(player_game, p_retrosheet_wrangled):
+    # column names of the pitching attributes
+    p_cols = [col for col in player_game.columns if col.startswith('p_')]
+
+    # if all pitching attributes are 0 then the player did not pitch
+    # note: all attributes are unsigned integers
     p_filt = player_game[p_cols].sum(axis=1) == 0
 
     # fields which uniquely identify a record
     pkey = ['game_id', 'player_id']
 
     # data with some non-zero attributes
-    batting = player_game.loc[:, pkey + b_cols].copy()
     pitching = player_game.loc[~p_filt, pkey + p_cols].copy()
 
-    # remove b_ and p_
-    b_cols_new = {col: col[2:] for col in b_cols if col[2] != '2' and col[2] != '3'}
+    # remove p_ from the column names, except for p_2b and p_3b
     p_cols_new = {col: col[2:] for col in p_cols if col[2] != '2' and col[2] != '3'}
-
-    batting.rename(columns=b_cols_new, inplace=True)
     pitching.rename(columns=p_cols_new, inplace=True)
-
-    logger.info('Writing and compressing batting.  This could take several minutes ...')
-    dh.to_csv_with_types(batting, p_retrosheet_wrangled / 'batting.csv.gz')
 
     logger.info('Writing and compressing pitching.  This could take several minutes ...')
     dh.to_csv_with_types(pitching, p_retrosheet_wrangled / 'pitching.csv.gz')
 
-    # fielding
-    f_cols = [col for col in stat_columns if col.startswith('f_')]
 
-    # decompose the fielding field names
-    # f_{pos}_{stat}
+def create_fielding(player_game, p_retrosheet_wrangled):
+    # column names for fielding attributes
+    f_cols = [col for col in player_game.columns if col.startswith('f_')]
+
+    # create orig_cols dictionary which maps position to original fielding columns names
+    # create new_cols dictionary which maps position to new fielding column names
+    # pos: P, C, 1B, 2B, 3B, SS, LF, CF, RF
+    # column name pattern: f_{pos}_{stat}
     orig_cols = collections.defaultdict(list)
     new_cols = collections.defaultdict(list)
     for col in f_cols:
@@ -132,31 +148,112 @@ def create_batting_pitching_fielding(player_game, p_retrosheet_wrangled):
         stat = stat.replace('out', 'inn_outs')  # to match Lahman
         new_cols[pos].append(stat)
 
+    # full pkey will be: ['game_id', 'player_id', 'pos']
+    pkey = ['game_id', 'player_id']
+
     # create 9 dfs, one per position
-    # all having the same columns
+    # each df has the same columns
     dfs = []
-    for key in orig_cols.keys():
-        # are all attributes for this position zero
-        f_filt = player_game[orig_cols[key]].sum(axis=1) == 0
+    for pos in orig_cols.keys():
+        # if all fielding attributes for this pos are 0 then the player did not play that pos
+        # note: all attributes are unsigned integers
+        f_filt = player_game[orig_cols[pos]].sum(axis=1) == 0
 
-        # create a new df using new columns from the original for rows with data
         df = pd.DataFrame()
-        df[pkey + new_cols[key]] = player_game.loc[~f_filt, pkey + orig_cols[key]].copy()
+        df[pkey + new_cols[pos]] = player_game.loc[~f_filt, pkey + orig_cols[pos]].copy()
 
-        # add the position column
-        df.insert(2, 'pos', key.upper())
+        # add the position column to the df
+        # use upper case to match Lahman positions
+        df.insert(2, 'pos', pos.upper())
 
-        # these are always zero for non-catchers
-        if key != 'c':
+        # orig_cols['c'] has pb and xi columns
+        # all other positions do not have pb and xi
+        if pos != 'c':
             df[f'pb'] = 0
             df[f'xi'] = 0
 
         dfs.append(df)
 
-    fielding_new = pd.concat(dfs, ignore_index=True)
-    dh.optimize_df_dtypes(fielding_new)
+    fielding = pd.concat(dfs, ignore_index=True)
+    dh.optimize_df_dtypes(fielding)
+
     logger.info('Writing and compressing fielding.  This could take several minutes ...')
-    dh.to_csv_with_types(fielding_new, p_retrosheet_wrangled / 'fielding.csv.gz')
+    dh.to_csv_with_types(fielding, p_retrosheet_wrangled / 'fielding.csv.gz')
+
+
+# def create_batting_pitching_fielding(player_game, p_retrosheet_wrangled):
+#     # player stat columns b_ for batter, p_ for pitcher, f_ for fielder
+#     stat_columns = [col for col in player_game.columns if re.search(r'^[bpf]_', col)]
+#
+#     # batting and pitching
+#     b_cols = [col for col in stat_columns if col.startswith('b_')]
+#     p_cols = [col for col in stat_columns if col.startswith('p_')]
+#
+#     # if all attributes for a given role are 0, then the player did not take on that role
+#     # however all players have b_g = 1, even if b_pa == 0 (no plate appearances)
+#     # b_filt = player_game[b_cols].sum(axis=1) == 0  # no rows meet this criteria
+#     p_filt = player_game[p_cols].sum(axis=1) == 0
+#
+#     # fields which uniquely identify a record
+#     pkey = ['game_id', 'player_id']
+#
+#     # data with some non-zero attributes
+#     batting = player_game.loc[:, pkey + b_cols].copy()
+#     pitching = player_game.loc[~p_filt, pkey + p_cols].copy()
+#
+#     # remove b_ and p_
+#     b_cols_new = {col: col[2:] for col in b_cols if col[2] != '2' and col[2] != '3'}
+#     p_cols_new = {col: col[2:] for col in p_cols if col[2] != '2' and col[2] != '3'}
+#
+#     batting.rename(columns=b_cols_new, inplace=True)
+#     pitching.rename(columns=p_cols_new, inplace=True)
+#
+#     logger.info('Writing and compressing batting.  This could take several minutes ...')
+#     dh.to_csv_with_types(batting, p_retrosheet_wrangled / 'batting.csv.gz')
+#
+#     logger.info('Writing and compressing pitching.  This could take several minutes ...')
+#     dh.to_csv_with_types(pitching, p_retrosheet_wrangled / 'pitching.csv.gz')
+#
+#     # fielding
+#     f_cols = [col for col in stat_columns if col.startswith('f_')]
+#
+#     # decompose the fielding field names
+#     # f_{pos}_{stat}
+#     orig_cols = collections.defaultdict(list)
+#     new_cols = collections.defaultdict(list)
+#     for col in f_cols:
+#         match = re.search(r'f_(\w{1,2})_(\w*)', col)
+#         pos = match.group(1)
+#         stat = match.group(2)
+#         orig_cols[pos].append(col)
+#         stat = stat.replace('out', 'inn_outs')  # to match Lahman
+#         new_cols[pos].append(stat)
+#
+#     # create 9 dfs, one per position
+#     # all having the same columns
+#     dfs = []
+#     for key in orig_cols.keys():
+#         # are all attributes for this position zero
+#         f_filt = player_game[orig_cols[key]].sum(axis=1) == 0
+#
+#         # create a new df using new columns from the original for rows with data
+#         df = pd.DataFrame()
+#         df[pkey + new_cols[key]] = player_game.loc[~f_filt, pkey + orig_cols[key]].copy()
+#
+#         # add the position column
+#         df.insert(2, 'pos', key.upper())
+#
+#         # these are always zero for non-catchers
+#         if key != 'c':
+#             df[f'pb'] = 0
+#             df[f'xi'] = 0
+#
+#         dfs.append(df)
+#
+#     fielding_new = pd.concat(dfs, ignore_index=True)
+#     dh.optimize_df_dtypes(fielding_new)
+#     logger.info('Writing and compressing fielding.  This could take several minutes ...')
+#     dh.to_csv_with_types(fielding_new, p_retrosheet_wrangled / 'fielding.csv.gz')
 
 
 def wrangle_game(game, p_retrosheet_wrangled):
@@ -332,12 +429,15 @@ def main():
 
     player_game = clean_player_game(player_game)
 
-    create_batting_pitching_fielding(player_game, p_retrosheet_wrangled)
+    create_batting(player_game, p_retrosheet_wrangled)
+    create_pitching(player_game, p_retrosheet_wrangled)
+    create_fielding(player_game, p_retrosheet_wrangled)
+
     create_retro_to_lahman_id_mappings(player_game, p_retrosheet_wrangled)
 
     wrangle_game(game, p_retrosheet_wrangled)
 
-    logger.info('Finished.')
+    logger.info('Finished')
 
 
 if __name__ == '__main__':
