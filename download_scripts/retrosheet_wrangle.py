@@ -55,8 +55,14 @@ def wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled):
         # player stat columns b_ for batter, p_ for pitcher, f_ for fielder
         stat_columns = [col for col in player_game.columns if re.search(r'^[bpf]_', col)]
 
-        # sum all stat columns except the game column
-        stat_columns.remove('b_g')
+        # TODO flag fields should be ORed not summed
+        # as there is only 1 dup record and summing the flags does not produce a 2
+        # in any flag column, this is not currently a problem
+        """Flag Fields:
+        b_g b_g_dh b_g_ph b_g_pr p_g p_gs p_cg p_sho p_gf p_w p_l p_sv f_p_g f_p_gs f_c_g 
+        f_c_gs f_1b_g f_1b_gs f_2b_g f_2b_gs f_3b_g f_3b_gs f_ss_g f_ss_gs f_lf_g f_lf_gs 
+        f_cf_g f_cf_gs f_rf_g f_rf_gs     
+        """
 
         player_game = dh.sum_stats_for_dups(player_game, pkey, stat_columns)
 
@@ -68,17 +74,19 @@ def wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled):
     b_cols = [col for col in stat_columns if col.startswith('b_')]
     p_cols = [col for col in stat_columns if col.startswith('p_')]
 
-    # if the entire row is zero, then the player did not bat or pitch in that game
-    b_filt = player_game[b_cols].sum(axis=1) == 0
+    # if all attributes for a given role are 0, then the player did not take on that role
+    # however all players have b_g = 1, even if b_pa == 0 (no plate appearances)
+    # b_filt = player_game[b_cols].sum(axis=1) == 0  # no rows meet this criteria
     p_filt = player_game[p_cols].sum(axis=1) == 0
 
     # fields which uniquely identify a record
     pkey = ['game_id', 'player_id']
 
     # data with some non-zero attributes
-    batting = player_game.loc[~b_filt, pkey + b_cols].copy()
+    batting = player_game.loc[:, pkey + b_cols].copy()
     pitching = player_game.loc[~p_filt, pkey + p_cols].copy()
 
+    # remove b_ and p_
     b_cols_new = {col: col[2:] for col in b_cols if col[2] != '2' and col[2] != '3'}
     p_cols_new = {col: col[2:] for col in p_cols if col[2] != '2' and col[2] != '3'}
 
@@ -95,6 +103,7 @@ def wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled):
     f_cols = [col for col in stat_columns if col.startswith('f_')]
 
     # decompose the fielding field names
+    # f_{pos}_{stat}
     orig_cols = collections.defaultdict(list)
     new_cols = collections.defaultdict(list)
     for col in f_cols:
@@ -117,7 +126,7 @@ def wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled):
         df[pkey + new_cols[key]] = player_game.loc[~f_filt, pkey + orig_cols[key]].copy()
 
         # add the position column
-        df.insert(2, 'pos', key)
+        df.insert(2, 'pos', key.upper())
 
         # these are always zero for non-catchers
         if key != 'c':
@@ -130,6 +139,47 @@ def wrangle_player_per_game(p_retrosheet_collected, p_retrosheet_wrangled):
     dh.optimize_df_dtypes(fielding_new)
     logger.info('Writing and compressing fielding.  This could take several minutes ...')
     dh.to_csv_with_types(fielding_new, p_retrosheet_wrangled / 'fielding.csv.gz')
+
+    # create and persist dictionaries to map retrosheet player_id to lahman player_id
+    # and retrosheet team_id to lahman team_id
+    lahman_people_fn = p_retrosheet_collected.parent.parent / 'lahman/wrangled/people.csv'
+    lahman_people = dh.from_csv_with_types(lahman_people_fn)
+
+    lahman_teams_fn = p_retrosheet_collected.parent.parent / 'lahman/wrangled/teams.csv'
+    lahman_teams = dh.from_csv_with_types(lahman_teams_fn)
+
+    # from (at least) 1955 on, there are no players in Retrosheet that are missing in Lahman's People.csv
+    # Lahman uses the filed 'retro_id' to represent the Retrosheet player_id
+    r_players = player_game['player_id'].unique()
+    l_players = lahman_people['retro_id'].unique()
+
+    # only need player_ids that are in Retrosheet
+    filt = lahman_people['retro_id'].isin(r_players)
+
+    pp = lahman_people.loc[filt, ['player_id', 'retro_id']].copy()
+    pp.set_index('retro_id', inplace=True)
+    pp_dict = pp.to_dict()['player_id']
+
+    # TODO move this to test_data.py after reading it in
+    # verify dictionary keys contains all retrosheet players
+    assert set(r_players).issubset(set(pp_dict.keys()))
+
+    # same for teams
+    r_teams = player_game['team_id'].unique()
+    l_teams = lahman_teams['team_id_retro'].unique()
+
+    # only need teams that are in Retrosheet
+    filt = lahman_teams['team_id_retro'].isin(r_teams)
+
+    tt = lahman_teams.loc[filt, ['year_id', 'team_id', 'team_id_retro']].copy()
+    tt.set_index(['year_id', 'team_id_retro'], inplace=True)
+    tt_dict = tt.to_dict()['team_id']
+
+    # TODO move this to test_data.py after reading it in
+    # spot check
+    assert tt_dict[(2013, 'ANA')] == 'LAA'
+
+    # TODO write tt and pp to disk
 
 
 def wrangle_game(p_retrosheet_collected, p_retrosheet_wrangled):

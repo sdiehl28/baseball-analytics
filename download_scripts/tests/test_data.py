@@ -150,33 +150,41 @@ def test_game_pkey(game):
 def test_lahman_retro_batting_data(data_dir, batting):
     """Compare Aggregated Lahman batting data to Aggregated Retrosheet batting data
 
-    The scripts must have worked correctly if the 16 batting fields
+    The scripts must have worked correctly if the 17 batting fields
     in common have almost exactly the same sum between 1974 and 2019
     """
     filename = data_dir / 'lahman' / 'wrangled' / 'batting.csv'
     lahman_batting = dh.from_csv_with_types(filename)
 
     # Retrosheet data has no missing games since 1974
-    filt = (lahman_batting['year_id'] >= 1974) & (lahman_batting['year_id'] <= 2019)
-    l_batting = lahman_batting[filt]
-
     filt = (batting['game_id'].str[3:7] >= '1974') & (batting['game_id'].str[3:7] <= '2019')
     r_batting = batting.loc[filt]
+
+    # this could differ from 1974 and 2019 if not all those years were downloaded
+    retro_min_year = r_batting['game_id'].str[3:7].astype('int').min()
+    retro_max_year = r_batting['game_id'].str[3:7].astype('int').max()
+
+    filt = (lahman_batting['year_id'] >= retro_min_year) & \
+           (lahman_batting['year_id'] <= retro_max_year)
+    l_batting = lahman_batting[filt]
 
     # columns in common -- these are the columns to compare
     b_cols = set(batting.columns) & set(lahman_batting.columns)
     b_cols -= {'player_id'}
 
     # there are 16 columns in common
-    assert len(b_cols) == 16
+    assert len(b_cols) == 17
 
     l_batting = l_batting[b_cols]
     r_batting = r_batting[b_cols]
 
     l_sums = l_batting.agg('sum').astype(int)
-    r_sums = r_batting.agg('sum').astype(int)
+    l_sums.sort_index(inplace=True)
 
-    # verify all 16 batting attributes from 1974-2019
+    r_sums = r_batting.agg('sum').astype(int)
+    r_sums.sort_index(inplace=True)
+
+    # verify all 17 batting attributes from 1974-2019
     # are within plus/minus 0.01% of each other when summed
     assert (np.abs(1.0 - (l_sums / r_sums)) < .0001).all()
 
@@ -191,11 +199,16 @@ def test_lahman_retro_pitching_data(data_dir, pitching):
     lahman_pitching = dh.from_csv_with_types(filename)
 
     # Retrosheet data has no missing games since 1974
-    filt = (lahman_pitching['year_id'] >= 1974) & (lahman_pitching['year_id'] <= 2019)
-    l_pitching = lahman_pitching[filt]
-
     filt = (pitching['game_id'].str[3:7] >= '1974') & (pitching['game_id'].str[3:7] <= '2019')
     r_pitching = pitching.loc[filt]
+
+    # this could differ from 1974 and 2019 if not all those years were downloaded
+    retro_min_year = r_pitching['game_id'].str[3:7].astype('int').min()
+    retro_max_year = r_pitching['game_id'].str[3:7].astype('int').max()
+
+    filt = (lahman_pitching['year_id'] >= retro_min_year) & \
+           (lahman_pitching['year_id'] <= retro_max_year)
+    l_pitching = lahman_pitching[filt]
 
     # columns in common -- these are the columns to compare
     p_cols = set(l_pitching.columns) & set(r_pitching.columns)
@@ -208,7 +221,10 @@ def test_lahman_retro_pitching_data(data_dir, pitching):
     r_pitching = r_pitching[p_cols]
 
     l_sums = l_pitching.agg('sum').astype(int)
+    l_sums.sort_index(inplace=True)
+
     r_sums = r_pitching.agg('sum').astype(int)
+    r_sums.sort_index(inplace=True)
 
     # verify all values between 1974 and 2019 are within plus/minus 0.06% of each other
     assert (np.abs(1.0 - (l_sums / r_sums)) < .0006).all()
@@ -226,13 +242,17 @@ def test_lahman_retro_fielding_data(data_dir, fielding):
     lahman_fielding = dh.from_csv_with_types(filename)
 
     # Retrosheet data has no missing games since 1974
-    filt = (lahman_fielding['year_id'] >= 1974) & (lahman_fielding['year_id'] <= 2019)
-    l_fielding = lahman_fielding[filt]
-
     filt = (fielding['game_id'].str[3:7] >= '1974') & (fielding['game_id'].str[3:7] <= '2019')
     r_fielding = fielding.loc[filt]
-
     r_fielding = r_fielding.rename(columns={'out': 'inn_outs'})
+
+    # this could differ from 1974 and 2019 if not all those years were downloaded
+    retro_min_year = r_fielding['game_id'].str[3:7].astype('int').min()
+    retro_max_year = r_fielding['game_id'].str[3:7].astype('int').max()
+
+    filt = (lahman_fielding['year_id'] >= retro_min_year) & \
+           (lahman_fielding['year_id'] <= retro_max_year)
+    l_fielding = lahman_fielding[filt]
 
     # find the common columns
     f_cols = (set(l_fielding.columns) & set(r_fielding.columns)) - set(['player_id', 'pos'])
@@ -241,18 +261,14 @@ def test_lahman_retro_fielding_data(data_dir, fielding):
     l_sums = l_fielding.groupby('pos')[f_cols].aggregate('sum')
     l_sums.sort_index(inplace=True)
 
-    # change position values to be lower case
-    idxs = {idx: idx.lower() for idx in l_sums.index}
-    l_sums.rename(index=idxs, inplace=True)
-
     # there are 7 fielding attributes and 7 fielding positions in Lahman
     assert l_sums.shape == (7, 7)
 
     r_sums = r_fielding.groupby('pos')[f_cols].aggregate('sum').astype('int')
 
     # Lahman uses OF for sum of LF, CF, RF
-    r_sums.loc['of'] = r_sums.loc['lf'] + r_sums.loc['cf'] + r_sums.loc['rf']
-    r_sums = r_sums.drop(['lf', 'cf', 'rf'])
+    r_sums.loc['OF'] = r_sums.loc['LF'] + r_sums.loc['CF'] + r_sums.loc['RF']
+    r_sums = r_sums.drop(['LF', 'CF', 'RF'])
     r_sums.sort_index(inplace=True)
 
     # there are 7 fielding attributes and 7 fielding positions in Retrosheet
@@ -262,6 +278,15 @@ def test_lahman_retro_fielding_data(data_dir, fielding):
     assert l_sums.index.equals(r_sums.index)
     assert l_sums.columns.equals(r_sums.columns)
 
-    #
-    # # verify all values between 1974 and 2019 are within plus/minus 0.06% of each other
-    # assert (np.abs(1.0 - (l_sums / r_sums)) < .0006).all()
+    filt = r_fielding['pos'].isin(['LF', 'CF', 'RF'])
+    r_of = r_fielding[filt]
+
+    # account for outfielders who played more than 1 outfield position in the same game
+    total_dups = r_of.duplicated(subset=['player_id', 'game_id'], keep=False).sum()
+    counted_dups = r_of.duplicated(subset=['player_id', 'game_id'], keep='first').sum()
+    r_sums.loc['OF', 'g'] -= (total_dups - counted_dups)
+
+    rel_accuarcy = l_sums / r_sums
+
+    # relative accuracy is within 0.8% for all 49 aggregated values
+    assert (np.abs(1.0 - rel_accuarcy) < 0.008).all().all()
