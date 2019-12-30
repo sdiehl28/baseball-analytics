@@ -34,7 +34,7 @@ Data is tidy if:
 
 Retrosheet has play-by-play data for every MLB game since 1974.  Data is available since 1918 with older years having somewhat more missing data.  Open source parsers from Dr. T. L. Turocy will be used to parse and summarize the play-by-play data.
 
-The **cwdaily** parser will generate a csv file with records **per player per game**.  This is a very large file as it includes all attributes for all roles a player may have (batter, pitcher, all 9 fielding positions) for all games.  Almost all the attributes are zero, as no player takes on all roles in a single game.  This output will be restructured into batting, pitching and fielding csv files with all records having at least 1 non-zero attribute.  This structure is almost identical to that used by Lahman.
+The **cwdaily** parser will generate a csv file with records **per player per game**.  This is a very large file as it includes all attributes for all roles a player may have (batter, pitcher, all 9 fielding positions) for all games.  As no player takes on all roles in a single game, almost all the attributes are zero.  This output will be restructured into batting, pitching and fielding csv files with all records having at least 1 non-zero attribute.  The resulting structure is almost identical to that used by Lahman.
 
 The **cwgame** parser will generate a csv file that contains statistics for both teams per game and as well as game specific information such as attendance.  This output will be restructured into attributes **per team per game** and **per game**.
 
@@ -48,20 +48,20 @@ The field names in both datasets are based on standard baseball statistic abbrev
 
 The field names have been changed as little as possible to remain familiar and yet meet Pandas and SQL naming conventions.
 
-The field names in Lahman are changed from CamelCase to snake_case.  The field names created by the Retrosheet parsers are changed from upper case to lower case.  Invalid identifiers, such as 2B and 3B are changed to b_2B and b_3B (for batter hitting a double or triple).
+The field names in Lahman are changed from CamelCase to snake_case.  The field names created by the Retrosheet parsers are changed from upper case to lower case.  Invalid identifiers, such as 2B and 3B are changed to b_2b and b_3b (for a batter hitting a double or triple) or p_2b and p_3b (for a pitcher allowing a double or triple).
 
-Lahman and Retrosheet respectively use:
+Lahman and Retrosheet use respectively:
 
-* gidp and gdp: for ground into double play
-* hbp and hp: for hit by pitch
+* for ground into double play: gidp and gdp
+* for hit by pitch: hbp and hp
 
-The Retrosheet field names will be changed to match the Lahman field names (gidp and hbp).
+The Retrosheet field names will be changed to match the Lahman field names, namely gidp and hbp.
 
 ### Data Wrangling
 
 Custom parsing of dates and times will be performed.  Data will be restructured.  Values that represent null will be converted to Pandas null (np.nan).  And more.
 
-Data will be cleaned so that "primary keys" are unique.  Extremely few records require modification, but as most data processing relies on having a set of fields which uniquely identify a record, this cleaning is required.
+Data will be cleaned so that "primary keys" are unique.  Extremely few records require this type of modification, but as most data processing relies on having a set of fields which uniquely identify a record, this cleaning is required.
 
 Pandas datatypes will be optimized to save space and more accurately describe the attribute.  For example, the number of hits in a game is always between 0 and 255, so a uint8 can be used rather than an int64.  Likewise, for integer fields with missing values, the new Pandas Int64 (and similar) can be used instead of requiring a float datatype.
 
@@ -81,7 +81,9 @@ pytest:
 
 ### Data Consistency
 
-To verify that the scripts worked correctly, the Retrosheet player per game and team per game data will be summarized to the yearly level and compared with Lahman.  This verification will be part of the supplied pytest tests.
+Aggregating over all players, over all years from 1974 through 2019, for all 85 common attributes between Lahman and Retrosheet, for batting, pitching and each fielding position, shows that all aggregated values match to within 0.1%.  This shows that the Lahman and Retrosheet data sets are consistent with each other and that the scripts worked correctly.
+
+The above tests for all 85 common attributes are part of the supplied data integrity tests kicked off by pytest.
 
 ### Statistics per Player Role
 
