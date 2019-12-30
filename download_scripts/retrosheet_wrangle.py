@@ -236,6 +236,14 @@ def wrangle_game(game, p_retrosheet_wrangled):
 
     # pitcher_ct (number of pitchers) is a good name though, keep it
     names.pop('pitcher_ct')
+
+    # additional fields to rename for consistency
+    names['bi_ct'] = 'rbi'
+    names['gdp_ct'] = 'gidp'
+    names['hits_ct'] = 'h'
+    names['hp_ct'] = 'hbp'
+    names['score_ct'] = 'r'
+
     team_game = team_game.rename(columns=names)
 
     logger.info('Writing and compressing team_game.  This could take several minutes ...')

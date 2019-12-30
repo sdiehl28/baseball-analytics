@@ -379,3 +379,25 @@ def test_team_id_mapping(data_dir, player_game):
 
     # spot check a particular entry
     assert tt_dict[(2013, 'ANA')] == 'LAA'
+
+
+def test_batting_team_game_data(batting, team_game):
+    """Verify Retrosheet batting aggregated by (game_id, team_id)
+    is the same a team_game by (game_id, team_id)
+
+    This shows that the two Retrosheet parsers are consistent with one another."""
+    # team_game batting columns
+    pkey = ['game_id', 'team_id']
+
+    # batting columns to compare
+    compare_cols = set(batting.columns) & set(team_game.columns) - set(pkey)
+    compare_cols = list(compare_cols)
+
+    assert len(compare_cols) == 17
+
+    # sum all batting columns by the pkey of team_game, sort and reindex
+    a = batting.groupby(['game_id', 'team_id'], as_index=False)[compare_cols].sum()
+    a = a.sort_values(['game_id', 'team_id']).reset_index(drop=True)
+    b = team_game[pkey + compare_cols].sort_values(['game_id', 'team_id']).reset_index(drop=True)
+
+    assert a.equals(b)
