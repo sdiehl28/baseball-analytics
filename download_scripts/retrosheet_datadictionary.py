@@ -44,7 +44,7 @@ def get_cwdaily_values(description):
     for line in io.StringIO(description):
 
         # if the line starts with a number
-        if re.match('^\d+', line):
+        if re.match(r'^\d+', line):
             tmp = line.rstrip()[8:]
 
             if ':' in tmp:
@@ -63,7 +63,7 @@ def get_cwgame_values(description):
     for line in io.StringIO(description):
 
         # if the line starts with a number
-        if re.match('^\d+', line):
+        if re.match(r'^\d+', line):
             tmp = line.rstrip()[8:]
 
             if ':' in tmp:
@@ -87,6 +87,7 @@ def main():
     p_data_raw = p_data.joinpath('retrosheet/raw')
     os.chdir(p_data_raw)
 
+    # TODO allow this to work with any event file found in raw directory
     if not Path('2019LAN.EVN').is_file():
         raise FileNotFoundError('retrosheet data must be downloaded first')
 

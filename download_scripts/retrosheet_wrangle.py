@@ -25,7 +25,6 @@ logger.setLevel(logging.DEBUG)
 def get_parser():
     """Args Description"""
 
-    # current_year = datetime.datetime.today().year
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -39,6 +38,7 @@ def get_parser():
 
 
 def get_game(p_retrosheet_collected):
+    """Read in collected results of the cwgame parser."""
     logger.info('Reading game.csv.gz ...')
     filename = p_retrosheet_collected / 'game.csv.gz'
     game = dh.from_csv_with_types(filename)
@@ -48,6 +48,7 @@ def get_game(p_retrosheet_collected):
 
 
 def get_player_game(p_retrosheet_collected):
+    """Read in collected results of the cwdaily parser."""
     logger.info('Reading player_game.csv.gz ...')
     filename = p_retrosheet_collected / 'player_game.csv.gz'
     player_game = dh.from_csv_with_types(filename)
@@ -57,13 +58,10 @@ def get_player_game(p_retrosheet_collected):
 
 
 def clean_player_game(player_game):
+    """Ensure Primary Key is Unique."""
     # Remove appear_dt as it has same values as game_dt
     if (player_game['game_dt'] == player_game['appear_dt']).mean() > 0.999:
         player_game.drop('appear_dt', axis=1, inplace=True)
-
-    # player stat columns b_ for batter, p_ for pitcher, f_ for fielder
-    stat_columns = [col for col in player_game.columns if re.search(r'^[bpf]_', col)]
-    stat_columns.remove('b_g')  # don't sum this column
 
     # Fix Duplicate Primary Key
     pkey = ['game_id', 'player_id']
@@ -74,13 +72,17 @@ def clean_player_game(player_game):
         logger.warning(f'Dup PKey Found - summing stats for:\n{df_dups.to_string()}')
 
         # TODO flag fields should be ORed not summed
-        # as there is only 1 dup record and summing the flags does not produce a 2
-        # in any flag column, this is not currently a problem
+        # this is not currently a problem with the single dup found
+        # data integrity tests verify that all flag fields are either 0 or 1
         """Flag Fields (value is 0 or 1):
         b_g b_g_dh b_g_ph b_g_pr p_g p_gs p_cg p_sho p_gf p_w p_l p_sv f_p_g f_p_gs f_c_g 
         f_c_gs f_1b_g f_1b_gs f_2b_g f_2b_gs f_3b_g f_3b_gs f_ss_g f_ss_gs f_lf_g f_lf_gs 
         f_cf_g f_cf_gs f_rf_g f_rf_gs     
         """
+
+        # player stat columns b_ for batter, p_ for pitcher, f_ for fielder
+        stat_columns = [col for col in player_game.columns if re.search(r'^[bpf]_', col)]
+        stat_columns.remove('b_g')  # don't sum this column
 
         player_game = dh.sum_stats_for_dups(player_game, pkey, stat_columns)
 
@@ -88,6 +90,7 @@ def clean_player_game(player_game):
 
 
 def create_batting(player_game, p_retrosheet_wrangled):
+    """Create batting.csv for batting attributes per player per game."""
     # column names of the batting attributes
     b_cols = [col for col in player_game.columns if col.startswith('b_')]
 
@@ -100,13 +103,14 @@ def create_batting(player_game, p_retrosheet_wrangled):
     # fields to join to other "tables"
     fkey = ['team_id']
 
-    # just the pkey plus the batting attributes
     batting = player_game.loc[:, pkey + fkey + b_cols].copy()
 
     # remove b_ from the column names, except for b_2b and b_3b
     b_cols_new = {col: col[2:] for col in b_cols}
     b_cols_new['b_2b'] = 'double'
     b_cols_new['b_3b'] = 'triple'
+    b_cols_new['b_gdp'] = 'gidp'  # to match Lahman
+    b_cols_new['b_hp'] = 'hbp'  # to match Lahman
     batting.rename(columns=b_cols_new, inplace=True)
 
     logger.info('Writing and compressing batting.  This could take several minutes ...')
@@ -114,11 +118,12 @@ def create_batting(player_game, p_retrosheet_wrangled):
 
 
 def create_pitching(player_game, p_retrosheet_wrangled):
+    """Create pitching.csv for pitching attributes per player per game."""
     # column names of the pitching attributes
     p_cols = [col for col in player_game.columns if col.startswith('p_')]
 
     # if all pitching attributes are 0 then the player did not pitch
-    # note: all attributes are unsigned integers
+    # note: all attributes are unsigned integers, so if their sum is zero, all are zero
     p_filt = player_game[p_cols].sum(axis=1) == 0
 
     # fields which uniquely identify a record
@@ -143,11 +148,12 @@ def create_pitching(player_game, p_retrosheet_wrangled):
 
 
 def create_fielding(player_game, p_retrosheet_wrangled):
+    """Create fielding.csv for fielding attributes per player per game."""
     # column names for fielding attributes
     f_cols = [col for col in player_game.columns if col.startswith('f_')]
 
-    # create orig_cols dictionary which maps position to original fielding columns names
-    # create new_cols dictionary which maps position to new fielding column names
+    # create orig_cols dictionary which maps fielder's pos to original fielding columns names
+    # create new_cols dictionary which maps fielder's pos to new fielding column names
     # pos: P, C, 1B, 2B, 3B, SS, LF, CF, RF
     # column name pattern: f_{pos}_{stat}
     orig_cols = collections.defaultdict(list)
@@ -166,8 +172,10 @@ def create_fielding(player_game, p_retrosheet_wrangled):
     # fields to join to other "tables"
     fkey = ['team_id']
 
-    # create 9 dfs, one per position
-    # each df has the same columns
+    """For each record created by cwdaily, create up to 9 new records, one per position.
+    Each record will temporarily go in its own dataframe and then be concatenated.
+    
+    Each dataframe has the same columns."""
     dfs = []
     for pos in orig_cols.keys():
         # if all fielding attributes for this pos are 0 then the player did not play that pos
@@ -179,7 +187,7 @@ def create_fielding(player_game, p_retrosheet_wrangled):
             player_game.loc[~f_filt, pkey + fkey + orig_cols[pos]].copy()
 
         # add the position column to the df
-        # use upper case to match Lahman positions
+        # use upper case to match Lahman position values
         df.insert(2, 'pos', pos.upper())
 
         # orig_cols['c'] has pb and xi columns
@@ -264,7 +272,7 @@ def wrangle_game(game, p_retrosheet_wrangled):
     game_tidy['game_start_dt'] = game_tidy.apply(parse_datetime, axis=1)
     game_tidy = dh.move_column_after(game_tidy, 'game_id', 'game_start_dt')
 
-    # these are no longer necessary
+    # these fields are no longer necessary
     game_tidy = game_tidy.drop(['start_game_tm', 'game_dt', 'game_dy'], axis=1)
 
     # convert designated hitter flag to True/False
@@ -314,46 +322,8 @@ def parse_datetime(row):
     return pd.to_datetime(datetime_str, format='%Y%m%d %H:%M')
 
 
-def create_retro_to_lahman_id_mappings(player_game, p_retrosheet_wrangled):
-    """ID Mappings for easy joins between Retrosheet and Lahman"""
-
-    # create and persist dictionaries to map retrosheet player_id to lahman player_id
-    # and retrosheet team_id to lahman team_id
-    lahman_people_fn = p_retrosheet_wrangled.parent.parent / 'lahman/wrangled/people.csv'
-    lahman_people = dh.from_csv_with_types(lahman_people_fn)
-
-    # Lahman uses the field 'retro_id' to represent the Retrosheet player_id
-    r_players = player_game['player_id'].unique()
-
-    # only need player_ids that are in Retrosheet
-    filt = lahman_people['retro_id'].isin(r_players)
-
-    pp = lahman_people.loc[filt, ['player_id', 'retro_id']].copy()
-    # pp.set_index('retro_id', inplace=True)
-    # pp_dict = pp.to_dict()['player_id']
-
-    fn = p_retrosheet_wrangled / 'player_id_mapping.csv'
-    pp.to_csv(fn, index=True)
-
-    # similar for teams
-    lahman_teams_fn = p_retrosheet_wrangled.parent.parent / 'lahman/wrangled/teams.csv'
-    lahman_teams = dh.from_csv_with_types(lahman_teams_fn)
-
-    r_teams = player_game['team_id'].unique()
-
-    # only need teams that are in Retrosheet
-    filt = lahman_teams['team_id_retro'].isin(r_teams)
-
-    tt = lahman_teams.loc[filt, ['year_id', 'team_id', 'team_id_retro']].copy()
-    # tt.set_index(['year_id', 'team_id_retro'], inplace=True)
-    # tt_dict = tt.to_dict()['team_id']
-
-    fn = p_retrosheet_wrangled / 'team_id_mapping.csv'
-    tt.to_csv(fn, index=True)
-
-
 def main():
-    """Perform the data transformations
+    """Wrangle the data.
     """
     parser = get_parser()
     args = parser.parse_args()
@@ -385,8 +355,6 @@ def main():
     create_batting(player_game, p_retrosheet_wrangled)
     create_pitching(player_game, p_retrosheet_wrangled)
     create_fielding(player_game, p_retrosheet_wrangled)
-
-    create_retro_to_lahman_id_mappings(player_game, p_retrosheet_wrangled)
 
     wrangle_game(game, p_retrosheet_wrangled)
 

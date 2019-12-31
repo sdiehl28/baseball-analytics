@@ -331,56 +331,6 @@ def test_lahman_retro_fielding_data(data_dir, fielding):
     assert (np.abs(1.0 - rel_accuarcy) < 0.008).all().all()
 
 
-@pytest.mark.slow
-def test_player_id_mapping(data_dir, player_game):
-    # note: test is not slow, but running the session fixture could take 30 seconds
-    r_players = player_game['player_id'].unique()
-
-    lahman_people_fn = data_dir / 'lahman/wrangled/people.csv'
-    lahman_people = dh.from_csv_with_types(lahman_people_fn)
-
-    # only need player_ids that are in Retrosheet
-    filt = lahman_people['retro_id'].isin(r_players)
-
-    pp = lahman_people.loc[filt, ['player_id', 'retro_id']].copy()
-    pp.set_index('retro_id', inplace=True)
-    pp_dict = pp.to_dict()['player_id']
-
-    # all Retrosheet player_ids from at least 1955 onward are in Lahman
-    # *** Following may fail for Retrosheet data older than 1955! ***
-    assert set(r_players).issubset(set(pp_dict.keys()))
-
-    fn = data_dir / 'retrosheet/wrangled/player_id_mapping.csv'
-    pp_check = pd.read_csv(fn)
-    pp_check.set_index('retro_id', inplace=True)
-    pp_check_dict = pp_check.to_dict()['player_id']
-    assert pp_dict == pp_check_dict
-
-
-@pytest.mark.slow
-def test_team_id_mapping(data_dir, player_game):
-    # note: test is not slow, but running the session fixture could take 30 seconds
-    lahman_teams_fn = data_dir / 'lahman/wrangled/teams.csv'
-    lahman_teams = dh.from_csv_with_types(lahman_teams_fn)
-
-    # only need teams that are in Retrosheet
-    r_teams = player_game['team_id'].unique()
-    filt = lahman_teams['team_id_retro'].isin(r_teams)
-
-    tt = lahman_teams.loc[filt, ['year_id', 'team_id', 'team_id_retro']].copy()
-    tt.set_index(['year_id', 'team_id_retro'], inplace=True)
-    tt_dict = tt.to_dict()['team_id']
-
-    fn = data_dir / 'retrosheet/wrangled/team_id_mapping.csv'
-    tt_check = pd.read_csv(fn)
-    tt_check.set_index(['year_id', 'team_id_retro'], inplace=True)
-    tt_check_dict = tt_check.to_dict()['team_id']
-    assert tt_dict == tt_check_dict
-
-    # spot check a particular entry
-    assert tt_dict[(2013, 'ANA')] == 'LAA'
-
-
 def test_batting_team_game_data(batting, team_game):
     """Verify Retrosheet batting aggregated by (game_id, team_id)
     is the same a team_game by (game_id, team_id)

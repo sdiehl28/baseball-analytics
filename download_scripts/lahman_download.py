@@ -23,7 +23,6 @@ logger.setLevel(logging.DEBUG)
 def get_parser():
     """Args Description"""
 
-    # current_year = datetime.datetime.today().year
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -48,8 +47,6 @@ def mk_dirs(data_dir):
 
     msg = " ".join(os.listdir(p_lahman))
     logger.info(f'{p_lahman} contents: {msg}')
-
-    return p_lahman_raw.resolve()
 
 
 def download_data(raw_dir):
@@ -101,8 +98,8 @@ def reorg_files(raw_dir):
         # rm the extract directory
         shutil.rmtree('baseballdatabank-master')
 
-    msg = ' '.join(os.listdir('.'))
-    logger.info(f'{raw_dir} contents: {msg}')
+    msg = '\n'.join(os.listdir('.'))
+    logger.info(f'{raw_dir} contents:\n {msg}')
 
 
 def main():
@@ -125,9 +122,15 @@ def main():
         sh.setLevel(logging.INFO)
         logger.addHandler(sh)
 
-    raw_dir = mk_dirs(args.data_dir)
+    data_dir = Path(args.data_dir)
+    mk_dirs(data_dir)
+
+    raw_dir = data_dir / 'lahman/raw'
+    raw_dir = raw_dir.resolve()
     download_data(raw_dir)
     reorg_files(raw_dir)
+
+    logger.info('Finished')
 
 
 if __name__ == '__main__':

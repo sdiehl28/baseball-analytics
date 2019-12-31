@@ -2,7 +2,7 @@
 
 """Wrangle Lahman Data from {data_dir}/lahman/raw to {data_dir}/lahman/wrangled
 
-Wrangles: people, batting, pitching, fielding, and teams
+Wrangles: batting, pitching, fielding, people, teams, salaries, parks
 """
 
 __author__ = 'Stephen Diehl'
@@ -21,7 +21,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def get_fieldname_mapping():
-    """Dictionary of fieldnames that will be modified."""
+    """Dictionary of fieldnames to modify."""
 
     # It is easier to maintain fieldname mappings in a single location
     new_names = {
@@ -73,7 +73,6 @@ def get_fieldname_mapping():
 def get_parser():
     """Args Description"""
 
-    # current_year = datetime.datetime.today().year
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -135,6 +134,8 @@ def wrangle_basic(p_raw, p_wrangled, filename):
 
 
 def wrangle_people(p_raw, p_wrangled):
+    """Custom parsing of dates, converts fieldnames, optimizes datatypes and persists data
+    """
     if p_wrangled.joinpath('people.csv').exists():
         logger.info('Skipping wrangle of People.csv - already performed')
         return
@@ -160,6 +161,8 @@ def wrangle_people(p_raw, p_wrangled):
 
 
 def wrangle_fielding(p_raw, p_wrangled):
+    """Drops cols > 90% null, converts fieldnames, optimizes datatypes and persists data
+    """
     if p_wrangled.joinpath('fielding.csv').exists():
         logger.info('Skipping wrangle of Fielding.csv - already performed')
         return
@@ -188,8 +191,7 @@ def wrangle_fielding(p_raw, p_wrangled):
 
 
 def main():
-    """Perform the data transformations
-    """
+    """Wrangle the data"""
     parser = get_parser()
     args = parser.parse_args()
 
@@ -214,6 +216,7 @@ def main():
     wrangle_people(p_lahman_raw, p_lahman_wrangled)
     wrangle_fielding(p_lahman_raw, p_lahman_wrangled)
 
+    # TODO add fieldname mappings to support other Lahman csv files
     wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'Batting.csv')
     wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'Pitching.csv')
     wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'Teams.csv')

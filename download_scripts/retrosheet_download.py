@@ -23,7 +23,6 @@ logger.setLevel(logging.DEBUG)
 def get_parser():
     """Args Description"""
 
-    # current_year = datetime.datetime.today().year
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -47,18 +46,15 @@ def get_parser():
 
 def mk_dirs(data_dir):
     """Make data directories"""
-    p_retrosheet = Path(data_dir).joinpath('retrosheet')
-    p_retrosheet_raw = p_retrosheet.joinpath('raw')
-    p_retrosheet_wrangled = p_retrosheet.joinpath('wrangled')
+    p_retrosheet_raw = data_dir / 'retrosheet/raw'
+    p_retrosheet_wrangled = data_dir / 'retrosheet/wrangled'
 
     # create directories from these path objects
     p_retrosheet_raw.mkdir(parents=True, exist_ok=True)
     p_retrosheet_wrangled.mkdir(parents=True, exist_ok=True)
 
-    msg = " ".join(os.listdir(p_retrosheet))
-    logger.info(f'{p_retrosheet} contents: {msg}')
-
-    return p_retrosheet_raw.resolve()
+    msg = " ".join(os.listdir(p_retrosheet_raw.parent))
+    logger.info(f'{p_retrosheet_raw.parent} contents: {msg}')
 
 
 def download_data(raw_dir, start_year, end_year):
@@ -113,7 +109,10 @@ def main():
         sh.setLevel(logging.INFO)
         logger.addHandler(sh)
 
-    raw_dir = mk_dirs(args.data_dir)
+    data_dir = Path(args.data_dir)
+    mk_dirs(data_dir)
+
+    raw_dir = data_dir / 'retrosheet/raw'
     download_data(raw_dir, args.start_year, args.end_year)
 
 

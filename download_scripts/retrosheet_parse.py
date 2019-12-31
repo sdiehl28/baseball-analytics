@@ -64,7 +64,6 @@ def parse_event_files(raw_dir, parser, fields):
         for file in files:
             out = f'../parsed/{parser}{year}.csv'
             if first:
-                # print header using -n
                 # print csv header using -n
                 cmd.append('-n')
                 cmd.extend(['-y', year])
@@ -89,7 +88,7 @@ def parse_event_files(raw_dir, parser, fields):
 
 
 def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
-    """Collect all parsed cwdaily files and optimize datatypes.
+    """Collect all parsed files and optimize datatypes.
     """
 
     os.chdir(parse_dir)
@@ -104,7 +103,7 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
         if parser == 'cwdaily':
             filename = '../player_game_types.csv'
         elif parser == 'cwgame':
-            filename = '../team_game_types.csv'
+            filename = '../game_types.csv'
         else:
             raise ValueError(f'Unrecognized parser: {parser}')
 
@@ -115,7 +114,7 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
                        copy=False)
         logger.info(f'Optimized Memory Usage:   {dh.mem_usage(df)}')
     else:
-        # this could use twice the RAM required to hold df
+        # this could use twice the RAM required to hold the DataFrame
         df = pd.concat((pd.read_csv(f) for f in dailyfiles), ignore_index=True, copy=False)
 
         logger.info(f'Unoptimized Memory Usage: {dh.mem_usage(df)}')
@@ -134,13 +133,6 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
         drop_cols = df.columns[filt]
         logger.warning(f'Cols > 99% missing being dropped: {" ".join(drop_cols)}')
         df.drop(drop_cols, axis=1, inplace=True)
-
-    # rename fields to match Lahman and standard MLB abbreviations
-    new_names = {
-        'b_hp': 'b_hbp',
-        'b_gdp': 'b_gidp'
-    }
-    df.rename(columns=new_names, inplace=True)
 
     # persist optimized dataframe
     # gzip chosen over xy because this runs on client computer and gzip is faster
