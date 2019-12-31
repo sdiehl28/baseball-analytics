@@ -104,7 +104,9 @@ def create_batting(player_game, p_retrosheet_wrangled):
     batting = player_game.loc[:, pkey + fkey + b_cols].copy()
 
     # remove b_ from the column names, except for b_2b and b_3b
-    b_cols_new = {col: col[2:] for col in b_cols if col[2] != '2' and col[2] != '3'}
+    b_cols_new = {col: col[2:] for col in b_cols}
+    b_cols_new['b_2b'] = 'double'
+    b_cols_new['b_3b'] = 'triple'
     batting.rename(columns=b_cols_new, inplace=True)
 
     logger.info('Writing and compressing batting.  This could take several minutes ...')
@@ -129,7 +131,11 @@ def create_pitching(player_game, p_retrosheet_wrangled):
     pitching = player_game.loc[~p_filt, pkey + fkey + p_cols].copy()
 
     # remove p_ from the column names, except for p_2b and p_3b
-    p_cols_new = {col: col[2:] for col in p_cols if col[2] != '2' and col[2] != '3'}
+    p_cols_new = {col: col[2:] for col in p_cols}
+    p_cols_new['p_2b'] = 'double'
+    p_cols_new['p_3b'] = 'triple'
+    p_cols_new['p_gdp'] = 'gidp'  # to match Lahman
+    p_cols_new['p_hp'] = 'hbp'  # to match Lahman
     pitching.rename(columns=p_cols_new, inplace=True)
 
     logger.info('Writing and compressing pitching.  This could take several minutes ...')
@@ -234,8 +240,8 @@ def wrangle_game(game, p_retrosheet_wrangled):
     names = {col: col.replace('_ct', '') for col in team_game.columns if col.endswith('_ct')}
 
     # handle invalid identifiers
-    names['2b_ct'] = 'b_2b'
-    names['3b_ct'] = 'b_3b'
+    names['2b_ct'] = 'double'
+    names['3b_ct'] = 'triple'
 
     # pitcher_ct (number of pitchers) is a good name though, keep it
     names.pop('pitcher_ct')

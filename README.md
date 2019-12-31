@@ -46,9 +46,9 @@ As of December 2019, Retrosheet has data through the 2019 season.
 
 The field names in both datasets are based on standard baseball statistic abbreviations.  See for example: https://en.wikipedia.org/wiki/Baseball_statistics or http://m.mlb.com/glossary/standard-stats
 
-The field names have been changed as little as possible to remain familiar and yet meet Pandas and SQL naming conventions.
+The field names have been changed as little as possible to remain familiar and yet meet Pandas and SQL naming conventions.  They have also been changed to ensure that fields with the same name in different csv files have the same meaning.
 
-The field names in Lahman are changed from CamelCase to snake_case.  The field names created by the Retrosheet parsers are changed from upper case to lower case.  Invalid identifiers, such as 2B and 3B are changed to b_2b and b_3b (for a batter hitting a double or triple) or p_2b and p_3b (for a pitcher allowing a double or triple).
+The field names in Lahman are changed from CamelCase to snake_case.  The field names created by the Retrosheet parsers are changed from upper case to lower case.  Invalid identifiers, such as 2B and 3B are changed to double and triple.
 
 Lahman and Retrosheet use respectively:
 
