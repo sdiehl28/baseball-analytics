@@ -251,6 +251,7 @@ def wrangle_game(game, p_retrosheet_wrangled):
     names['gdp_ct'] = 'gidp'
     names['hits_ct'] = 'h'
     names['hp_ct'] = 'hbp'
+    names['err_ct'] = 'e'
     names['score_ct'] = 'r'
 
     team_game = team_game.rename(columns=names)
