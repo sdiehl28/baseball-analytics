@@ -424,3 +424,27 @@ def test_pitching_team_game_data(batting, pitching, team_game):
         ['game_id', 'opponent_team_id']).reset_index(drop=True)
 
     assert a[compare_cols].equals(b[compare_cols])
+
+def test_fielding_team_game_data(fielding, team_game):
+    """Verify Retrosheet fielding aggregated by (game_id, team_id)
+    is the same a team_game by (game_id, team_id)
+
+    This shows that the two Retrosheet parsers are consistent with one another."""
+    pkey = ['game_id', 'team_id']
+
+    # columns to compare
+    compare_cols = set(fielding.columns) & set(team_game.columns) - set(pkey)
+
+    # in fielding dp and tp are for those players involved, so this over counts
+    # the total dp and tp in a game
+    # there are more types of xi than just those by defensive players
+    compare_cols -= {'dp', 'tp', 'xi'}
+    compare_cols = list(compare_cols)
+
+    assert len(compare_cols) == 4
+
+    a = fielding.groupby(['game_id', 'team_id'], as_index=False)[compare_cols].sum()
+    a = a.sort_values(['game_id', 'team_id']).reset_index(drop=True)
+    b = team_game[pkey + compare_cols].sort_values(['game_id', 'team_id']).reset_index(drop=True)
+
+    assert a.equals(b)
