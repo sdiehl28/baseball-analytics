@@ -253,8 +253,8 @@ def test_lahman_retro_pitching_data(data_dir, pitching):
     p_cols = set(l_pitching.columns) & set(r_pitching.columns)
     p_cols -= {'player_id', 'team_id'}
 
-    # there are 19 columns in common
-    assert len(p_cols) == 19
+    # there are 21 columns in common
+    assert len(p_cols) == 21
 
     l_pitching = l_pitching[p_cols]
     r_pitching = r_pitching[p_cols]
@@ -401,3 +401,26 @@ def test_batting_team_game_data(batting, team_game):
     b = team_game[pkey + compare_cols].sort_values(['game_id', 'team_id']).reset_index(drop=True)
 
     assert a.equals(b)
+
+
+def test_pitching_team_game_data(batting, pitching, team_game):
+    """Verify Retrosheet batting aggregated by (game_id, team_id)
+    is the same as team_game Pitching by (game_id, opponent_team_id)
+
+    This shows that the two Retrosheet parsers are consistent with one another."""
+    # team_game batting columns
+    pkey = ['game_id', 'team_id']
+
+    # columns to compare
+    compare_cols = set(pitching.columns) & set(batting.columns) & set(team_game.columns) - set(pkey)
+    compare_cols = list(compare_cols)
+
+    assert len(compare_cols) == 14
+
+    a = pitching.groupby(['game_id', 'team_id'], as_index=False)[compare_cols].sum()
+    a = a.sort_values(['game_id', 'team_id']).reset_index(drop=True)
+
+    b = team_game[['game_id', 'opponent_team_id'] + compare_cols].sort_values(
+        ['game_id', 'opponent_team_id']).reset_index(drop=True)
+
+    assert a[compare_cols].equals(b[compare_cols])
