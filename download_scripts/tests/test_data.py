@@ -425,6 +425,7 @@ def test_pitching_team_game_data(batting, pitching, team_game):
 
     assert a[compare_cols].equals(b[compare_cols])
 
+
 def test_fielding_team_game_data(fielding, team_game):
     """Verify Retrosheet fielding aggregated by (game_id, team_id)
     is the same a team_game by (game_id, team_id)
@@ -448,3 +449,47 @@ def test_fielding_team_game_data(fielding, team_game):
     b = team_game[pkey + compare_cols].sort_values(['game_id', 'team_id']).reset_index(drop=True)
 
     assert a.equals(b)
+
+
+def test_batting_lahman_game_data(data_dir, batting):
+    """Verify Retrosheet batting aggregated by (year_id, team_id_lahman)
+    is the same as lahman_teams
+
+    This shows that Retrosheet batting and Lahman Teams are consistent with each other."""
+
+    filename = data_dir / 'lahman' / 'wrangled' / 'teams.csv'
+    lahman_teams = dh.from_csv_with_types(filename)
+
+    # Add year and only select between 1974 and 2019
+    retro_batting = batting.copy()
+    retro_batting['year_id'] = retro_batting['game_id'].str[3:7].astype('int')
+    year_filt = (retro_batting['year_id'] >= 1974) & (retro_batting['year_id'] <= 2019)
+    retro_batting = retro_batting[year_filt].copy()
+
+    # Add team_id_lahman
+    retro_batting = pd.merge(retro_batting, lahman_teams[['team_id', 'year_id', 'team_id_retro']],
+                             left_on=['year_id', 'team_id'],
+                             right_on=['year_id', 'team_id_retro'],
+                             how='inner', suffixes=['_retrosheet', '_lahman'])
+
+    # team_id_retro is now the same as team_id_retrosheet
+    retro_batting.drop('team_id_retro', axis=1, inplace=True)
+
+    pkey = ['year_id', 'team_id']
+    compare_cols = set(lahman_teams.columns) & set(retro_batting.columns) - set(pkey)
+    compare_cols -= {'g'}  # cannot sum g by player per team to get g per team
+    compare_cols -= {'sb', 'cs'}  # these stats are close, but don't tie out as well as others
+    compare_cols = list(compare_cols)
+
+    assert len(compare_cols) == 10
+
+    retro_batting_sums = retro_batting.groupby(['year_id', 'team_id_lahman'])[compare_cols].sum().astype('int')
+    retro_batting_sums.sort_index(inplace=True)
+
+    year_min, year_max = retro_batting['year_id'].aggregate(['min', 'max'])
+    year_filt = (lahman_teams['year_id'] >= year_min) & (lahman_teams['year_id'] <= year_max)
+    l_teams = lahman_teams.loc[year_filt, pkey + compare_cols]
+    l_teams = l_teams.set_index(pkey).sort_index()
+
+    # verify all 12880 values are within 0.5% of each other
+    assert np.abs(1.0 - (l_teams / retro_batting_sums)).max().max() < 0.005
