@@ -14,6 +14,8 @@ The resulting data is not published as it is several gigabytes in length.  Over 
 
 Examples of baseball data analysis will be provided soon in the form of Jupyter Notebooks.
 
+If you have any questions, you may send me an email with the word "baseball" in the subject and send it to: sdiehl28@gmail.com
+
 ## MLB Data Overview
 
 ### Lahman Overview
@@ -34,7 +36,7 @@ Data is tidy if:
 
 Retrosheet has play-by-play data for every MLB game since 1974.  Data is available since 1918 with older years having somewhat more missing data.  Open source parsers from Dr. T. L. Turocy will be used to parse and summarize the play-by-play data.
 
-The **cwdaily** parser will generate a csv file with records **per player per game**.  If data is collected since 1955, this will produce over 3 million records with over 150 attributes.  There are over 150 attributes because all attributes for all roles a player may have (batter, pitcher, and all 9 fielding positions) are include in each record.  As players do not take on all roles in all games, almost all attribute values are zero.  The output from cwdaily will be restructured into **batting per player per game**, **pitching per player per game** and **fielding per player per game**.  This is very similar to how Lahman structures its data.
+The **cwdaily** parser will generate a csv file with records **per player per game**.  If data is collected since 1955, this will produce over 3 million records with over 150 attributes.  These attributes include all attributes for all roles a player may have, including batter, pitcher, and all 9 fielding positions.  As players do not take on all roles in each game, almost all attribute values are zero.  The output from cwdaily will be restructured into **batting per player per game**, **pitching per player per game** and **fielding per player per game** with a record only created if there are relevant attributes for that player and game.  This is very similar to how Lahman structures its data.
 
 The **cwgame** parser will generate a csv file that contains statistics for both teams per game and as well as game specific information such as attendance.  This output will be restructured into attributes **per team per game** and **per game**.
 
@@ -88,7 +90,7 @@ A baseball player may have several roles during the course of a game, such as ba
 
 Attribute names for batters and pitchers are the same were it makes sense to do so.  For example, if a batter hits a "double" then then opposing team's pitcher must have given up a "double".
 
-All attribute names for the 9 fielding positions are identical, even though passed-ball and catcher-interference only apply to the catcher.  This allows for a single csv file for fielding.
+All attribute names for the 9 fielding positions are identical, even though passed-ball and catcher-interference only apply to the catcher.  This allows for a single csv file for fielding with no null values.
 
 ## Script Summary
 
@@ -117,7 +119,7 @@ Scripts with example command line arguments:
     * all data in `data/retrosheet/raw` is parsed with the results placed in `data/retrosheet/parsed`
   * all parsed data is collected into a one DataFrame for cwdaily and one DataFrame for cwgame and placed in `data/retrosheet/collected`
 * **retrosheet_wrangle.py** -v --log=INFO --data-type --data-dir=../data
-  *  wrangles the collected Retrosheet data and persists it with optimized data types to `../data/retrosheet/wrange`
+  *  wrangles the collected Retrosheet data and persists it with optimized data types to `../data/retrosheet/wrangle`
 * **pytest -v --runslow**
   * runs the functional and data integrity tests using tests/test_func.py and tests/test_data.py
 
