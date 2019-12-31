@@ -1,6 +1,4 @@
 # Baseball Analytics
-&#x1F534; Under Construction - may be ready for use by 12/31/19  
-
 Scripts are provided to:
 
 - download
@@ -10,9 +8,11 @@ Scripts are provided to:
 
 Major League Baseball (MLB) data in preparation for easy analysis with Pandas or SQL.
 
-The end result will be a set of csv files, with data types per column in associated csv files, which can be loaded into Pandas or any database.
+The result is a set of csv files, with optimized data types per column in associated csv files, which can be loaded into Pandas or any database.
 
-Examples of baseball data analysis will be provided later in the form of Jupyter Notebooks.
+The resulting data is not published as it is several gigabytes in length.  Over 25 data integrity tests are included to ensure that the scripts worked properly.
+
+Examples of baseball data analysis will be provided soon in the form of Jupyter Notebooks.
 
 ## MLB Data Overview
 
@@ -34,7 +34,7 @@ Data is tidy if:
 
 Retrosheet has play-by-play data for every MLB game since 1974.  Data is available since 1918 with older years having somewhat more missing data.  Open source parsers from Dr. T. L. Turocy will be used to parse and summarize the play-by-play data.
 
-The **cwdaily** parser will generate a csv file with records **per player per game**.  This is a very large file as it includes all attributes for all roles a player may have (batter, pitcher, all 9 fielding positions) for all games.  As no player takes on all roles in a single game, almost all the attributes are zero.  This output will be restructured into batting, pitching and fielding csv files with all records having at least 1 non-zero attribute.  The resulting structure is almost identical to that used by Lahman.
+The **cwdaily** parser will generate a csv file with records **per player per game**.  If data is collected since 1955, this will produce over 3 million records with over 150 attributes.  There are over 150 attributes because all attributes for all roles a player may have (batter, pitcher, and all 9 fielding positions) are include in each record.  As players do not take on all roles in all games, almost all attribute values are zero.  The output from cwdaily will be restructured into **batting per player per game**, **pitching per player per game** and **fielding per player per game**.  This is very similar to how Lahman structures its data.
 
 The **cwgame** parser will generate a csv file that contains statistics for both teams per game and as well as game specific information such as attendance.  This output will be restructured into attributes **per team per game** and **per game**.
 
@@ -44,24 +44,21 @@ As of December 2019, Retrosheet has data through the 2019 season.
 
 ### Field Names
 
-The field names in both datasets are based on standard baseball statistic abbreviations.  See for example: https://en.wikipedia.org/wiki/Baseball_statistics or http://m.mlb.com/glossary/standard-stats
+The field names in both datasets are based on standard baseball statistic abbreviations.  See for example: https://en.wikipedia.org/wiki/Baseball_statistics.
 
-The field names have been changed as little as possible to remain familiar and yet meet Pandas and SQL naming conventions.  They have also been changed to ensure that fields with the same name in different csv files have the same meaning.
+The field names have been changed as little as possible to remain familiar.  Field name changes include:
 
-The field names in Lahman are changed from CamelCase to snake_case.  The field names created by the Retrosheet parsers are changed from upper case to lower case.  Invalid identifiers, such as 2B and 3B are changed to double and triple.
-
-Lahman and Retrosheet use respectively:
-
-* for ground into double play: gidp and gdp
-* for hit by pitch: hbp and hp
-
-The Retrosheet field names will be changed to match the Lahman field names, namely gidp and hbp.
+* columns in different csv files with the same meaning, now have the same column name
+* CamelCase is converted to snake_case
+* '2B' and '3B' are changed to 'double' and 'triple' to make them valid identifiers
+* Retrosheet's 'gdp' is changed to match Lahman's 'gidp'
+* Retrosheet's 'hp' is changed to match Lahman's 'hbp' 
 
 ### Data Wrangling
 
-Custom parsing of dates and times will be performed.  Data will be restructured.  Values that represent null will be converted to Pandas null (np.nan).  And more.
+Retrosheet data is restructured.  Custom parsing of dates and times is performed.  And more.
 
-Data will be cleaned so that "primary keys" are unique.  Extremely few records require this type of modification, but as most data processing relies on having a set of fields which uniquely identify a record, this cleaning is required.
+Data will be cleaned so that "primary keys" are unique.  Extremely few records require this type of cleaning, but as most data processing relies on having a set of fields which uniquely identify a record, this cleaning is required.
 
 Pandas datatypes will be optimized to save space and more accurately describe the attribute.  For example, the number of hits in a game is always between 0 and 255, so a uint8 can be used rather than an int64.  Likewise, for integer fields with missing values, the new Pandas Int64 (and similar) can be used instead of requiring a float datatype.
 
@@ -69,9 +66,9 @@ Datatype optimizations per column are persisted to disk for each corresponding c
 
 ### Data Validation
 
-pytest will be used to automate the running of data integrity tests, such as validating that the unique identifying fields are in fact, unique.
+pytest will be used to automate the running of more than 25 data integrity and data consistency tests.  Tests include validating that the unique identifying fields for a csv file, are in fact unique.
 
-pytest:
+Running pytest:
 
 * recommend: 'pytest -v --runslow'
 * must be run from the `download_scripts` directory
@@ -81,21 +78,21 @@ pytest:
 
 ### Data Consistency
 
-Aggregating over all players, over all years from 1974 through 2019, for all 85 common attributes between Lahman and Retrosheet (which includes batting, pitching and each fielding position), shows that Lahman's aggregated values differ by less than 1% from Retrosheet's aggregated values.  Most values differ by less than 0.1%.
+The data consistency tests ensure that over 100 common attributes between Lahman and Retrosheet are within 1% of each other when aggregated (summed) to the same level between the years 1974 and 2019.  Most aggregated attributes differ by less than 0.1%.  These tests are run on the wrangled data.
 
 This shows that the Lahman and Retrosheet data sets are consistent with each other and that the scripts worked correctly.
 
-The above tests for all 85 common attributes are part of the supplied data integrity tests kicked off by pytest.
+### Baseball Player Roles
 
-### Statistics per Player Role
+A baseball player may have several roles during the course of a game, such as batter, pitcher and any of the 9 fielding positions.
 
-A baseball player may have several roles during the course of a game, such as batter, fielder, and pitcher.  Most attributes are unique to the role, but some are not.  The same player can hit a home run as a batter and allow a home run as a pitcher.
+Attribute names for batters and pitchers are the same were it makes sense to do so.  For example, if a batter hits a "double" then then opposing team's pitcher must have given up a "double".
 
-There are nine fielding roles.  For example, the same player could make a put-out while playing second base and later make a put-out while playing first base.
+All attribute names for the 9 fielding positions are identical, even though passed-ball and catcher-interference only apply to the catcher.  This allows for a single csv file for fielding.
 
 ## Script Summary
 
-Scripts are run from the download_scripts directory.  For more detail, see the README.md in the github download_scripts directory: [download_scripts](https://github.com/sdiehl28/baseball-analytics/tree/master/download_scripts)
+Scripts are run from the download_scripts directory.  For more detail about the scripts, see the README.md in the github download_scripts directory: [download_scripts](https://github.com/sdiehl28/baseball-analytics/tree/master/download_scripts)
 
 Options include:
 
@@ -106,23 +103,23 @@ Options include:
 Scripts with example command line arguments:
 
 * **run_all_scripts.py** --data-dir=../data
-  * convenience script to run all scripts
+  * convenience script to run all scripts in the proper order
 * **lahman_download.py** -v --log=INFO --data-dir=../data
   * downloads all the lahman data and unzips it to `../data/lahman/raw`
 
 * **lahman_wrangle.py** -v -log=INFO --data-dir=../data
-  * wrangles the Lahman data and persists it with optimized data types to `../data/lahman/wrange`
+  * wrangles the Lahman data and persists it with optimized data types to `../data/lahman/wrangle`
 * **retrosheet_download.py** -v -log=INFO --data-dir=../data
   * downloads the Retrosheet data and unzips it to `../data/retrosheet/raw`
 * **retrosheet_parse.py** -v --log=INFO --data-type --data-dir=../data
   * parses the play-by-play data using the cwdaily and cwgame open-source parsers
     * see [Parsers for Retrosheet](#Parsers-for-Retrosheet) below
-    * all data in the `data/retrosheet/raw` is parsed with the results placed in `data/retrosheet/parsed`
+    * all data in `data/retrosheet/raw` is parsed with the results placed in `data/retrosheet/parsed`
   * all parsed data is collected into a one DataFrame for cwdaily and one DataFrame for cwgame and placed in `data/retrosheet/collected`
 * **retrosheet_wrangle.py** -v --log=INFO --data-type --data-dir=../data
-  *  wrangles the Retrosheet data and persists it with optimized data types to `../data/retrosheet/wrange`
+  *  wrangles the collected Retrosheet data and persists it with optimized data types to `../data/retrosheet/wrange`
 * **pytest -v --runslow**
-  * will kick off the functional and data integrity tests using tests/test_func.py and tests/test_data.py
+  * runs the functional and data integrity tests using tests/test_func.py and tests/test_data.py
 
 ## MLB Data Details
 
@@ -130,7 +127,7 @@ Scripts with example command line arguments:
 
 The most recent data will be downloaded from:  https://github.com/chadwickbureau/baseballdatabank/archive/master.zip
 
-As per https://github.com/chadwickbureau/baseballdatabank readme.txt, regarding the **Lahman data license**:
+**Lahman Data License** from https://github.com/chadwickbureau/baseballdatabank readme.txt
 
 ```
 This work is licensed under a Creative Commons Attribution-ShareAlike
@@ -146,7 +143,7 @@ This file is also copied to this repo at: `data/lahman/readme2017.txt`
 
 #### Lahman CSV Data Files
 
-The csv files for Lahman are tidy.  The lahman_download script will put these in: `../data/lahman/raw`
+The csv files for Lahman are tidy.  The lahman_download script will place these in: `../data/lahman/raw`
 
 * **per player per year**
   * Batting.csv
@@ -166,7 +163,7 @@ The play-by-play data will be downloaded from: http://www.retrosheet.org/events/
 
 The retrosheet_download script will put these in: `../data/retrosheet/raw`
 
-As per: https://www.retrosheet.org/notice.txt regarding the **Retrosheet data license**:
+**Retrosheet Data License** from https://www.retrosheet.org/notice.txt 
 
 ```
      The information used here was obtained free of
@@ -192,7 +189,7 @@ This script has been run and the descriptions have been saved to:  `data/retrosh
 
 The open source parsers created by Dr. T. L. Turocy will be used.
 
-As per https://github.com/chadwickbureau/chadwick README, regarding the parser license:
+**Retrosheet Parsers License** from https://github.com/chadwickbureau/chadwick README
 
 ```
 This is Chadwick, a library and toolset for baseball play-by-play

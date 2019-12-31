@@ -1,7 +1,5 @@
 # Download Scripts for Baseball Analytics
 
-&#x1F534; Under Construction - may be ready for use by 12/31/19  
-
 Scripts are provided to:
 
 - download
