@@ -97,6 +97,8 @@ Running pytest:
 * must be run after the scripts which download and parse the data have been run
 * accepts custom option: --data-dir=<data_directory>
 
+If you like, you may spot check the data using [Baseball Reference](https://www.baseball-reference.com/).  Baseball Reference uses the Retrosheet data.  The box score for a game can be constructed from the game_id using: `'https://www.baseball-reference.com/boxes/' + game_id[:3] + '/' + game_id + '.shtml'` For example, to verify that there are two entries for Chris Young for game_id = BOS201708250, the url is: https://www.baseball-reference.com/boxes/BOS/BOS201708250.shtml
+
 ### Data Consistency
 
 The data consistency tests ensure that over 100 common attributes between Lahman and Retrosheet are within 1% of each other when aggregated (summed) to the same level between the years 1974 and 2019.  Most aggregated attributes differ by less than 0.1%.  These tests are run on the wrangled data.
