@@ -10,9 +10,6 @@ from pathlib import Path
 from sqlalchemy.types import SmallInteger, Integer, BigInteger
 
 
-# from IPython.display import HTML, display
-
-
 def to_csv_with_types(df, filename):
     """
     Save df to csv file and save df.dtypes to csv file.
@@ -218,6 +215,7 @@ def df_info(df):
     return buffer.getvalue()
 
 
+# from IPython.display import HTML, display
 # def game_id_to_url(game_id):
 #     home = game_id[:3]
 #     url = 'https://www.baseball-reference.com/boxes/' + home + '/' + game_id + '.shtml'

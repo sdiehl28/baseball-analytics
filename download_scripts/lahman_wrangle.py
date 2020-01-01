@@ -126,7 +126,7 @@ def wrangle_basic(p_raw, p_wrangled, filename):
     dh.optimize_df_dtypes(df)
 
     msg = dh.df_info(df)
-    logger.info('{}\n{}'.format(filename, msg))
+    logger.info(f'{filename}\n{msg}')
 
     # persist with optimized datatypes
     os.chdir(p_wrangled)
@@ -218,7 +218,10 @@ def main():
 
     # TODO add fieldname mappings to support other Lahman csv files
     wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'Batting.csv')
+    wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'BattingPost.csv')
+    wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'FieldingPost.csv')
     wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'Pitching.csv')
+    wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'PitchingPost.csv')
     wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'Teams.csv')
     wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'Salaries.csv')
     wrangle_basic(p_lahman_raw, p_lahman_wrangled, 'Parks.csv')
