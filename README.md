@@ -14,7 +14,7 @@ The resulting data is not published as it is several gigabytes in length.  Over 
 
 Examples of baseball data analysis will be provided soon in the form of Jupyter Notebooks.
 
-If you have any questions, you may send me an email with the word "baseball" in the subject and send it to: sdiehl28@gmail.com
+If you have any questions, you may send me an email with the word "baseball" in the subject to: sdiehl28@gmail.com
 
 ## Environment
 
@@ -117,7 +117,9 @@ Scripts with example command line arguments:
   * wrangles the Lahman data and persists it with optimized data types to `../data/lahman/wrangle`
 * **retrosheet_download.py** -v -log=INFO --data-dir=../data
   * downloads the Retrosheet data and unzips it to `../data/retrosheet/raw`
-* **retrosheet_parse.py** -v --log=INFO --data-type --data-dir=../data
+  * by default, data from 1955 thru 2019 is downloaded
+  * pytest data consistency tests use years 1974 thru 2019, so --start-year should be 1974 or earlier and --end-year should be 2019 (or later when 2020 data becomes available)
+* **retrosheet_parse.py** -v --log=INFO --use-datatypes --data-dir=../data
   * parses the play-by-play data using the cwdaily and cwgame open-source parsers
     * see [Parsers for Retrosheet](#Parsers-for-Retrosheet) below
     * all data in `data/retrosheet/raw` is parsed with the results placed in `data/retrosheet/parsed`
