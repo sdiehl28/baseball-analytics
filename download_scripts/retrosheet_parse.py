@@ -27,7 +27,7 @@ def get_parser():
 
     parser.add_argument("--data-dir", type=str, help="baseball data directory", default='../data')
     parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
-    parser.add_argument("-d", "--data-type", help="use precomputed datatypes", action="store_true")
+    parser.add_argument("--use-datatypes", help="use precomputed datatypes", action="store_true")
     parser.add_argument("--log", dest="log_level", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help="Set the logging level")
 
@@ -87,7 +87,7 @@ def parse_event_files(raw_dir, parser, fields):
                     result = subprocess.run(cmd_full, shell=False, stdout=outfile, stderr=subprocess.DEVNULL)
 
 
-def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
+def collect_parsed_files(parse_dir, collect_dir, parser, use_datatypes):
     """Collect all parsed files and optimize datatypes.
     """
 
@@ -97,8 +97,8 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_data_types):
 
     logger.info(f'Collecting {len(dailyfiles)} {parser} parsed csv files into single dataframe ...')
 
-    if use_data_types:
-        # this uses 3 time less memory for cwdaily but relies on precomputed data types
+    if use_datatypes:
+        # this can save gigabytes of RAM by using precomputed datatypes
         logger.info('Using precomputed data types')
         if parser == 'cwdaily':
             filename = '../player_game_types.csv'
@@ -189,8 +189,8 @@ def main():
     parse_event_files(p_data_raw, 'cwdaily', '-f 0-153')
     parse_event_files(p_data_raw, 'cwgame', '-f 0-83 -x 0-94')
 
-    collect_parsed_files(p_data_parsed, p_data_collected, 'cwdaily', args.data_type)
-    collect_parsed_files(p_data_parsed, p_data_collected, 'cwgame', args.data_type)
+    collect_parsed_files(p_data_parsed, p_data_collected, 'cwdaily', args.use_datatypes)
+    collect_parsed_files(p_data_parsed, p_data_collected, 'cwgame', args.use_datatypes)
 
 
 if __name__ == '__main__':
