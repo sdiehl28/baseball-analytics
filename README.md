@@ -129,7 +129,6 @@ Scripts with example command line arguments:
   * convenience script to run all scripts in the proper order
 * **lahman_download.py** -v --log=INFO --data-dir=../data
   * downloads all the lahman data and unzips it to `../data/lahman/raw`
-
 * **lahman_wrangle.py** -v -log=INFO --data-dir=../data
   * wrangles the Lahman data and persists it with optimized data types to `../data/lahman/wrangle`
 * **retrosheet_download.py** -v -log=INFO --data-dir=../data --start-year=1955 --end-year=2019
@@ -144,6 +143,14 @@ Scripts with example command line arguments:
   *  wrangles the collected Retrosheet data and persists it with optimized data types to `../data/retrosheet/wrangle`
 * **pytest -v**
   * runs the functional, data consistency and data integrity tests from tests/test_func.py and tests/test_data.py
+
+### Rerunning the Scripts
+
+It is rarely necessary to re-download the data.  Minor tweaks are continually being made to Lahman and Retrosheet for very old data, but recent data is usually accurate and complete the first time it is made available.
+
+The data is not updated during the season.  It is added to both Lahman and Retrosheet around late December.  For example, all of the 2019 regular and post-season data became available in December 2019.
+
+To rerun the scripts, it is only necessary to remove the data from all data directories other than the raw data directories.
 
 ## MLB Data Details
 
