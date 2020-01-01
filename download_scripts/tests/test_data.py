@@ -117,15 +117,12 @@ def test_lahman_parks_pkey(data_dir):
     # assert dh.is_unique(parks, ['park_name']
 
 
-@pytest.mark.slow
-def test_player_game_id_values(player_game):
-    # note: test is not slow, but running the session fixture could take 30 seconds
-    filt = player_game['home_fl'] == 0
-    player_game['home_team_id'] = player_game['team_id']
-    player_game.loc[filt, 'home_team_id'] = player_game.loc[filt, 'opponent_id']
+def test_team_game_opponent_id_values(team_game):
+    filt = team_game['at_home'] == False
+    team_game['home_team_id'] = team_game['team_id']
+    team_game.loc[filt, 'home_team_id'] = team_game.loc[filt, 'opponent_team_id']
 
-    assert (player_game['game_id'] == player_game['home_team_id'] +
-            player_game['game_dt'].astype(str) + player_game['game_ct'].astype(str)).all()
+    assert (team_game['game_id'].str[:3] == team_game['home_team_id']).all()
 
 
 def test_batting_flags(batting):
