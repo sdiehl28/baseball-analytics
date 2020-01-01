@@ -17,7 +17,7 @@ The scripts in this repo will wrangle the Lahman and Retrosheet data to create c
 * ensure that for both data sets, the same 50+ field names are used to represent the same information
   * for example, if a batter hits a "hr", then the opposing pitcher gave up an "hr" and "hr" is the field name used in the batting and pitching csv files for both Lahman and Retrosheet
 * ensure that field names conform to official baseball abbreviations
-* ensure that all field names are valid Python identifiers and SQL column names
+* ensure that all field names are valid Python identifiers and valid SQL column names
 * determine the most efficient data type, for both Pandas and SQL, and persist that data type for each field in a corresponding csv file
   * code is provided to read/write csv files with persisted data types
 * parse the Retrosheet data using open-source parsers (which on Linux must be built from source code)
