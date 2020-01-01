@@ -18,6 +18,8 @@ def get_parser():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument("--data-dir", type=str, help="baseball data directory", default='../data')
+    parser.add_argument("--start-year", type=int, help="start year", default='1955')
+    parser.add_argument("--end-year", type=int, help="end year", default='2019')
 
     return parser
 
@@ -33,6 +35,14 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
     data_dir = f'--data-dir={args.data_dir}'
+    start_year = f'--start-year={args.start_year}'
+    end_year = f'--end-year={args.end_year}'
+
+    if args.start_year > 1974:
+        print('WARNING: data integrity tests may fail if start-year > 1974')
+
+    if args.end_year < 2019:
+        print('WARNING: data integrity tests may fail if end-year < 2019')
 
     print('Running lahman_download:')
     cmd = ['./lahman_download.py', '-v', '--log=INFO', data_dir]
@@ -43,7 +53,7 @@ def main():
     run_cmd(cmd)
 
     print('Running retrosheet_download:')
-    cmd = ['./retrosheet_download.py', '-v', '--log=INFO', data_dir]
+    cmd = ['./retrosheet_download.py', '-v', '--log=INFO', data_dir, start_year, end_year]
     run_cmd(cmd)
 
     print('Running retrosheet_parse:')
@@ -55,7 +65,7 @@ def main():
     run_cmd(cmd)
 
     print('All Scripts have run.')
-    print('Run "pytest -v --runslow" at command line.')
+    print('Run "pytest -v --runslow" --data-dir={data_dir} at command line.')
 
 
 if __name__ == '__main__':
