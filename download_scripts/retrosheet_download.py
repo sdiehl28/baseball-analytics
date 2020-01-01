@@ -114,10 +114,10 @@ def main():
 
     raw_dir = data_dir / 'retrosheet/raw'
     if args.start_year > 1974:
-        logger.WARNING('data integrity tests may fail if start-year > 1974')
+        logger.WARNING('data consistency tests may fail if start-year > 1974')
 
     if args.end_year < 2019:
-        logger.WARNING('data integrity tests may fail if end-year < 2019')
+        logger.WARNING('data consistency tests may fail if end-year < 2019')
     download_data(raw_dir, args.start_year, args.end_year)
 
 
