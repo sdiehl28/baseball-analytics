@@ -16,6 +16,10 @@ Examples of baseball data analysis will be provided soon in the form of Jupyter 
 
 If you have any questions, you may send me an email with the word "baseball" in the subject and send it to: sdiehl28@gmail.com
 
+## Environment
+
+The scripts were tested using Python 3.7 in a full [Anaconda](https://www.anaconda.com/distribution/) 2019.10 environment.  The [open-source parsers](https://sourceforge.net/projects/chadwick/) for Retrosheet must be installed.  See: [Parsers for Retrosheet](#Parsers-for-Retrosheet) below.
+
 ## MLB Data Overview
 
 ### Lahman Overview
