@@ -92,7 +92,7 @@ This shows that the Lahman and Retrosheet data sets are consistent with each oth
 
 A baseball player may have several roles during the course of a game, such as batter, pitcher and any of the 9 fielding positions.
 
-Attribute names for batters and pitchers are the same were it makes sense to do so.  For example, if a batter hits a "double" then then opposing team's pitcher must have given up a "double".
+Attribute names for batters and pitchers are the same where it makes sense to do so.  For example, if a batter hits a "double" then then opposing team's pitcher must have given up a "double".
 
 All attribute names for the 9 fielding positions are identical, even though passed-ball and catcher-interference only apply to the catcher.  This allows for a single csv file for fielding with no null values.
 
@@ -124,7 +124,7 @@ Scripts with example command line arguments:
     * see [Parsers for Retrosheet](#Parsers-for-Retrosheet) below
     * all data in `data/retrosheet/raw` is parsed with the results placed in `data/retrosheet/parsed`
   * all parsed data is collected into a one DataFrame for cwdaily and one DataFrame for cwgame and placed in `data/retrosheet/collected`
-* **retrosheet_wrangle.py** -v --log=INFO --data-type --data-dir=../data
+* **retrosheet_wrangle.py** -v --log=INFO --data-dir=../data
   *  wrangles the collected Retrosheet data and persists it with optimized data types to `../data/retrosheet/wrangle`
 * **pytest -v --runslow**
   * runs the functional and data integrity tests using tests/test_func.py and tests/test_data.py
@@ -155,8 +155,11 @@ The csv files for Lahman are tidy.  The lahman_download script will place these 
 
 * **per player per year**
   * Batting.csv
+  * BattingPost.csv
   * Fielding.csv
+  * FieldingPost.csv
   * Pitching.csv
+  * PitchingPost.csv
 * **per team per year**
   * Teams.csv
 * **reference tables**
@@ -167,7 +170,7 @@ The csv files for Lahman are tidy.  The lahman_download script will place these 
 
 ### Retrosheet
 
-The play-by-play data will be downloaded from: http://www.retrosheet.org/events/{year}eve.zip
+The play-by-play data will be downloaded for each year at: http://www.retrosheet.org/events/{year}eve.zip
 
 The retrosheet_download script will put these in: `../data/retrosheet/raw`
 
