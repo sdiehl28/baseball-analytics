@@ -481,3 +481,19 @@ def test_sky_condition_values(game):
     # http://chadwick.sourceforge.net/doc/cwgame.html#cwtools-cwgame-sky
     valid_values = ['sunny', 'cloudy', 'overcast', 'night', 'dome']
     assert game['sky_condition'].dropna().isin(valid_values).all()
+
+def test_game_length_values(game):
+    outs = game['game_length_outs']
+    inns = game['game_length_innings']
+
+    # this is defined by the rules of baseball
+    assert ((5 * inns  <= outs) & (outs <= 6 * inns)).all()
+
+def test_game_length_minute_values(game):
+    outs = game['game_length_outs']
+    mins = game['game_length_minutes']
+    mins_per_out = mins/outs
+
+    # these bounds should be wide enough to encompass any future game
+    assert ((mins_per_out.min() > 1) & (mins_per_out.max() < 6)).all()
+
