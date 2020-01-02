@@ -15,6 +15,7 @@ import sys
 import collections
 
 import pandas as pd
+import numpy as np
 
 import data_helper as dh
 
@@ -275,11 +276,84 @@ def wrangle_game(game, p_retrosheet_wrangled):
     # these fields are no longer necessary
     game_tidy = game_tidy.drop(['start_game_tm', 'game_dt', 'game_dy'], axis=1)
 
-    # convert designated hitter flag to True/False
-    game_tidy['dh_flag'] = False
+    # convert designated hitter to True/False and rename
+    game_tidy['dh'] = False
     filt = game_tidy['dh_fl'] == 'T'
-    game_tidy.loc[filt, 'dh_flag'] = True
+    game_tidy.loc[filt, 'dh'] = True
     game_tidy.drop('dh_fl', axis=1, inplace=True)
+
+    # convert impossible attendance values to null and rename
+    filt = game_tidy['attend_park_ct'] <= 0
+    impossible_values = game_tidy.loc[filt, 'attend_park_ct'].unique()
+    game_tidy['attendance'] = game_tidy['attend_park_ct'].replace(impossible_values, np.nan)
+    game_tidy.drop('attend_park_ct', axis=1, inplace=True)
+
+    # convert impossible temperature values to null and rename
+    filt = game_tidy['temp_park_ct'] <= 0
+    impossible_values = game_tidy.loc[filt, 'temp_park_ct'].unique()
+    game_tidy['temperature'] = game_tidy['temp_park_ct'].replace(impossible_values, np.nan)
+    game_tidy.drop('temp_park_ct', axis=1, inplace=True)
+
+    # replace code values with strings
+    # http://chadwick.sourceforge.net/doc/cwgame.html#cwtools-cwgame-winddirection
+    direction = {
+        0: 'unknown',
+        1: 'to_lf',
+        2: 'to_cf',
+        3: 'to_rf',
+        4: 'l_to_r',
+        5: 'from_lf',
+        6: 'from_cf',
+        7: 'from_rf',
+        8: 'r_to_l'}
+    game_tidy['wind_direction'] = \
+        game_tidy['wind_direction_park_cd'].map(direction).replace('unknown', np.nan)
+    game_tidy.drop('wind_direction_park_cd', axis=1, inplace=True)
+
+    # http://chadwick.sourceforge.net/doc/cwgame.html#cwtools-cwgame-windspeed
+    # convert impossible wind speed values to null and rename
+    filt = game_tidy['wind_speed_park_ct'] < 0
+    impossible_values = game_tidy.loc[filt, 'wind_speed_park_ct'].unique()
+    game_tidy['wind_speed'] = game_tidy['wind_speed_park_ct'].replace(impossible_values, np.nan)
+    game_tidy.drop('wind_speed_park_ct', axis=1, inplace=True)
+
+    # replace code values with strings
+    # http://chadwick.sourceforge.net/doc/cwgame.html#cwtools-cwgame-fieldcondition
+    condition = {
+        0: 'unknown',
+        1: 'soaked',
+        2: 'wet',
+        3: 'damp',
+        4: 'dry'}
+    game_tidy['field_condition'] = \
+        game_tidy['field_park_cd'].map(condition).replace('unknown', np.nan)
+    game_tidy.drop('field_park_cd', axis=1, inplace=True)
+
+    # replace code values with strings
+    # http://chadwick.sourceforge.net/doc/cwgame.html#cwtools-cwgame-precipitation
+    precip = {
+        0: 'unknown',
+        1: 'none',
+        2: 'drizzle',
+        3: 'showers',
+        4: 'rain',
+        5: 'snow'}
+    game_tidy['precip_type'] = \
+        game_tidy['precip_park_cd'].map(precip).replace('unknown', np.nan)
+    game_tidy.drop('precip_park_cd', axis=1, inplace=True)
+
+    # replace code values with strings
+    # http://chadwick.sourceforge.net/doc/cwgame.html#cwtools-cwgame-sky
+    sky = {
+        0: 'unknown',
+        1: 'sunny',
+        2: 'cloudy',
+        3: 'overcast',
+        4: 'night',
+        5: 'dome'}
+    game_tidy['sky_condition'] = \
+        game_tidy['sky_park_cd'].map(sky).replace('unknown', np.nan)
+    game_tidy.drop('sky_park_cd', axis=1, inplace=True)
 
     logger.info('Writing and compressing game.  This could take several minutes ...')
     dh.optimize_df_dtypes(game_tidy)

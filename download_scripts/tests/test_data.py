@@ -440,3 +440,41 @@ def test_batting_lahman_game_data(data_dir, batting):
 
     # verify all 12880 values are within 0.5% of each other
     assert np.abs(1.0 - (l_teams / retro_batting_sums)).max().max() < 0.005
+
+
+def test_attendance_values(game):
+    assert game['attendance'].min() > 0
+
+
+def test_temperature_values(game):
+    # http://chadwick.sourceforge.net/doc/cwgame.html#cwtools-cwgame-temperature
+    assert game['temperature'].min() > 0
+
+
+def test_wind_speed_values(game):
+    assert game['wind_speed'].min() >= 0
+
+
+def test_wind_direction_values(game):
+    # http://chadwick.sourceforge.net/doc/cwgame.html#cwtools-cwgame-winddirection
+    valid_values = ['to_lf', 'to_cf', 'to_rf', 'l_to_r', 'from_lf', 'from_cf',
+                    'from_rf', 'r_to_l']
+    assert game['wind_direction'].dropna().isin(valid_values).all()
+
+
+def test_field_condition_values(game):
+    # http://chadwick.sourceforge.net/doc/cwgame.html#cwtools-cwgame-fieldcondition
+    valid_values = ['soaked', 'wet', 'damp', 'dry']
+    assert game['field_condition'].dropna().isin(valid_values).all()
+
+
+def test_precip_type_values(game):
+    # http://chadwick.sourceforge.net/doc/cwgame.html#cwtools-cwgame-precipitation
+    valid_values = ['none', 'drizzle', 'showers', 'rain', 'snow']
+    assert game['precip_type'].dropna().isin(valid_values).all()
+
+
+def test_sky_condition_values(game):
+    # http://chadwick.sourceforge.net/doc/cwgame.html#cwtools-cwgame-sky
+    valid_values = ['sunny', 'cloudy', 'overcast', 'night', 'dome']
+    assert game['sky_condition'].dropna().isin(valid_values).all()
