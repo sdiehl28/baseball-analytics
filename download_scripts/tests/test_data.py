@@ -443,6 +443,9 @@ def test_batting_lahman_game_data(data_dir, batting):
 
 
 def test_attendance_values(game):
+    # There was one baseball game in which the public was not allowed to attend.
+    # This is considered null rather than 0, as people wanted to attend, but were not allowed.
+    # https://www.baseball-reference.com/boxes/BAL/BAL201504290.shtml
     assert game['attendance'].min() > 0
 
 
