@@ -9,3 +9,4 @@ data/retrosheet/wrangled
 test_data
 tmp*
 __pycache__
+*checkpoint.ipynb

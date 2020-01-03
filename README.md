@@ -15,18 +15,20 @@ The scripts in this repo will wrangle the Lahman and Retrosheet data to create c
 * allow for easy Pandas analysis (or SQL analysis if loaded into a database)
 * allow both data sets to be referenced in the same query
 * ensure that for both data sets, the same 50+ field names are used to represent the same information
-  * for example, if a batter hits a "hr", then the opposing pitcher gave up an "hr" and "hr" is the field name used in the batting and pitching csv files for both Lahman and Retrosheet
+  * for example, if a batter hits a "hr", then the opposing pitcher gave up a "hr" and "hr" is the field name used in the batting and pitching csv files for both Lahman and Retrosheet
 * ensure that field names conform to official baseball abbreviations
 * ensure that all field names are valid Python identifiers and valid SQL column names
 * determine the most efficient data type, for both Pandas and SQL, and persist that data type for each field in a corresponding csv file
   * code is provided to read/write csv files with persisted data types
 * parse the Retrosheet data using open-source parsers (which on Linux must be built from source code)
 * tidy the Retrosheet data, clean primary key data to be unique, and identify primary and foreign keys
-* ensure that the data is accurate by providing more than 25 pytest tests to verify that the restructured data is consistent between the two data sets, the primary keys are unique, etc.  
+* ensure that the data is accurate by providing more than 30 pytest tests to verify that the restructured data is consistent between the two data sets, the primary keys are unique, etc.  
 
 TODO: scripts to load the csv files, with primary and foreign key constraints and optimal data types into Postgres are currently being worked on.
 
-TODO: Examples of baseball data analysis will be provided in the form of Jupyter Notebooks.
+TODO: Continue adding examples of baseball data analysis in the form of Jupyter Notebooks.
+
+TODO: Begin adding Sabermetrics such as wOBA by making use of data available from [FanGraphs](https://www.fangraphs.com/guts.aspx).
 
 At this time, the restructured data is not provided in this repo, only the scripts to create it are provided.
 

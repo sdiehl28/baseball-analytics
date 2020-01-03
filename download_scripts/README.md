@@ -1,9 +1,10 @@
 # Data Preparation Scripts for Baseball Analytics
 
-All scripts should be run from the download_scripts directory.  All scripts have help using --help.
+All scripts should be run from the download_scripts directory. 
 
 For all scripts:
 
+* --help for help
 * -v for verbose: logs to stdout
 * --log INFO:  appends to download.log file (at the INFO level)
 * --data-dir ../data:   specifies the data directory (default is ../data)
