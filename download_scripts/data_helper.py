@@ -7,6 +7,8 @@ import numpy as np
 import re
 import io
 from pathlib import Path
+import statsmodels.api as sm
+from IPython.display import HTML, display
 from sqlalchemy.types import SmallInteger, Integer, BigInteger
 
 
@@ -33,7 +35,7 @@ def to_csv_with_types(df, filename):
     df.to_csv(p, index=False)
 
 
-def from_csv_with_types(filename, nrows=None):
+def from_csv_with_types(filename, usecols=None, nrows=None, ):
     """
     Read df.dtypes from csv file and read df from csv file.
 
@@ -46,7 +48,7 @@ def from_csv_with_types(filename, nrows=None):
     p_types = p.parent / types_name
     dates, dtypes = read_types(p_types)
 
-    return pd.read_csv(p, parse_dates=dates, dtype=dtypes, nrows=nrows)
+    return pd.read_csv(p, parse_dates=dates, dtype=dtypes, usecols=usecols, nrows=nrows)
 
 
 def read_types(filename):
@@ -215,13 +217,6 @@ def df_info(df):
     return buffer.getvalue()
 
 
-# from IPython.display import HTML, display
-# def game_id_to_url(game_id):
-#     home = game_id[:3]
-#     url = 'https://www.baseball-reference.com/boxes/' + home + '/' + game_id + '.shtml'
-#     display(HTML(f'<a href="{url}">{game_id}</a>'))
-
-
 def order_cols(df, cols):
     """Put columns in cols first, followed by rest of columns"""
     rest = [col for col in df.columns if col not in cols]
@@ -267,3 +262,21 @@ def move_column_after(df, after_col, col):
     cols.remove(col)
     cols.insert(idx + 1, col)
     return df.reindex(cols, axis=1)
+
+
+def game_id_to_url(game_id):
+    """Game ID to URL for Jupyter Notebooks"""
+    home = game_id[:3]
+    url = 'https://www.baseball-reference.com/boxes/' + home + '/' + game_id + '.shtml'
+    display(HTML(f'<a href="{url}">{game_id}</a>'))
+
+
+def simple_loess(x, y, df, frac=1 / 6, it=0):
+    """Smoothes noisy data.
+
+    Increase frac to get more smoothing.
+    Decrease frac to get less smoothing.
+
+    sns.lmplot has a loess option, but it uses poor and unchangeable defaults."""
+    z = sm.nonparametric.lowess(df[y], df[x], frac=frac, it=it)
+    return pd.DataFrame(data=z, columns=[x, y])
