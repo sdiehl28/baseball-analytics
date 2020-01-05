@@ -70,7 +70,7 @@ def test_lahman_fielding_pkey(data_dir):
 
     # check for duplicate IDs
     fielding = dh.from_csv_with_types(filename)
-    assert dh.is_unique(fielding, ['player_id', 'year_id', 'stint', 'team_id', 'pos'])
+    assert dh.is_unique(fielding, ['player_id', 'year_id', 'stint', 'pos'])
 
 
 def test_lahman_batting_pkey(data_dir):
@@ -78,7 +78,7 @@ def test_lahman_batting_pkey(data_dir):
 
     # check for duplicate IDs
     batting = dh.from_csv_with_types(filename)
-    assert dh.is_unique(batting, ['player_id', 'year_id', 'stint', 'team_id'])
+    assert dh.is_unique(batting, ['player_id', 'year_id', 'stint'])
 
 
 def test_lahman_pitching_pkey(data_dir):
@@ -86,7 +86,7 @@ def test_lahman_pitching_pkey(data_dir):
 
     # check for duplicate IDs
     pitching = dh.from_csv_with_types(filename)
-    assert dh.is_unique(pitching, ['player_id', 'year_id', 'stint', 'team_id'])
+    assert dh.is_unique(pitching, ['player_id', 'year_id', 'stint'])
 
 
 def test_lahman_salaries_pkey(data_dir):

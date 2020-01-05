@@ -161,13 +161,14 @@ def optimize_db_dtypes(df):
     from sqlalchemy.types import SmallInteger, Integer, BigInteger
     """
     small_int = {col: SmallInteger for col in df.select_dtypes(
-        include=[np.int16, np.uint16, np.int8, np.uint8]).columns}
+        include=[pd.Int8Dtype, np.int8, pd.UInt8Dtype, np.uint8,
+                 pd.Int16Dtype, np.int16, pd.UInt16Dtype, np.uint16]).columns}
 
     integer = {col: Integer for col in df.select_dtypes(
-        include=[np.int32, np.uint32]).columns}
+        include=[pd.Int32Dtype, np.int32, pd.UInt32Dtype, np.uint32]).columns}
 
     big_int = {col: BigInteger for col in df.select_dtypes(
-        include=[np.int64, np.uint64]).columns}
+        include=[pd.Int64Dtype, np.int64, pd.UInt64Dtype, np.uint64]).columns}
 
     dtypes = {**small_int, **integer, **big_int}
 
