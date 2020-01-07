@@ -56,7 +56,7 @@ def create_and_load_table(conn, prefix, filename, pkey=None):
     table = prefix + filename.name.split('.')[0]
     logger.info(f'{table} loading ...')
 
-    # read optimized Pandas data types
+    # read with optimized Pandas data types
     df = dh.from_csv_with_types(filename)
 
     # compute optimized database data types
