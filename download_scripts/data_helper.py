@@ -9,7 +9,7 @@ import io
 from pathlib import Path
 import statsmodels.api as sm
 from IPython.display import HTML, display
-from sqlalchemy.types import SmallInteger, Integer, BigInteger
+from sqlalchemy.types import SmallInteger, Integer, BigInteger, Float
 
 
 def to_csv_with_types(df, filename):
@@ -35,7 +35,7 @@ def to_csv_with_types(df, filename):
     df.to_csv(p, index=False)
 
 
-def from_csv_with_types(filename, usecols=None, nrows=None, ):
+def from_csv_with_types(filename, usecols=None, nrows=None):
     """
     Read df.dtypes from csv file and read df from csv file.
 
@@ -131,9 +131,24 @@ def optimize_df_dtypes(df, ignore=None):
 def get_dtype_range():
     """Create a Dictionary having min/max values per Data Type
 
-    First value is 0 or np.nan
-    Second value is min for data type
-    Third value is max for data type
+    Key: string representation of data type
+    Value: list of length 3
+      value[0] is 0 or np.nan
+      value[1] is min for that data type
+      value[2] is max for that data type
+
+    This dictionary can be used to create a 3 row DataFrame which demonstrates
+    that the specified data type can hold the specified values.
+
+    Pandas data type limits:
+    Int8   nullable with same limits as np.int8
+    UInt8  nullable with same limits as np.uint8
+    Int16  nullable with same limits as np.int16
+    UInt16 nullable with same limits as np.uint16
+    Int32  nullable with same limits as np.int32
+    UInt32 nullable with same limits as np.uint32
+    Int64  nullable with min/max limits about 1/2 of np.int64
+    UInt64 nullable with max limit about 1/4 of np.uint64
     """
     data = []
     for dtype in ['uint8', 'int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64']:
@@ -145,10 +160,10 @@ def get_dtype_range():
 
     dtype_range = dict(zip(keys, data))
 
-    # pandas nullable Uint64 and Int64 have weird min/max values (these are approximate)
-    dtype_range['UInt64'][2] //= 4
-    dtype_range['Int64'][1] //= 2
-    dtype_range['Int64'][2] //= 2
+    # these are valid large values, but may not be the largest allowable by Pandas 0.25.x
+    dtype_range['UInt64'][2] = dtype_range['uint64'][2] // 4
+    dtype_range['Int64'][1] = dtype_range['int64'][1] // 2
+    dtype_range['Int64'][2] = dtype_range['int64'][2] // 2
 
     return dict(zip(keys, data))
 
@@ -159,18 +174,26 @@ def optimize_db_dtypes(df):
 
     Relies on:
     from sqlalchemy.types import SmallInteger, Integer, BigInteger
+
+    SQL Column Types are signed, so uint16 might not fit in smallinteger
+    TODO: below is safe but inefficient for uint16, UInt16, uint32 and UInt32
     """
     small_int = {col: SmallInteger for col in df.select_dtypes(
         include=[pd.Int8Dtype, np.int8, pd.UInt8Dtype, np.uint8,
-                 pd.Int16Dtype, np.int16, pd.UInt16Dtype, np.uint16]).columns}
+                 pd.Int16Dtype, np.int16]).columns}
 
     integer = {col: Integer for col in df.select_dtypes(
-        include=[pd.Int32Dtype, np.int32, pd.UInt32Dtype, np.uint32]).columns}
+        include=[pd.UInt16Dtype, np.uint16, pd.Int32Dtype, np.int32]).columns}
 
     big_int = {col: BigInteger for col in df.select_dtypes(
-        include=[pd.Int64Dtype, np.int64, pd.UInt64Dtype, np.uint64]).columns}
+        include=[pd.UInt32Dtype, np.uint32, pd.Int64Dtype, np.int64]).columns}
 
-    dtypes = {**small_int, **integer, **big_int}
+    # use double precision for unsigned 64 bit integers
+    # Float(precision=53) is the SQL data type for double precision
+    double = {col: Float(precision=53) for col in df.select_dtypes(
+        include=[np.uint64, pd.UInt64Dtype]).columns}
+
+    dtypes = {**small_int, **integer, **big_int, **double}
 
     return dtypes
 

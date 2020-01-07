@@ -19,8 +19,18 @@ def test_data_dir(data_dir):
 
 
 def test_optimize_df():
+    # 16 columns but only 3 data types chosen by Pandas 0.25.x
     df = pd.DataFrame(dh.get_dtype_range())
+    assert len(df.columns) == 16
+    assert df.dtypes.nunique() == 3
+
+    # optimize the data types (modifies df inplace)
     dh.optimize_df_dtypes(df)
+    assert len(df.columns) == 16
+    assert df.dtypes.nunique() == 16
+
+    # Pandas will silently convert to float if int value is too large
+    # Verify that no implicit conversion took place
     assert (df.dtypes.values == df.columns.values).all()
 
 
