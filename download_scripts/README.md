@@ -21,7 +21,7 @@ Scripts with example command line arguments:
 * **./lahman_wrangle.py** -v -log=INFO
   * converts field names to snake_case
   * performs custom parsing of dates
-  * drops fielding columns that have more than 90% missing values
+  * drops fielder columns that have more than 90% missing values
   * optimizes data types
   * persists with optimized data types to `../data/lahman/wrangle`
 * **./retrosheet_download.py** -v -log=INFO --start-year=1974 --end-year=2019
@@ -58,4 +58,12 @@ Scripts with example command line arguments:
 
 After all scripts have run:  pytest -v
 
-WARNING: The data consistency tests, which have tight limits on how different the aggregated Retrosheet data can be from the aggregated Lahman data, were determined using the years 1974 through 2019 inclusive.  These tests may fail if --start-year > 1974 or --end-year < 2019.
+*WARNING*: The data consistency tests, which have tight limits on how different the aggregated Retrosheet data can be from the aggregated Lahman data, were created using the years 1974 through 2019 inclusive.  These tests may fail if all Retrosheet data between 1974 and 2019 is not downloaded.
+
+### Rerunning the Scripts
+
+It is rarely necessary to re-download the data.  Minor tweaks are continually being made to Lahman and Retrosheet for very old data, but recent data is usually accurate and complete the first time it is made available.
+
+The data is not updated during the season.  It is added to both Lahman and Retrosheet around late December.  For example, all of the 2019 regular and post-season data became available in December 2019.
+
+To rerun the scripts, it is only necessary to remove the data from all data directories other than the raw data directories.
