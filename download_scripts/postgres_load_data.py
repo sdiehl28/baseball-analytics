@@ -1,12 +1,10 @@
-import pandas as pd
-import numpy as np
-
 import os
 import sys
 from pathlib import Path
-import subprocess
 import argparse
 import logging
+import csv
+from io import StringIO
 
 from sqlalchemy import create_engine
 
@@ -31,16 +29,27 @@ def get_parser():
     return parser
 
 
-def psql(cmd, user='postgres', schema='baseball'):
-    # For this to work without a password, a .pgpass file is necessary.
-    # See: https://www.postgresql.org/docs/current/libpq-pgpass.html
+# This improves df.to_sql() write speed by a couple orders of magnitude!
+# https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#io-sql-method
+# Alternative to_sql() *method* for DBs that support COPY FROM
+def psql_insert_copy(table, conn, keys, data_iter):
+    # gets a DBAPI connection that can provide a cursor
+    dbapi_conn = conn.connection
+    with dbapi_conn.cursor() as cur:
+        s_buf = StringIO()
+        writer = csv.writer(s_buf)
+        writer.writerows(data_iter)
+        s_buf.seek(0)
 
-    psql_cmd = ['psql', '-U', user, schema, '-c', cmd]
-    p1 = subprocess.run(psql_cmd, shell=False, capture_output=True)
-    logger.info(p1.stdout.decode('utf-8'))
-    if p1.returncode != 0:
-        logger.error(p1.stderr.decode('utf-8'))
-        raise FileNotFoundError(f'{cmd} failed.')
+        columns = ', '.join('"{}"'.format(k) for k in keys)
+        if table.schema:
+            table_name = '{}.{}'.format(table.schema, table.name)
+        else:
+            table_name = table.name
+
+        sql = 'COPY {} ({}) FROM STDIN WITH CSV'.format(
+            table_name, columns)
+        cur.copy_expert(sql=sql, file=s_buf)
 
 
 def create_and_load_table(conn, prefix, filename, pkey=None):
@@ -48,28 +57,14 @@ def create_and_load_table(conn, prefix, filename, pkey=None):
     logger.info(f'{table} loading ...')
 
     # read optimized Pandas data types
-    df = dh.from_csv_with_types(filename, nrows=0)
+    df = dh.from_csv_with_types(filename)
 
     # compute optimized database data types
     db_dtypes = dh.optimize_db_dtypes(df)
 
-    """df.to_sql automatically creates a table with good but not optimal data types,
-    hence the use of dh.optimize_db_dtypes()
-    
-    df.to_sql() will issue a commit per row.  This is extremely slow.  It is better
-    to use the DBMS bulk load utility.
-    """
-
-    # drop then create an empty table
+    # drop table and its dependencies (e.g. primary key constraint)
     conn.execute(f'DROP TABLE IF EXISTS {table} CASCADE')
-    df.to_sql(table, conn, index=False, dtype=db_dtypes)
-
-    # bulk load the data
-    if filename.name.endswith('.gz'):
-        cmd = f"\copy {table} from program 'zcat {filename.as_posix()}' CSV HEADER"
-    else:
-        cmd = f"\copy {table} from '{filename.as_posix()}' CSV HEADER"
-    psql(cmd)
+    df.to_sql(table, conn, index=False, dtype=db_dtypes, method=psql_insert_copy)
 
     # add primary key constraint
     if pkey:
