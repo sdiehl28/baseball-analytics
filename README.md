@@ -23,7 +23,7 @@ These Jupyter Notebooks are in this repo at: [Baseball Analysis](https://github.
 
 ### Data Validation
 
-pytest is used to automate data integrity and data consistency testing.  More than 100 attributes are validated over the last 45 years worth of data.  Some examples:
+pytest is used to automate data integrity and data consistency testing.  More than 100 attributes are checked over the last 45 years worth of data.  Some examples:
 
 * the number of home runs hit by batters should equal the number of home runs allowed by pitchers
 * when the Retrosheet data aggregated to the same level as Lahman data, the two data sets should be consistent with each other
@@ -31,9 +31,9 @@ pytest is used to automate data integrity and data consistency testing.  More th
 
 ### Ongoing
 
-Additional example of baseball data analysis are continually being added.
+Additional examples of baseball data analysis are continually being added.
 
-Sabermetrics, such as wOBA, will soon be added using data available from [FanGraphs](https://www.fangraphs.com/guts.aspx).
+Sabermetrics, such as wOBA, will soon be computed using reference data from [FanGraphs](https://www.fangraphs.com/guts.aspx).
 
 ## MLB Data Wrangling
 
@@ -68,7 +68,7 @@ If you have any questions, you may send me an email with the word "baseball" in 
 
 ## Development Environment
 
-The scripts were tested Jupyter Notebooks were run using Python 3.7 in a full [Anaconda](https://www.anaconda.com/distribution/) 2019.10 environment.  Note that the [open-source parsers](https://sourceforge.net/projects/chadwick/) for Retrosheet must be installed to run the scripts.  See:  [MLB Data Details](https://github.com/sdiehl28/baseball-analytics/blob/master/MLB_Data_Details.md)
+The scripts and Jupyter Notebooks were testing using Python 3.7 in a full [Anaconda](https://www.anaconda.com/distribution/) 2019.10 environment.  Note that the [open-source parsers](https://sourceforge.net/projects/chadwick/) for Retrosheet must be installed to run the scripts.  See:  [MLB Data Details](https://github.com/sdiehl28/baseball-analytics/blob/master/MLB_Data_Details.md)
 
 ## Additional Information
 
