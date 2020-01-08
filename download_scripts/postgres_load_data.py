@@ -30,6 +30,7 @@ def get_parser():
 
 
 # This improves df.to_sql() write speed by a couple orders of magnitude!
+# This method was copied verbatim from:
 # https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#io-sql-method
 # Alternative to_sql() *method* for DBs that support COPY FROM
 def psql_insert_copy(table, conn, keys, data_iter):
@@ -52,7 +53,7 @@ def psql_insert_copy(table, conn, keys, data_iter):
         cur.copy_expert(sql=sql, file=s_buf)
 
 
-def create_and_load_table(conn, prefix, filename, pkey=None):
+def create_and_load_table(engine, prefix, filename, pkey=None):
     table = prefix + filename.name.split('.')[0]
     logger.info(f'{table} loading ...')
 
@@ -63,65 +64,65 @@ def create_and_load_table(conn, prefix, filename, pkey=None):
     db_dtypes = dh.optimize_db_dtypes(df)
 
     # drop table and its dependencies (e.g. primary key constraint)
-    conn.execute(f'DROP TABLE IF EXISTS {table} CASCADE')
-    df.to_sql(table, conn, index=False, dtype=db_dtypes, method=psql_insert_copy)
+    engine.execute(f'DROP TABLE IF EXISTS {table} CASCADE')
+    df.to_sql(table, engine, index=False, dtype=db_dtypes, method=psql_insert_copy)
 
     # add primary key constraint
     if pkey:
         pkeys_str = ', '.join(pkey)
         sql = f'ALTER TABLE {table} ADD PRIMARY KEY ({pkeys_str})'
-        conn.execute(sql)
+        engine.execute(sql)
 
     # rows added
-    rs = conn.execute(f'SELECT COUNT(*) from {table}')
+    rs = engine.execute(f'SELECT COUNT(*) from {table}')
     result = rs.fetchall()
     rows = result[0][0]
 
     logger.info(f'{table} added with {rows} rows')
 
 
-def load_lahman_tables(conn, data_dir):
+def load_lahman_tables(engine, data_dir):
     lahman_data = data_dir.joinpath('lahman/wrangled')
 
-    create_and_load_table(conn, 'lahman_', lahman_data / 'people.csv', ['player_id'])
+    create_and_load_table(engine, 'lahman_', lahman_data / 'people.csv', ['player_id'])
     sql = 'ALTER TABLE lahman_people ADD CONSTRAINT retro_player_unique UNIQUE (retro_id)'
-    conn.execute(sql)
+    engine.execute(sql)
 
-    create_and_load_table(conn, 'lahman_', lahman_data / 'batting.csv',
+    create_and_load_table(engine, 'lahman_', lahman_data / 'batting.csv',
                           ['player_id', 'year_id', 'stint'])
-    create_and_load_table(conn, 'lahman_', lahman_data / 'battingpost.csv',
+    create_and_load_table(engine, 'lahman_', lahman_data / 'battingpost.csv',
                           ['player_id', 'year_id', 'round'])
-    create_and_load_table(conn, 'lahman_', lahman_data / 'pitching.csv',
+    create_and_load_table(engine, 'lahman_', lahman_data / 'pitching.csv',
                           ['player_id', 'year_id', 'stint'])
-    create_and_load_table(conn, 'lahman_', lahman_data / 'pitchingpost.csv',
+    create_and_load_table(engine, 'lahman_', lahman_data / 'pitchingpost.csv',
                           ['player_id', 'year_id', 'round'])
-    create_and_load_table(conn, 'lahman_', lahman_data / 'fielding.csv',
+    create_and_load_table(engine, 'lahman_', lahman_data / 'fielding.csv',
                           ['player_id', 'year_id', 'stint', 'pos'])
-    create_and_load_table(conn, 'lahman_', lahman_data / 'fieldingpost.csv',
+    create_and_load_table(engine, 'lahman_', lahman_data / 'fieldingpost.csv',
                           ['player_id', 'year_id', 'round', 'pos'])
-    create_and_load_table(conn, 'lahman_', lahman_data / 'parks.csv',
+    create_and_load_table(engine, 'lahman_', lahman_data / 'parks.csv',
                           ['park_key'])
-    create_and_load_table(conn, 'lahman_', lahman_data / 'salaries.csv',
+    create_and_load_table(engine, 'lahman_', lahman_data / 'salaries.csv',
                           ['player_id', 'year_id', 'team_id'])
-    create_and_load_table(conn, 'lahman_', lahman_data / 'teams.csv',
+    create_and_load_table(engine, 'lahman_', lahman_data / 'teams.csv',
                           ['team_id', 'year_id'])
     sql = 'ALTER TABLE lahman_teams ADD CONSTRAINT retro_team_unique UNIQUE (team_id_retro, year_id)'
-    conn.execute(sql)
+    engine.execute(sql)
 
 
-def load_retrosheet_tables(conn, data_dir):
+def load_retrosheet_tables(engine, data_dir):
     retro_data = data_dir.joinpath('retrosheet/wrangled')
 
-    create_and_load_table(conn, 'retro_', retro_data / 'batting.csv.gz',
+    create_and_load_table(engine, 'retro_', retro_data / 'batting.csv.gz',
                           ['player_id', 'game_id'])
-    create_and_load_table(conn, 'retro_', retro_data / 'pitching.csv.gz',
+    create_and_load_table(engine, 'retro_', retro_data / 'pitching.csv.gz',
                           ['player_id', 'game_id'])
-    create_and_load_table(conn, 'retro_', retro_data / 'fielding.csv.gz',
+    create_and_load_table(engine, 'retro_', retro_data / 'fielding.csv.gz',
                           ['player_id', 'game_id', 'pos'])
 
-    create_and_load_table(conn, 'retro_', retro_data / 'game.csv.gz',
+    create_and_load_table(engine, 'retro_', retro_data / 'game.csv.gz',
                           ['game_id'])
-    create_and_load_table(conn, 'retro_', retro_data / 'team_game.csv.gz',
+    create_and_load_table(engine, 'retro_', retro_data / 'team_game.csv.gz',
                           ['team_id', 'game_id'])
 
 
@@ -153,11 +154,13 @@ def main():
     # avoid putting passwords directly in code
     connect_str = f'postgresql://{db_user}:{db_pass}@localhost:5432/baseball'
 
-    conn = create_engine(connect_str)
+    # for distinction between engine.execute() and engine.connect().execute() see:
+    # https://stackoverflow.com/questions/34322471/sqlalchemy-engine-connection-and-session-difference#answer-42772654
+    engine = create_engine(connect_str)
 
     data_dir = Path('../data')
-    load_lahman_tables(conn, data_dir)
-    load_retrosheet_tables(conn, data_dir)
+    load_lahman_tables(engine, data_dir)
+    load_retrosheet_tables(engine, data_dir)
 
     logger.info('Finished')
 
