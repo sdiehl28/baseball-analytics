@@ -1,6 +1,12 @@
 ## Jupyter Notebooks
 
-The notebooks in this directory can be viewed with nbviewer by clicking on the links below:
+The Jupyter Notesbooks:
 
-[Introduction](https://nbviewer.jupyter.org/github/sdiehl28/baseball-analytics/blob/master/baseball_jupyter_nb/01_Introduction.ipynb)
+* with a CSV suffix use CSV files as the data source
+* with a SQL suffix use SQL to acquire data from a database (e.g. Postgres)
+
+but otherwise perform the same data analysis.
+
+[01_Intro_CSV](https://nbviewer.jupyter.org/github/sdiehl28/baseball-analytics/blob/master/baseball_jupyter_nb/01_Intro_CSV.ipynb)
+[01_Intro_SQL](https://nbviewer.jupyter.org/github/sdiehl28/baseball-analytics/blob/master/baseball_jupyter_nb/01_Intro_SQL.ipynb)
 
