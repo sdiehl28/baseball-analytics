@@ -7,6 +7,6 @@ The Jupyter Notesbooks:
 
 but otherwise perform the same data analysis.
 
-[01_Intro_CSV](https://nbviewer.jupyter.org/github/sdiehl28/baseball-analytics/blob/master/baseball_jupyter_nb/01_Intro_CSV.ipynb)
+[01_Intro_CSV](https://nbviewer.jupyter.org/github/sdiehl28/baseball-analytics/blob/master/baseball_jupyter_nb/01_Intro_CSV.ipynb)  
 [01_Intro_SQL](https://nbviewer.jupyter.org/github/sdiehl28/baseball-analytics/blob/master/baseball_jupyter_nb/01_Intro_SQL.ipynb)
 
