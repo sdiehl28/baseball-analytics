@@ -26,7 +26,7 @@ def get_fieldname_mapping():
     # It is easier to maintain fieldname mappings in a single location
     new_names = {
         'playerID': 'player_id',
-        'yearID': 'year_id',
+        'yearID': 'year',
         'teamID': 'team_id',
         'lgID': 'lg_id',
         '2B': 'double',
