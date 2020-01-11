@@ -290,9 +290,16 @@ def move_column_after(df, after_col, col):
 
 def game_id_to_url(game_id):
     """Game ID to URL for Jupyter Notebooks"""
-    home = game_id[:3]
-    url = 'https://www.baseball-reference.com/boxes/' + home + '/' + game_id + '.shtml'
+    dir = game_id[:3]
+    url = 'https://www.baseball-reference.com/boxes/' + dir + '/' + game_id + '.shtml'
     display(HTML(f'<a href="{url}">{game_id}</a>'))
+
+
+def player_id_to_url(player_id):
+    """Baseball Reference Player ID to URL for Jupyter Notebooks"""
+    dir = player_id[0]
+    url = 'https://www.baseball-reference.com/players/' + dir + '/' + player_id + '.shtml'
+    display(HTML(f'<a href="{url}">{player_id}</a>'))
 
 
 def simple_loess(x, y, df, frac=1 / 6, it=0):
