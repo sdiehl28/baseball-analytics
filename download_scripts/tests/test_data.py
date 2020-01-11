@@ -335,7 +335,7 @@ def test_batting_team_game_data(batting, team_game):
     assert b.equals(tg)
 
 
-def test_pitching_team_game_data(batting, pitching, team_game):
+def test_pitching_team_game_data(pitching, team_game):
     """Verify Retrosheet batting aggregated by (game_id, team_id)
     is the same as team_game Pitching by (game_id, opponent_team_id)
 
