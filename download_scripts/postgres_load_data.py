@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+
+"""Load Wrangled data into Postgres"""
+
+__author__ = 'Stephen Diehl'
+
 import os
 import sys
 from pathlib import Path
@@ -89,24 +95,24 @@ def load_lahman_tables(engine, data_dir):
     engine.execute(sql)
 
     create_and_load_table(engine, 'lahman_', lahman_data / 'batting.csv',
-                          ['player_id', 'year_id', 'stint'])
+                          ['player_id', 'year', 'stint'])
     create_and_load_table(engine, 'lahman_', lahman_data / 'battingpost.csv',
-                          ['player_id', 'year_id', 'round'])
+                          ['player_id', 'year', 'round'])
     create_and_load_table(engine, 'lahman_', lahman_data / 'pitching.csv',
-                          ['player_id', 'year_id', 'stint'])
+                          ['player_id', 'year', 'stint'])
     create_and_load_table(engine, 'lahman_', lahman_data / 'pitchingpost.csv',
-                          ['player_id', 'year_id', 'round'])
+                          ['player_id', 'year', 'round'])
     create_and_load_table(engine, 'lahman_', lahman_data / 'fielding.csv',
-                          ['player_id', 'year_id', 'stint', 'pos'])
+                          ['player_id', 'year', 'stint', 'pos'])
     create_and_load_table(engine, 'lahman_', lahman_data / 'fieldingpost.csv',
-                          ['player_id', 'year_id', 'round', 'pos'])
+                          ['player_id', 'year', 'round', 'pos'])
     create_and_load_table(engine, 'lahman_', lahman_data / 'parks.csv',
                           ['park_key'])
     create_and_load_table(engine, 'lahman_', lahman_data / 'salaries.csv',
-                          ['player_id', 'year_id', 'team_id'])
+                          ['player_id', 'year', 'team_id'])
     create_and_load_table(engine, 'lahman_', lahman_data / 'teams.csv',
-                          ['team_id', 'year_id'])
-    sql = 'ALTER TABLE lahman_teams ADD CONSTRAINT retro_team_unique UNIQUE (team_id_retro, year_id)'
+                          ['team_id', 'year'])
+    sql = 'ALTER TABLE lahman_teams ADD CONSTRAINT retro_team_unique UNIQUE (team_id_retro, year)'
     engine.execute(sql)
 
 
@@ -115,16 +121,44 @@ def load_retrosheet_tables(engine, data_dir):
 
     create_and_load_table(engine, 'retro_', retro_data / 'batting.csv.gz',
                           ['player_id', 'game_id'])
+    sql = """ALTER TABLE retro_batting
+    ADD CONSTRAINT batting_player_id
+    FOREIGN KEY(player_id)
+    REFERENCES lahman_people(retro_id)
+    """
+    engine.execute(sql)
     create_and_load_table(engine, 'retro_', retro_data / 'pitching.csv.gz',
                           ['player_id', 'game_id'])
+    sql = """ALTER TABLE retro_pitching
+    ADD CONSTRAINT pitching_player_id
+    FOREIGN KEY(player_id)
+    REFERENCES lahman_people(retro_id)
+    """
+    engine.execute(sql)
     create_and_load_table(engine, 'retro_', retro_data / 'fielding.csv.gz',
                           ['player_id', 'game_id', 'pos'])
+    sql = """ALTER TABLE retro_fielding
+    ADD CONSTRAINT fielding_player_id
+    FOREIGN KEY(player_id)
+    REFERENCES lahman_people(retro_id)
+    """
+    engine.execute(sql)
 
     create_and_load_table(engine, 'retro_', retro_data / 'game.csv.gz',
                           ['game_id'])
     create_and_load_table(engine, 'retro_', retro_data / 'team_game.csv.gz',
                           ['team_id', 'game_id'])
-
+    sql = 'ALTER TABLE retro_team_game ADD YEAR integer'
+    engine.execute(sql)
+    sql = """UPDATE retro_team_game 
+    SET YEAR = CAST(DATE_PART('year', game_start_dt) AS integer)
+    """
+    engine.execute(sql)
+    sql = """ALTER TABLE retro_team_game
+    ADD CONSTRAINT team_id FOREIGN KEY (team_id, year) 
+    REFERENCES lahman_teams (team_id_retro, year)
+    """
+    engine.execute(sql)
 
 def main():
     """Load the data in Postgres.
