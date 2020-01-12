@@ -60,7 +60,7 @@ The scripts in this repo will wrangle the Lahman and Retrosheet data to create c
   * code is provided to read/write csv files with persisted data types
 * parse the Retrosheet data using open-source parsers (which on Linux must be built from source code)
 * tidy the Retrosheet data, identify primary keys and clean primary key data to be unique
-* ensure that the data is accurate by providing more than 35 pytest tests to verify that the restructured data is consistent between the two data sets, the primary keys are unique, etc.  
+* ensure that the data is accurate by providing more than 50 pytest tests to verify that the restructured data is consistent between the two data sets, the primary keys are unique, etc.  
 
 At this time, the restructured data is not provided in this repo, only the scripts to create it are provided.
 
