@@ -60,9 +60,6 @@ def get_player_game(p_retrosheet_collected):
 
 def clean_player_game(player_game):
     """Ensure Primary Key is Unique."""
-    # Remove appear_dt as it has same values as game_dt
-    if (player_game['game_dt'] == player_game['appear_dt']).mean() > 0.999:
-        player_game.drop('appear_dt', axis=1, inplace=True)
 
     # Fix Duplicate Primary Key
     pkey = ['game_id', 'player_id']

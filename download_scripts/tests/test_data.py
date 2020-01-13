@@ -588,7 +588,7 @@ def test_lahman_pitching_teams(lahman_pitching, lahman_teams):
             p[col] = p[col].astype('int')
             t[col] = t[col].astype('int')
 
-    assert np.abs(p[col] - t[col]).max() == 1
+    assert np.abs(p[cols] - t[cols]).max().max() == 1
 
 
 def test_lahman_fielding_teams(lahman_fielding, lahman_teams):
