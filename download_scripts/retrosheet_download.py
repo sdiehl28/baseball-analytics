@@ -8,7 +8,7 @@ Will not download data if it has already been downloaded.
 __author__ = 'Stephen Diehl'
 
 import os
-import glob
+import shutil
 import argparse
 import requests
 from pathlib import Path
@@ -28,15 +28,6 @@ def get_parser():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument("--data-dir", type=str, help="baseball data directory", default='../data')
-
-    # Some Key MLB Data Dates
-    # 1955: sacrifice files, sacrifice bunts and intentional walks are recorded for the first time
-    # 1969: divisional play begins
-    # 1974: Retrosheet is missing no games from 1974 to present
-    parser.add_argument("--start-year", type=int, help="start year", default='1955')
-
-    # Retrosheet Data for 2019 became available in December 2019
-    parser.add_argument("--end-year", type=int, help="end year", default='2019')
     parser.add_argument("-v", "--verbose", help="verbose output", action="store_true")
     parser.add_argument("--log", dest="log_level", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help="Set the logging level")
@@ -53,39 +44,42 @@ def mk_dirs(data_dir):
     p_retrosheet_raw.mkdir(parents=True, exist_ok=True)
     p_retrosheet_wrangled.mkdir(parents=True, exist_ok=True)
 
-    msg = " ".join(os.listdir(p_retrosheet_raw.parent))
-    logger.info(f'{p_retrosheet_raw.parent} contents: {msg}')
 
-
-def download_data(raw_dir, start_year, end_year):
-    """download and unzip retrosheet event files
-    """
+def download_data(raw_dir):
+    """download and unzip retrosheet event files"""
 
     os.chdir(raw_dir)
-    for year in range(start_year, end_year + 1):
-        # download each event file, if it doesn't exist locally
-        filename = f'{year}eve.zip'
-        path = Path(filename)
-        if not path.exists():
-            url = f'http://www.retrosheet.org/events/{year}eve.zip'
-            logger.info(f'Downloading {url}')
-            r = requests.get(url)
-            r.raise_for_status()
-            with open(filename, 'wb') as f:
-                f.write(r.content)
 
-        # unzip each zip file, if its contents don't exist locally
-        # {year}BOS.EVA is in all zip files
-        filename = f'{year}BOS.EVA'
-        path = Path(filename)
-        if not path.exists():
-            filename = f'{year}eve.zip'
-            with zipfile.ZipFile(filename, "r") as zip_ref:
-                zip_ref.extractall(".")
+    # download most recent Retrosheet data
+    # most recent data is from chadwickbureau on github.
+    zip_filename = 'retrosheet-master.zip'
 
-    years = glob.glob('TEAM*')
-    years = sorted([year[4:] for year in years])
-    logger.info(f'Data downloaded for years: {years[0]} thru {years[-1]}')
+    if not Path(zip_filename).is_file():
+        logger.info('Downloading >200 MB of Data ...')
+
+        url = 'https://github.com/chadwickbureau/retrosheet/archive/master.zip'
+        r = requests.get(url)
+        r.raise_for_status()
+        with open(zip_filename, 'wb') as f:
+            f.write(r.content)
+
+        # unzip it
+        with zipfile.ZipFile(zip_filename, "r") as zip_ref:
+            zip_ref.extractall('.')
+
+
+def reorg_files(raw_dir):
+    """move the unzipped files to the raw directory and remove the extract directory"""
+    os.chdir(raw_dir)
+
+    unzip_dir = raw_dir / 'retrosheet-master'
+
+    # move the subdirectories up one directory
+    for dir in os.listdir(unzip_dir):
+        shutil.move(unzip_dir.joinpath(dir).as_posix(), '.')
+
+    # rm the extract directory
+    shutil.rmtree('retrosheet-master')
 
 
 def main():
@@ -112,13 +106,9 @@ def main():
     data_dir = Path(args.data_dir)
     mk_dirs(data_dir)
 
-    raw_dir = data_dir / 'retrosheet/raw'
-    if args.start_year > 1974:
-        logger.WARNING('data consistency tests may fail if start-year > 1974')
-
-    if args.end_year < 2019:
-        logger.WARNING('data consistency tests may fail if end-year < 2019')
-    download_data(raw_dir, args.start_year, args.end_year)
+    raw_dir = (data_dir / 'retrosheet/raw').resolve()
+    download_data(raw_dir)
+    reorg_files(raw_dir)
 
 
 if __name__ == '__main__':
