@@ -33,7 +33,7 @@ pytest is used to automate data integrity and data consistency testing.  More th
 
 Additional examples of baseball data analysis are continually being added.
 
-Sabermetrics, such as wOBA, will soon be computed using reference data from [FanGraphs](https://www.fangraphs.com/guts.aspx).
+Retrosheet postseason data will soon be parsed.  All Retrosheet regular season data is parsed and wrangled.
 
 ## MLB Data Wrangling
 
