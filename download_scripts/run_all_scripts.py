@@ -38,12 +38,6 @@ def main():
     start_year = f'--start-year={args.start_year}'
     end_year = f'--end-year={args.end_year}'
 
-    if args.start_year > 1974:
-        print('WARNING: data integrity tests may fail if start-year > 1974')
-
-    if args.end_year < 2019:
-        print('WARNING: data integrity tests may fail if end-year < 2019')
-
     print('Running lahman_download:')
     cmd = ['./lahman_download.py', '-v', '--log=INFO', data_dir]
     run_cmd(cmd)
@@ -53,11 +47,15 @@ def main():
     run_cmd(cmd)
 
     print('Running retrosheet_download:')
-    cmd = ['./retrosheet_download.py', '-v', '--log=INFO', data_dir, start_year, end_year]
+    cmd = ['./retrosheet_download.py', '-v', '--log=INFO', data_dir]
     run_cmd(cmd)
 
     print('Running retrosheet_parse:')
-    cmd = ['./retrosheet_parse.py', '-v', '--log=INFO', data_dir]
+    cmd = ['./retrosheet_parse.py', '-v', '--log=INFO', data_dir, start_year, end_year]
+    run_cmd(cmd)
+
+    print('Running retrosheet_collect:')
+    cmd = ['./retrosheet_collect.py', '-v', '--log=INFO', '--use-datatypes', data_dir]
     run_cmd(cmd)
 
     print('Running retrosheet_wrangle:')
