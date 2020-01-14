@@ -20,7 +20,7 @@ This file is also copied to this repo at: `data/lahman/readme2017.txt`
 
 ### Retrosheet Data Source
 
-The play-by-play data will be downloaded for each year at: http://www.retrosheet.org/events/{year}eve.zip
+The play-by-play data will be downloaded from: https://github.com/chadwickbureau/retrosheet 
 
 The retrosheet_download script will put these in: `../data/retrosheet/raw`
 
