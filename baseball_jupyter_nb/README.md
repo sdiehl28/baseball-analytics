@@ -1,6 +1,6 @@
 ## Jupyter Notebooks
 
-The Jupyter Notesbooks:
+The Jupyter Notebooks:
 
 * with a CSV suffix use CSV files as the data source
 * with a SQL suffix use SQL to acquire data from a database (e.g. Postgres)

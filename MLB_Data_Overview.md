@@ -50,7 +50,7 @@ Datatype optimizations per column are persisted to disk for each corresponding c
 
 ### Data Validation
 
-pytest will be used to automate the running of more than 35 data integrity and data consistency tests.  Tests include validating that the unique identifying fields for a csv file, are in fact unique.
+pytest will be used to automate the running of more than 50 data integrity and data consistency tests.  Tests include validating that the unique identifying fields for a csv file, are in fact unique.
 
 Running pytest:
 

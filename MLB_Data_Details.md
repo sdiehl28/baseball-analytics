@@ -20,7 +20,7 @@ This file is also copied to this repo at: `data/lahman/readme2017.txt`
 
 ### Retrosheet Data Source
 
-The play-by-play data will be downloaded from: https://github.com/chadwickbureau/retrosheet 
+The play-by-play data will be downloaded from: https://github.com/chadwickbureau/retrosheet/archive/master.zip 
 
 The retrosheet_download script will put these in: `../data/retrosheet/raw`
 
