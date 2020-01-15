@@ -3,11 +3,17 @@
 
 The free and open-source baseball data sets from Lahman and Retrosheet will be downloaded, wrangled, and analyzed.
 
+## Sabermetrics
+
+Sabermetrics is a term coined prior to the advent of modern software tools for data analysis with fast personal computers.  One aim is to create metrics that make it easy for people to quickly grasp how much a player contributes to his team's wins.
+
+With Pandas and Scikit Learn, comprehensive models can now easily be created, but this does not diminish the value of Sabermetrics.  Most of the thinking behind Sabermetrics is relevant to all data analysis.  Both modern data analysis and Sabermetrics will be presented in Jupyter Notebooks.
+
 ### Data Preparation
 
-The 80/20 rule applies here, with 80% of the effort in preparing the data and 20% of the effort in analyzing the data.  The provided Python scripts perform the tedious task of preparing the data for analysis.  These scripts are located in this repo at: [data wrangling scripts](https://github.com/sdiehl28/baseball-analytics/tree/master/download_scripts).
+The Python scripts prepare the data for analysis.  This includes running the open-source Retrosheet parsers.  See:   These scripts are located in this repo at: [download_scripts](https://github.com/sdiehl28/baseball-analytics/tree/master/download_scripts).
 
-A script is also provided to load the wrangled data into Postgres with primary key constraints.  Use of Postgres is optional.
+A script is also provided to load the wrangled data into Postgres with primary and foreign key constraints.  Use of Postgres is optional.
 
 ### Data Analysis
 
@@ -15,9 +21,9 @@ Examples of interesting baseball questions are answered using Jupyter Notebooks 
 
 Some questions include:
 
-* How many more runs per game are there when the DH is used?  Is this difference statistically significant?
+* How many more runs per game are there when the DH is used?  Could this difference be due to chance?
 * How has game length and pitcher count increased over the years?
-* How is game length related to pitcher count?  Is a linear model of game length vs pitcher count statistically significant?
+* How is game length related to pitcher count?  Could this relationship be due to chance?
 
 These Jupyter Notebooks are in this repo at: [Baseball Analysis](https://github.com/sdiehl28/baseball-analytics/tree/master/baseball_jupyter_nb).
 
@@ -33,7 +39,7 @@ pytest is used to automate data integrity and data consistency testing.  More th
 
 Additional examples of baseball data analysis are continually being added.
 
-Retrosheet postseason data will soon be parsed.  All Retrosheet regular season data is parsed and wrangled.
+Retrosheet postseason data will soon be parsed.  All Retrosheet regular season data has been parsed and wrangled for use.
 
 ## MLB Data Wrangling
 
@@ -59,8 +65,8 @@ The scripts in this repo will wrangle the Lahman and Retrosheet data to create c
 * determine the most efficient data type, for both Pandas and SQL, and persist that data type for each field in a corresponding csv file
   * code is provided to read/write csv files with persisted data types
 * parse the Retrosheet data using open-source parsers (which on Linux must be built from source code)
-* tidy the Retrosheet data, identify primary keys and clean primary key data to be unique
-* ensure that the data is accurate by providing more than 50 pytest tests to verify that the restructured data is consistent between the two data sets, the primary keys are unique, etc.  
+* tidy the Retrosheet data, identify primary keys and sum stats for the exceptionally few players who had multiple records with the same primary key
+* ensure that the data is accurate by providing more than 50 pytest tests to verify that the restructured data is consistent between the two data sets, the Retrosheet data produced by the parsers is completely consistent between parsers, the primary keys are unique, etc.  
 
 At this time, the restructured data is not provided in this repo, only the scripts to create it are provided.
 
@@ -68,7 +74,7 @@ If you have any questions, you may send me an email with the word "baseball" in 
 
 ## Development Environment
 
-The scripts and Jupyter Notebooks were testing using Python 3.7 in a full [Anaconda](https://www.anaconda.com/distribution/) 2019.10 environment.  Note that the [open-source parsers](https://sourceforge.net/projects/chadwick/) for Retrosheet must be installed to run the scripts.  See:  [MLB Data Details](https://github.com/sdiehl28/baseball-analytics/blob/master/MLB_Data_Details.md)
+The scripts and Jupyter Notebooks were testing using Python 3.7 in a full [Anaconda](https://www.anaconda.com/distribution/) 2019.10 environment.  Note that the [open-source parsers](https://sourceforge.net/projects/chadwick/) for Retrosheet must be installed to run the scripts.  See:  [Retrosheet Parsers](https://github.com/sdiehl28/baseball-analytics/blob/master/RetrosheetParsers.md).
 
 ## Additional Information
 
