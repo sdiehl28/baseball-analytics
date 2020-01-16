@@ -54,16 +54,26 @@ Scripts with example command line arguments:
   *  restructure cwgame output to create stats per team per game (team_game.csv) and stats per game (game.csv)
   *  the csv files are compressed using gzip
 
-#### pytest
+### Performing Data Validation
 
-After all scripts have run:  pytest -v
+pytest is used to automate the running of more than 50 data integrity and data consistency tests.
 
-*WARNING*: The data consistency tests, which have tight limits on how different the aggregated Retrosheet data can be from the aggregated Lahman data, were created using the years 1974 through 2019 inclusive.  These tests may fail if all Retrosheet data between 1974 and 2019 is not downloaded.
+Running pytest:
+
+* recommend: 'pytest -v'
+* must be run from the `download_scripts` directory
+* must be run after the scripts which download and parse the data have been run
+* accepts custom option: --data-dir=<data_directory>
+
+If you like, you may spot check the data using [Baseball Reference](https://www.baseball-reference.com/).  Baseball Reference uses the Retrosheet data.  The box score for a game can be constructed from the game_id using:  
+ `'https://www.baseball-reference.com/boxes/' + game_id.str[:3] + '/' + game_id + '.shtml'`  
+ For example, to verify that there are two entries for Chris Young for game_id = BOS201708250, the url is:  
+https://www.baseball-reference.com/boxes/BOS/BOS201708250.shtml
 
 ### Rerunning the Scripts
 
 It is rarely necessary to re-download the data.  Minor tweaks are continually being made to Lahman and Retrosheet for very old data, but recent data is usually accurate and complete the first time it is made available.
 
-The data is not updated during the season.  It is added to both Lahman and Retrosheet around late December.  For example, all of the 2019 regular and post-season data became available in December 2019.
+The data is not updated during the season.  It is added to both Lahman and Retrosheet around late December.  For example, all of the 2019 regular and post-season data for both Lahman and Retrosheet became available in late December 2019.
 
-To rerun the scripts, it is only necessary to remove the data from all data directories other than the raw data directories.
+To rerun the scripts, it is only necessary to remove the data from data directories other than the raw data directories.

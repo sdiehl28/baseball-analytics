@@ -33,10 +33,12 @@ These Jupyter Notebooks are in this repo at: [Baseball Analysis](https://github.
 
 ### Data Validation
 
-pytest is used to automate data integrity and data consistency testing.  More than 50 tests check more than 100 attributes over the last 45 years worth of data.  Some examples:
+pytest is used to automate data integrity and data consistency testing.  More than 50 tests check more than 100 attributes.  The data is checked for all years between 1974 and 2019 as this is the time period for which there is no missing Retrosheet data.
+
+Some examples:
 
 * the number of home runs hit by batters should equal the number of home runs allowed by pitchers
-* when the Retrosheet data aggregated to the same level as Lahman data, the two data sets should be consistent with each other
+* when the Retrosheet data is aggregated to the same level as the Lahman data, the two data sets should be consistent with each other
 * fields which should uniquely identify a row in a CSV file, actually do.
 
 The data consistency tests show that the Retrosheet parsers are 100% consistent with each other.  In other words, when the data from one parser is aggregated to the same level as another parser and compared, the results are identical.
@@ -57,7 +59,7 @@ Retrosheet postseason data will soon be parsed and wrangled.  All Retrosheet reg
 
 ## MLB Data Wrangling
 
-There are two primary sources of free and extensive baseball data:
+The two best sources of free baseball data are:
 
 * Lahman
 * Retrosheet
@@ -68,9 +70,9 @@ The raw Retrosheet data is play-by-play data and is not in CSV format.  The Retr
 
 * **cwevent** produces a CSV file with a row per play (aka event)
 * **cwdaily** produces a CSV file with a row per player per game
-* **cwgame** produces a CSV file with team stats per game
+* **cwgame** produces a CSV file with a row per game
 
-Having both data sets available allows for queries such as what was the longest hitting streak for all players who earned in the top 10% of salary that year.
+Having both Lahman and Retrosheet data allows for queries such as what was the longest hitting streak for all players who earned in the top 10% of salary that year.
 
 The purpose of data wrangling is to make data analysis easier and more efficient.  The 50+ data consistency tests would have been much more difficult to write had the data not been wrangled first.
 
@@ -85,6 +87,7 @@ The scripts which wrangle the Lahman and Retrosheet data:
   * code is provided to read/write CSV files with persisted data types
 * automate the running of the Retrosheet parsers and tidy their output
 * identify primary keys and sum stats for the exceptionally few players who had multiple records with the same primary key
+  * since 1948, the only duplicate key was produced by cwdaily in which a player had two rows created for one game
 
 At this time, the wrangled data is not provided in this repo, only the scripts to create it are provided.
 
