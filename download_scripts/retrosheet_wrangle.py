@@ -9,6 +9,7 @@ __author__ = 'Stephen Diehl'
 
 import argparse
 import re
+import shutil
 from pathlib import Path
 import logging
 import sys
@@ -414,6 +415,19 @@ def parse_datetime(row):
     return pd.to_datetime(datetime_str, format='%Y%m%d %H:%M')
 
 
+def wrangle_event(p_retrosheet_collected, p_retrosheet_wrangled):
+    """Wrangle event
+
+    At this time, there is nothing to do, just copy the collected data."""
+    source = p_retrosheet_collected / 'event.csv.gz'
+    destination = p_retrosheet_wrangled / 'event.csv.gz'
+    shutil.copyfile(source, destination)
+
+    source = p_retrosheet_collected / 'event_types.csv'
+    destination = p_retrosheet_wrangled / 'event_types.csv'
+    shutil.copyfile(source, destination)
+
+
 def main():
     """Wrangle the data.
     """
@@ -448,6 +462,8 @@ def main():
     create_batting(player_game, game_start, p_retrosheet_wrangled)
     create_pitching(player_game, game_start, p_retrosheet_wrangled)
     create_fielding(player_game, game_start, p_retrosheet_wrangled)
+
+    wrangle_event(p_retrosheet_collected, p_retrosheet_wrangled)  # cwevent
 
     logger.info('Finished')
 
