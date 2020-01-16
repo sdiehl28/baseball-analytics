@@ -51,6 +51,8 @@ The data consistency tests show that the Retrosheet data when aggregated and com
 * for pitching stats: within 0.06%
 * for fielding stats: within 0.8%
 
+For a detailed description of many of the data consistency tests, see my Jupyter notebook at: [Data Consistency](https://nbviewer.jupyter.org/github/sdiehl28/baseball-analytics/blob/master/baseball_jupyter_nb/02_Data_Consistency_CSV.ipynb)
+
 ### Ongoing
 
 Additional examples of baseball data analysis are continually being added.
