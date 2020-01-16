@@ -459,6 +459,9 @@ def test_retro_lahman_fielding_players(fielding, lahman_people, lahman_fielding)
     # The missing fielder had zero fielding total chances.
     assert missing['tc'].sum() == 0
 
+    # The missing fielder was on the field for no outs.
+    assert missing['inn_outs'].sum() == 0
+
 
 def test_retro_lahman_pitching_players(pitching, lahman_pitching, lahman_people):
     """Verify all Retrosheet pitchers are in Lahman pitchers"""
@@ -472,8 +475,6 @@ def test_retro_lahman_player_ids(batting, lahman_people):
     """Verify the inverse of Lahman player_id to Retrosheet player_id mapping is valid.
 
     In other words, each Retrosheet player_id is mapped to exactly one Lahman player_id.
-
-    In math terms, Lahman player_id to Retrosheet player_id is one-to-one and onto.
 
     Other tests verify that Retrosheet player_ids and Lahman player_ids are unique.
 
