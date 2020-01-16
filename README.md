@@ -5,13 +5,17 @@ The free and open-source baseball data sets from Lahman and Retrosheet will be d
 
 ## Sabermetrics
 
-Sabermetrics is a term coined prior to the advent of modern software tools for data analysis with fast personal computers.  One aim is to create metrics that make it easy for people to quickly grasp how much a player contributes to his team's wins.
+[Sabermetrics](https://en.wikipedia.org/wiki/Sabermetrics) is a term coined prior to the advent of modern software tools for data analysis and fast personal computers.  One aim is to create metrics that make it easy for people to quickly grasp how much a player contributes to his team's wins.  In modern terminology, this is an example of explanatory modeling.
 
-With Pandas and Scikit Learn, comprehensive models can now easily be created, but this does not diminish the value of Sabermetrics.  Most of the thinking behind Sabermetrics is relevant to all data analysis.  Both modern data analysis and Sabermetrics will be presented in Jupyter Notebooks.
+Another aim of Sabermetrics is to identify metrics that are likely to be causative.  Someone who analyzes baseball data with no baseball domain knowledge, may find many statistical associations, but these may not be causative.  A model built from causative inputs is more likely to predict well than one built from "merely associative" inputs.  In modern terminology, this is an example of predictive modeling in which a domain expert uses feature engineering to create inputs (the Sabermetrics) to improve predictive accuracy.
+
+Most of the thinking behind Sabermetrics is relevant to all data analysis.
+
+Baseball data analysis, including the use of Sabermetrics created by baseball experts, will be presented in Jupyter Notebooks.
 
 ### Data Preparation
 
-The Python scripts prepare the data for analysis.  This includes running the open-source Retrosheet parsers.  See:   These scripts are located in this repo at: [download_scripts](https://github.com/sdiehl28/baseball-analytics/tree/master/download_scripts).
+The Python scripts prepare the data for analysis.  This includes running the open-source [Retrosheet Parsers](https://github.com/sdiehl28/baseball-analytics/blob/master/RetrosheetParsers.md).  These scripts are located in this repo at: [download_scripts](https://github.com/sdiehl28/baseball-analytics/tree/master/download_scripts).
 
 A script is also provided to load the wrangled data into Postgres with primary and foreign key constraints.  Use of Postgres is optional.
 
@@ -29,17 +33,27 @@ These Jupyter Notebooks are in this repo at: [Baseball Analysis](https://github.
 
 ### Data Validation
 
-pytest is used to automate data integrity and data consistency testing.  More than 100 attributes are checked over the last 45 years worth of data.  Some examples:
+pytest is used to automate data integrity and data consistency testing.  More than 50 tests check more than 100 attributes over the last 45 years worth of data.  Some examples:
 
 * the number of home runs hit by batters should equal the number of home runs allowed by pitchers
 * when the Retrosheet data aggregated to the same level as Lahman data, the two data sets should be consistent with each other
 * fields which should uniquely identify a row in a CSV file, actually do.
 
+The data consistency tests show that the Retrosheet parsers are 100% consistent with each other.  In other words, when the data from one parser is aggregated to the same level as another parser and compared, the results are identical.
+
+The data consistency tests show that the Lahman data is almost 100% self consistent.  In other words, when data from one Lahman CSV file is aggregated to the same level as another and compared, the results are almost identical.
+
+The data consistency tests show that the Retrosheet data when aggregated and compared with the Lahman data is:
+
+* for batting stats: within 0.01%
+* for pitching stats: within 0.06%
+* for fielding stats: within 0.8%
+
 ### Ongoing
 
 Additional examples of baseball data analysis are continually being added.
 
-Retrosheet postseason data will soon be parsed.  All Retrosheet regular season data has been parsed and wrangled for use.
+Retrosheet postseason data will soon be parsed and wrangled.  All Retrosheet regular season data has been parsed and wrangled.
 
 ## MLB Data Wrangling
 
@@ -48,27 +62,31 @@ There are two primary sources of free and extensive baseball data:
 * Lahman
 * Retrosheet
 
-The Lahman data is tidy and is therefore easy to use with Pandas or SQL, however the data is per season rather than per game.  Finding a team's win streaks, a player's best month for hitting, and similar is not possible with the Lahman data.
+The Lahman data is tidy and is therefore easy to analyze with Pandas or SQL, however the data is per season rather than per game.  Finding a team's win streaks, a player's best month for hitting, and similar is not possible with the Lahman data.
 
-The Retrosheet data is play-by-play data which is arguably too fine grained and must be parsed and summarized to the game level.  To make it easy to use, it must be made tidy.
+The raw Retrosheet data is play-by-play data and is not in CSV format.  The Retrosheet parsers perform the following:
+
+* **cwevent** produces a CSV file with a row per play (aka event)
+* **cwdaily** produces a CSV file with a row per player per game
+* **cwgame** produces a CSV file with team stats per game
 
 Having both data sets available allows for queries such as what was the longest hitting streak for all players who earned in the top 10% of salary that year.
 
-The scripts in this repo will wrangle the Lahman and Retrosheet data to create csv files to:
+The purpose of data wrangling is to make data analysis easier and more efficient.  The 50+ data consistency tests would have been much more difficult to write had the data not been wrangled first.
 
-* allow for easy Pandas analysis (or SQL analysis if loaded into a database)
-* allow both data sets to be referenced in the same query
-* ensure that for both data sets, the same 50+ field names are used to represent the same information
-  * for example, if a batter hits a "hr", then the opposing pitcher gave up a "hr" and "hr" is the field name used in the batting and pitching csv files for both Lahman and Retrosheet
+The scripts which wrangle the Lahman and Retrosheet data:
+
+* ensure that for all CSV files in both datasets, the same 50+ field names are used to represent the same information
+  * for example, if a batter hits a "hr", then the opposing pitcher gave up a "hr" and "hr" is the field name used in the batting and pitching CSV files for both Lahman and Retrosheet
 * ensure that field names conform to official baseball abbreviations as much as possible
-* ensure that all field names are valid Python identifiers and valid SQL column names
-* determine the most efficient data type, for both Pandas and SQL, and persist that data type for each field in a corresponding csv file
-  * code is provided to read/write csv files with persisted data types
-* parse the Retrosheet data using open-source parsers (which on Linux must be built from source code)
-* tidy the Retrosheet data, identify primary keys and sum stats for the exceptionally few players who had multiple records with the same primary key
-* ensure that the data is accurate by providing more than 50 pytest tests to verify that the restructured data is consistent between the two data sets, the Retrosheet data produced by the parsers is completely consistent between parsers, the primary keys are unique, etc.  
+  * with the caveat that all field names are valid Python identifiers and valid SQL column names
+* determine the most efficient data type, for both Pandas and SQL, and persist that data type for each field in a corresponding CSV file
+  * this greatly reduces the amount of memory required
+  * code is provided to read/write CSV files with persisted data types
+* automate the running of the Retrosheet parsers and tidy their output
+* identify primary keys and sum stats for the exceptionally few players who had multiple records with the same primary key
 
-At this time, the restructured data is not provided in this repo, only the scripts to create it are provided.
+At this time, the wrangled data is not provided in this repo, only the scripts to create it are provided.
 
 If you have any questions, you may send me an email with the word "baseball" in the subject to: sdiehl28@gmail.com
 
@@ -81,7 +99,3 @@ The scripts and Jupyter Notebooks were testing using Python 3.7 in a full [Anaco
 For more information about the Lahman and Retrosheet data sets and how they were wrangled, see: [MLB Data Overview](https://github.com/sdiehl28/baseball-analytics/blob/master/MLB_Data_Overview.md)
 
 For even more information, such as the Lahman and Retrosheet data licenses and the Retrosheet parsers, see: [MLB Data Details](https://github.com/sdiehl28/baseball-analytics/blob/master/MLB_Data_Details.md)
-
-
-
-

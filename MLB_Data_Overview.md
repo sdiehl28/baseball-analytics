@@ -18,7 +18,9 @@ Data is tidy if:
 
 Retrosheet has play-by-play data for every MLB game since 1974.  Data is available since 1918 with older years having somewhat more missing data.  Open source parsers from Dr. T. L. Turocy will be used to parse and summarize the play-by-play data.
 
-The **cwdaily** parser will generate a csv file with a row **per player per game**.  If data is collected since 1955, this will produce over 3 million rows with over 150 attributes.  These attributes include all attributes for all roles a player may have, including batter, pitcher, and all 9 fielding positions.  As players do not take on all roles in each game, almost all attribute values are zero.  The output from cwdaily will be restructured into **batting stats per player per game**, **pitching stats per player per game** and **fielding stats per player per game** with a row created only if there are relevant stats for that player and game.  This is very similar to how the Lahman data is structured.
+The **cwdaily** parser will generate a csv file with a row **per player per game**.  If data is collected since 1955, this will produce over 3 million rows with over 150 attributes.  These attributes include all attributes for all roles a player may have, including batter, pitcher, and all 9 fielding positions.  As players do not take on all roles in each game, almost all attribute values are zero.  
+
+The output from cwdaily will be restructured into **batting stats per player per game**, **pitching stats per player per game** and **fielding stats per player per game** with a row created only if there are relevant stats for that player and game.  This is very similar to how the Lahman data is structured.
 
 The **cwgame** parser will generate a csv file with a row that has stats for both teams per game as well as game specific stats such as attendance.  This output will be restructured into stats **per team per game** and stats **per game**.
 
