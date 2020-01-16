@@ -14,7 +14,7 @@ Scripts with example command line arguments:
 * **./run_all_scripts.py** --start-year=1974 --end-year=2019
   * convenience script to run all scripts with -v --log=INFO
   * default data directory is ../data
-  * all Lahman data is downloaded, but only the years specified for Retrosheet are downloaded
+  * all data is downloaded but only the years specified are parsed and wrangled
 * **./lahman_download.py** -v --log=INFO
   * downloads all the lahman data and unzips it to `../data/lahman/raw`
 
@@ -24,21 +24,20 @@ Scripts with example command line arguments:
   * drops fielder columns that have more than 90% missing values
   * optimizes data types
   * persists with optimized data types to `../data/lahman/wrangle`
-* **./retrosheet_download.py** -v -log=INFO --start-year=1974 --end-year=2019
+* **./retrosheet_download.py** -v -log=INFO
   * downloads the retrosheet data and unzips it to `../data/retrosheet/raw`
-  * by default, data is downloaded from 1955 through 2019 inclusive
-  * this can be changed by using the --start-year and --end-year flags
-* **./retrosheet_parse.py** -v --log=INFO --use-datatypes
+* **./retrosheet_parse.py** -v --log=INFO --start-year=1974 --end-year=2019
+  * parses data in `data/retrosheet/raw` for the specified years
+    * cwdaily and cwgame are always run
+    * use '--run-cwevent' to run the cwevent parser as well
+* **./retrosheet_collect.py** -v --log=INFO --use-datatypes
   * with --use-datatypes option
-    * uses the precomputed optimized data type files provided with this repo at `data/retrosheet`
+    * uses the precomputed optimized data types: `data/retrosheet/*_types.csv`
     * this can save several Gigs of RAM, if data goes back to the 1950s or earlier
   * without --use-datatypes option
     * will compute and save the optimized data types
     * may require more than 16 Gig of RAM, if data goes back to the 1950s or earlier
-  * runs the cwdaily and cwgame parsers to generate csv files
-    * see the "Parsers for Retrosheet" section below
-  * all data in the `data/retrosheet/raw` is parsed
-  * collects the results into one DataFrame for cwdaily and one DataFrame for cwgame
+  * collects the results into one DataFrame for cwdaily, one DataFrame for cwgame and one DataFrame for cwevent (if cwevent had been run)
   * converts the field names to lower case
   * drops columns that have more than 99% missing values
   * persists the results to `../data/retrosheet/collected`
