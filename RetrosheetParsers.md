@@ -4,12 +4,13 @@ The open source parsers created by Dr. T. L. Turocy to parse the Retrosheet play
 
 Retrosheet has 98% of all play-by-play data since 1954 and 100% of all play-by-play data since 1974.  Making use of this data would be very difficult without the parsers.
 
-The data consistency checks in this repo verify that the results of the parsers are consistent with each other.  That is, when data from different parsers is aggregated to the same level and compared, the results are the same.  Furthermore the parsed Retrosheet data, when aggregated to the season level, is within 1% of the Lahman data for every data consistency test that was run.
+The data consistency checks in this repo verify that the results of the parsers are consistent with each other.  That is, when the data from different parsers is aggregated to the same level and compared, the results are exactly the same.  Furthermore the parsed Retrosheet data, when aggregated to the season level, is within 1% of the Lahman data for every data consistency test run.
 
 The parsers generate CSV files which can then be wrangled and analyzed.
 
-* cwevent - creates a play-by-play file with a row per event
-  * I am slightly augmenting the output of this parser by parsing event_tx myself to provide additional fields at the play-by-play level similar to cwgame -- this augmentation is under development as of 2020-01-15
+* cwevent - creates a play-by-play file with a row per play (aka event)
+  * about 10 additional fields were added by custom parsing event_tx to allow for easier analysis of the play-by-play data
+  * these 10 new fields were aggregated and compared against cwgame output and found to be identical
 * cwdaily - create stats per player per game for batting, fielding and pitching
   * The data wrangling scripts will split the cwdaily output into three files, one each for batting, fielding and pitching
 * cwgame - create stats per team per game for batting, fielding and pitching
