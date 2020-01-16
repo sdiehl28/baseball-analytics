@@ -1,5 +1,7 @@
 # Data Preparation Scripts for Baseball Analytics
 
+These scripts download, parse and wrangle the Lahman and Retrosheet data.
+
 All scripts should be run from the download_scripts directory. 
 
 For all scripts:
@@ -52,6 +54,13 @@ Scripts with example command line arguments:
   *  restructure cwdaily output to create batting/pitching/fielding csv files that have a row only if the player has a non-zero batting/pitching/fielding statistic for that game
   *  restructure cwgame output to create stats per team per game (team_game.csv) and stats per game (game.csv)
   *  the csv files are compressed using gzip
+* **./postgres_load_data.py** -v --log=INFO
+  *  optional script to:
+     *  create tables with optimized data types
+     *  create primary and foreign key constraints
+     *  load data into tables
+  *  the baseball database must have already been created
+     *  connect string:  f'postgresql://{db_user}:{db_pass}@localhost:5432/baseball' 
 
 ### Performing Data Validation
 
