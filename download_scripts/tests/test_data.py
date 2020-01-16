@@ -613,3 +613,35 @@ def test_lahman_fielding_teams(lahman_fielding, lahman_teams):
     # When comparing large values, it is best to use their relative differences.
     # When comparing small values, it is best to use their absolute differences.
     assert ((f[cols] - t[cols]).max() <= 2).all()
+
+
+def test_event(event, team_game):
+    """Verify play-by-play data aggregated per team per game matches team_game data
+
+    About 10 fields were added to cwevent output by custom parsing of event_tx.
+    These 10 fields are included in this test."""
+
+    key = ['game_id', 'team_id', 'opponent_team_id']
+    compare_cols = set(team_game.columns) & set(event.columns) - set(key)
+    compare_cols = list(compare_cols)
+    assert len(compare_cols) == 21
+
+    event_team_game = event[key + compare_cols].groupby(key).agg('sum')
+
+    # e, dp, tp, pb, wp, and bk should be charged to the opponent when
+    # aggregating values to compare with team_game
+    opp_cols = ['e', 'dp', 'tp', 'pb', 'wp', 'bk']
+    tmp = event_team_game.reset_index()
+    opp = event_team_game.sort_values(['game_id', 'opponent_team_id']).reset_index()
+
+    # swap column values
+    tmp[opp_cols] = opp[opp_cols]
+    event_team_game = tmp
+
+    tg = team_game.set_index(['game_id', 'team_id']).sort_index()
+    etg = event_team_game.set_index(['game_id', 'team_id']).sort_index()
+
+    diff = tg[compare_cols] - etg[compare_cols]
+
+    assert diff.max().max() == 0
+    assert diff.min().min() == 0

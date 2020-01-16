@@ -38,7 +38,11 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_datatypes):
     """
 
     os.chdir(parse_dir)
-    dailyfiles = glob.glob(f'{parser}*.csv')
+    # read the augmented files, not the ones created by cwevent
+    if parser == 'cwevent':
+        dailyfiles = glob.glob(f'{parser}*_plus.csv')
+    else:
+        dailyfiles = glob.glob(f'{parser}*.csv')
     dailyfiles.sort()
 
     logger.info(f'Collecting {len(dailyfiles)} {parser} parsed csv files into single dataframe ...')
@@ -50,14 +54,16 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_datatypes):
             filename = '../player_game_types.csv'
         elif parser == 'cwgame':
             filename = '../game_types.csv'
+        elif parser == 'cwevent':
+            filename = '../event_types.csv'
         else:
             raise ValueError(f'Unrecognized parser: {parser}')
 
         dates, dtypes = dh.read_types(filename)
         dtypes = {key.upper(): value for key, value in dtypes.items()}
 
-        df = pd.concat((pd.read_csv(f, parse_dates=dates, dtype=dtypes) for f in dailyfiles), ignore_index=True,
-                       copy=False)
+        df = pd.concat((pd.read_csv(f, parse_dates=dates, dtype=dtypes) for f in dailyfiles),
+                       ignore_index=True, copy=False)
         logger.info(f'Optimized Memory Usage:   {dh.mem_usage(df)}')
     else:
         # this could use twice the RAM required to hold the DataFrame
@@ -88,6 +94,8 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_datatypes):
         filename = 'player_game.csv.gz'
     elif parser == 'cwgame':
         filename = 'game.csv.gz'
+    elif parser == 'cwevent':  # was wrangled in parser to save RAM, write to wrangled dir
+        filename = '../wrangled/event.csv.gz'
     else:
         raise ValueError(f'Unrecognized parser: {parser}')
 
@@ -118,7 +126,8 @@ def main():
 
     p_data = Path(args.data_dir).resolve()
     if p_data.joinpath('retrosheet', 'collected', 'player_game.csv.gz').exists() and \
-            p_data.joinpath('retrosheet', 'collected', 'game.csv.gz').exists():
+       p_data.joinpath('retrosheet', 'collected', 'game.csv.gz').exists() and \
+       p_data.joinpath('retrosheet', 'wrangled', 'event.csv.gz').exists():
         logger.info('Skipping collecting -- already performed')
         return
 
@@ -129,6 +138,7 @@ def main():
     p_data_parsed.mkdir(parents=True, exist_ok=True)
     p_data_collected.mkdir(parents=True, exist_ok=True)
 
+    collect_parsed_files(p_data_parsed, p_data_collected, 'cwevent', args.use_datatypes)
     collect_parsed_files(p_data_parsed, p_data_collected, 'cwdaily', args.use_datatypes)
     collect_parsed_files(p_data_parsed, p_data_collected, 'cwgame', args.use_datatypes)
 

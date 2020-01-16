@@ -116,3 +116,9 @@ def lahman_teams(data_dir):
 def lahman_people(data_dir):
     filename = data_dir / 'lahman' / 'wrangled' / 'people.csv'
     return dh.from_csv_with_types(filename)
+
+
+@pytest.fixture(scope='session')
+def event(data_dir):
+    filename = data_dir / 'retrosheet' / 'wrangled' / 'event.csv.gz'
+    return dh.from_csv_with_types(filename)
