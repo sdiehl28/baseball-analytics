@@ -1,7 +1,7 @@
 # Baseball Analytics
 ## Overview
 
-The free and open-source baseball data sets from Lahman and Retrosheet will be downloaded, wrangled, and analyzed.
+The free and open-source baseball data sets from Lahman and Retrosheet will be downloaded, parsed, wrangled, and analyzed.
 
 ## Sabermetrics
 
@@ -27,7 +27,7 @@ Some questions include:
 
 * How many more runs per game are there when the DH is used?  Could this difference be due to chance?
 * How has game length and pitcher count increased over the years?
-* How is game length related to pitcher count?  Could this relationship be due to chance?
+  * How is game length related to pitcher count?  Could this relationship be due to chance?
 
 These Jupyter Notebooks are in this repo at: [Baseball Analysis](https://github.com/sdiehl28/baseball-analytics/tree/master/baseball_jupyter_nb).
 
@@ -38,10 +38,10 @@ pytest is used to automate data integrity and data consistency testing.  More th
 Some examples:
 
 * the number of home runs hit by batters should equal the number of home runs allowed by pitchers
-* when the Retrosheet data is aggregated to the same level as the Lahman data, the two data sets should be consistent with each other
+* when the Retrosheet data is aggregated to the same level as the Lahman data and compared, the results should be very close
 * fields which should uniquely identify a row in a CSV file, actually do.
 
-The data consistency tests show that the Retrosheet parsers are 100% consistent with each other.  In other words, when the data from one parser is aggregated to the same level as another parser and compared, the results are identical.
+The data consistency tests show that the Retrosheet parsers produce outputs that are 100% consistent with each other.  In other words, when the data from one parser is aggregated to the same level as another parser and compared, the results are identical.
 
 The data consistency tests show that the Lahman data is almost 100% self consistent.  In other words, when data from one Lahman CSV file is aggregated to the same level as another and compared, the results are almost identical.
 
@@ -76,7 +76,7 @@ Having both Lahman and Retrosheet data allows for queries such as what was the l
 
 The purpose of data wrangling is to make data analysis easier and more efficient.  The 50+ data consistency tests would have been much more difficult to write had the data not been wrangled first.
 
-The scripts which wrangle the Lahman and Retrosheet data:
+The scripts which wrangle the Lahman and Retrosheet data will:
 
 * ensure that for all CSV files in both datasets, the same 50+ field names are used to represent the same information
   * for example, if a batter hits a "hr", then the opposing pitcher gave up a "hr" and "hr" is the field name used in the batting and pitching CSV files for both Lahman and Retrosheet
@@ -101,4 +101,4 @@ The scripts and Jupyter Notebooks were testing using Python 3.7 in a full [Anaco
 
 For more information about the Lahman and Retrosheet data sets and how they were wrangled, see: [MLB Data Overview](https://github.com/sdiehl28/baseball-analytics/blob/master/MLB_Data_Overview.md)
 
-For even more information, such as the Lahman and Retrosheet data licenses and the Retrosheet parsers, see: [MLB Data Details](https://github.com/sdiehl28/baseball-analytics/blob/master/MLB_Data_Details.md)
+For the data sources and their licenses see: [MLB Data Details](https://github.com/sdiehl28/baseball-analytics/blob/master/MLB_Data_Details.md)

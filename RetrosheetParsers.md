@@ -9,7 +9,7 @@ The data consistency checks in this repo verify that the results of the parsers 
 The parsers generate CSV files which can then be wrangled and analyzed.
 
 * cwevent - creates a play-by-play file with a row per play (aka event)
-  * about 10 additional fields were added by custom parsing event_tx to allow for easier analysis of the play-by-play data
+  * about 10 fields were missing from the cwevent output that exist in the cwgame output.  These 10 fields were added by writing code to parse the event_tx field.
   * these 10 new fields were aggregated and compared against cwgame output and found to be identical
 * cwdaily - create stats per player per game for batting, fielding and pitching
   * The data wrangling scripts will split the cwdaily output into three files, one each for batting, fielding and pitching

@@ -59,7 +59,7 @@ After data wrangling, the following CSV files exist:
 * Stats per Game:
   * game.csv.gz
 
-Data will be cleaned so that "primary keys" are unique.  Extremely few records require this type of cleaning, but as most data processing relies on having a set of fields which uniquely identify a record, this cleaning is required.
+Statistics will be summed so that "primary keys" are unique.  Extremely few records require this summing but as most data processing relies on having a set of fields which uniquely identify a record, this is required.
 
 Pandas datatypes will be optimized to save space and more accurately describe the attribute.  For example, the number of hits in a game is always between 0 and 255, so a uint8 can be used rather than an int64.  Likewise, for integer fields with missing values, the new Pandas Int64 (and similar) can be used instead of requiring a float datatype.
 
@@ -71,4 +71,4 @@ A baseball player may have several roles during the course of a game, such as ba
 
 Attribute names for batters and pitchers are the same where it makes sense to do so.  For example, if a batter hits a "hr" then then opposing team's pitcher must have given up a "hr".
 
-All attribute names for the 9 fielding positions are identical, even though passed-ball and catcher-interference only apply to the catcher.  This allows for a single csv file for fielding with no null values.
+All attribute names for the 9 fielding positions are identical, even though passed-ball only applies to the catcher and interference is only relevant to the catcher, pitcher and first baseman.  This allows for a single csv file for fielding with no null values.
