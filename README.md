@@ -7,11 +7,11 @@ The free and open-source baseball data sets from Lahman and Retrosheet will be d
 
 [Sabermetrics](https://en.wikipedia.org/wiki/Sabermetrics) is a term coined prior to the advent of modern software tools for data analysis and fast personal computers.  One aim is to create metrics that make it easy for people to quickly grasp how much a player contributes to his team's wins.  In modern terminology, this is an example of explanatory modeling.
 
-Another aim of Sabermetrics is to identify metrics that are likely to be causative.  Someone who analyzes baseball data with no baseball domain knowledge, may find many statistical associations, but these may not be causative.  A model built from causative inputs is more likely to predict well than one built from "merely associative" inputs.  In modern terminology, this is an example of predictive modeling in which a domain expert uses feature engineering to create inputs (the Sabermetrics) to improve predictive accuracy.
+Another aim of Sabermetrics is to identify metrics that are likely to be causative.  Someone who analyzes baseball data with no baseball domain knowledge may find statistical associations, but these may not be causative.  A model built from causative inputs is more likely to predict well.  In modern terminology, this is an example of predictive modeling in which a domain expert uses feature engineering to create inputs (Sabermetrics) to improve predictive accuracy.
 
-Most of the thinking behind Sabermetrics is relevant to all data analysis.
+Data Science, and science in general, must produce results that are repeatable.  See for example: [Reproducible Research](https://en.wikipedia.org/wiki/Reproducibility#Reproducible_research).  A problem with many Sabermetric blog posts is that the results cannot be reproduced because the queries that created them are not published.  Also it appears that most sports writers do not wrangle the data prior to performing their queries, so correct queries must be very complex.  Furthermore many  derived features such as "park factor" do not have an agreed upon formulation.  And even when a derived feature is described, it is described in English text that is ambiguous rather than in code or precise mathematical formulation, which is unambiguous.
 
-Baseball data analysis, including the use of Sabermetrics created by baseball experts, will be presented in Jupyter Notebooks.
+The emphasis on data analysis here will be repeatability.  The data is wrangled to simplify the analysis and the data wrangling scripts are provided.  Over 50 tests which verify the data wrangling are also provided and can be run with the single command, 'pytest'.  The data analysis is published in unambiguous code in the form of Jupyter notebooks.
 
 ### Data Preparation
 
@@ -23,7 +23,7 @@ A script is also provided to load the wrangled data into Postgres with primary a
 
 Examples of interesting baseball questions are answered using Jupyter Notebooks with Python, Pandas and matplotlib/seaborn plots.
 
-Some questions include:
+Some initial questions include:
 
 * How many more runs per game are there when the DH is used?  Could this difference be due to chance?
 * How has game length and pitcher count increased over the years?
@@ -38,7 +38,7 @@ pytest is used to automate data integrity and data consistency testing.  More th
 Some examples:
 
 * the number of home runs hit by batters should equal the number of home runs allowed by pitchers
-* when the Retrosheet data is aggregated to the same level as the Lahman data and compared, the results should be very close
+* when the Retrosheet data is aggregated to the same level as the Lahman data and compared, the results should be close
 * fields which should uniquely identify a row in a CSV file, actually do.
 
 The data consistency tests show that the Retrosheet parsers produce outputs that are 100% consistent with each other.  In other words, when the data from one parser is aggregated to the same level as another parser and compared, the results are identical.
@@ -83,12 +83,12 @@ The scripts which wrangle the Lahman and Retrosheet data will:
 * ensure that for all CSV files in both datasets, the same 50+ field names are used to represent the same information
   * for example, if a batter hits a "hr", then the opposing pitcher gave up a "hr" and "hr" is the field name used in the batting and pitching CSV files for both Lahman and Retrosheet
 * ensure that field names conform to official baseball abbreviations as much as possible
-  * with the caveat that all field names are valid Python identifiers and valid SQL column names
+  * with the caveat that all field names must be valid Python identifiers and valid SQL column names
 * determine the most efficient data type, for both Pandas and SQL, and persist that data type for each field in a corresponding CSV file
-  * this greatly reduces the amount of memory required
+  * this greatly reduces the amount of memory required or the amount of storage required in a database
   * code is provided to read/write CSV files with persisted data types
 * automate the running of the Retrosheet parsers and tidy their output
-* identify primary keys and sum stats for the exceptionally few players who had multiple records with the same primary key
+* identify primary keys and sum statistics for the exceptionally few players who had multiple records with the same primary key
   * since 1948, the only duplicate key was produced by cwdaily in which a player had two rows created for one game
 
 At this time, the wrangled data is not provided in this repo, only the scripts to create it are provided.

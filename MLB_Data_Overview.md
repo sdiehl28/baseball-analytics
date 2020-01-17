@@ -22,15 +22,15 @@ As of December 2019, Retrosheet has data through the 2019 season.
 
 ### Field Names
 
-The field names in both datasets are based on standard baseball statistic abbreviations.  See for example: https://en.wikipedia.org/wiki/Baseball_statistics.
+The field names in both datasets are based on standard baseball abbreviations.  See for example: https://en.wikipedia.org/wiki/Baseball_statistics.
 
 The field names have been changed as little as possible to remain familiar.  Field name changes include:
 
 * columns in different CSV files with the same meaning, now have the same column name
 * CamelCase is converted to snake_case
 * '2B' and '3B' are changed to 'double' and 'triple' to make them valid identifiers
-* Retrosheet's 'gdp' is changed to match Lahman's 'gidp'
-* Retrosheet's 'hp' is changed to match Lahman's 'hbp' 
+* Retrosheet's 'gdp' is changed to 'gidp' to match Lahman
+* Retrosheet's 'hp' is changed to 'hbp' to match Lahman 
 
 ### Data Wrangling
 
@@ -41,13 +41,21 @@ After data wrangling, the following CSV files exist:
   * batting.csv
   * pitching.csv
   * fielding.csv
+* Postseason Stats per Round per Player per Year
+  * battingpost.csv
+  * pitchingpost.csv
+  * fieldingpost.csv
 * Stats per Team per Year:
   * teams.csv -- contains team_id for both Lahman and Retrosheet
 * Other
   * people.csv -- contains player_id for Lahman, Retrosheet and Baseball-Reference
+  * salaries.csv
+  * parks.csv
+  * more to be added soon ...
   
 
 **Retrosheet**  
+
 * Stats per Event
   * event.csv.gz
 * Stats per Player per Game:
@@ -58,10 +66,11 @@ After data wrangling, the following CSV files exist:
   * team_game.csv.gz
 * Stats per Game:
   * game.csv.gz
+* Postseason stats: to be added soon ...
 
-Statistics will be summed so that "primary keys" are unique.  Extremely few records require this summing but as most data processing relies on having a set of fields which uniquely identify a record, this is required.
+Where necessary, statistics will be summed so that "primary keys" are unique.  Extremely few records require this summing but as most data processing relies on having a set of fields which uniquely identify a record, this is required.
 
-Pandas datatypes will be optimized to save space and more accurately describe the attribute.  For example, the number of hits in a game is always between 0 and 255, so a uint8 can be used rather than an int64.  Likewise, for integer fields with missing values, the new Pandas Int64 (and similar) can be used instead of requiring a float datatype.
+Pandas datatypes will be optimized to save space and more accurately describe the attribute.  For example, the number of hits in a game is always between 0 and 255, so a uint8 can be used rather than an int64.  Likewise, for integer fields with missing values, the new Pandas Int64 (and similar) can be used instead of requiring a float datatype.  Similarly, the database table create statements for optional use with a database, use data types optimized to reduce storage.
 
 Datatype optimizations per column are persisted to disk for each corresponding csv file with the suffix `_types.csv`.  The Python functions **from_csv_with_types()** and **to_csv_with_types()** have been written to  allow persistence of data to/from csv files without losing data type information.
 
@@ -71,4 +80,4 @@ A baseball player may have several roles during the course of a game, such as ba
 
 Attribute names for batters and pitchers are the same where it makes sense to do so.  For example, if a batter hits a "hr" then then opposing team's pitcher must have given up a "hr".
 
-All attribute names for the 9 fielding positions are identical, even though passed-ball only applies to the catcher and interference is only relevant to the catcher, pitcher and first baseman.  This allows for a single csv file for fielding with no null values.
+All attribute names for the 9 fielding positions are identical, even though passed-ball only applies to the catcher and interference is mostly relevant to the catcher, pitcher and first baseman.  This allows for a single csv file for fielding with no null values.

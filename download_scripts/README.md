@@ -32,6 +32,8 @@ Scripts with example command line arguments:
   * parses data in `data/retrosheet/raw` for the specified years
     * cwdaily and cwgame are always run
     * use '--run-cwevent' to run the cwevent parser as well
+    * use '--cwevent-fields' to specify your own set of fields using the cwevent syntax
+      * for example, to specify all fields use: --cwevent-fields='-f 0-96 -x 0-62'
 * **./retrosheet_collect.py** -v --log=INFO --use-datatypes
   * with --use-datatypes option
     * uses the precomputed optimized data types: `data/retrosheet/*_types.csv`
@@ -39,7 +41,9 @@ Scripts with example command line arguments:
   * without --use-datatypes option
     * will compute and save the optimized data types
     * may require more than 16 Gig of RAM, if data goes back to the 1950s or earlier
-  * collects the results into one DataFrame for cwdaily, one DataFrame for cwgame and one DataFrame for cwevent (if cwevent had been run)
+  * collects the results into one DataFrame for cwdaily and one DataFrame for cwgame
+    * if there are cwevent files, it will collect these into a single DataFrame as well
+    * if there are cwevent files, it will add the following new fields to make play-by-play analysis easier: so, sb, cs, bk, bb, ibb, hbp, xi, single, double, triple, hr
   * converts the field names to lower case
   * drops columns that have more than 99% missing values
   * persists the results to `../data/retrosheet/collected`
