@@ -39,6 +39,8 @@ def get_parser():
                         help="Set the logging level")
 
     parser.add_argument("--run-cwevent", help="verbose output", action="store_true")
+    parser.add_argument("--cwevent-fields", type=str, help="cwevent field specification",
+                        default='-f 0,2,3,8,9,10,14,29,36-42,44,45,51 -x 1,2,5,8,11,13,14,45,50,55')
 
     return parser
 
@@ -144,8 +146,7 @@ def main():
             logger.info('Skipping cwevent parsing -- already performed')
         else:
             parse_event_files(p_data_raw, p_data_parsed, 'cwevent',
-                              '-f 0,2,3,8,9,10,14,29,36-42,44,45,51 -x 1,2,5,8,11,13,14,45,50,55',
-                              args.start_year, args.end_year)
+                              args.cwevent_fields, args.start_year, args.end_year)
 
     # request all available fields for cwdaily and cwgame
     if (p_data_parsed / 'cwdaily2019.csv').exists():
