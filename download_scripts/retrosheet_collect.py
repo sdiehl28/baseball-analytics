@@ -104,18 +104,20 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_datatypes):
 
 
 def augment_event_files(p_data_parsed):
-    """Augment event data
+    """Add New Play-by-Play Fields
 
     cwevent does not produce a boolean or int for the following values:
     'so', 'sb', 'cs', 'bk', 'bb', 'ibb', 'hbp', 'xi', 'single', 'double', 'triple', 'hr'
     Extract these from event_tx and h_cd
 
     The advantage of creating these fields is:
-     1) groupby (game,team) to sum values and compare with cwgame for data consistency check
-     2) some play-by-play analysis is easier
+     1) some play-by-play analysis is easier
+     2) the new fields can be aggregated to the game level and compared with cwgame to
+        verify data consistency
 
     This method is in retrosheet_collect.py rather than retrosheet_wrangle.py, because
-    many Gigs of RAM can be saved by collecting csv files with booleans instead of objects
+    many Gigs of RAM can be saved by collecting csv files that replace the value 'T'
+    with the value True (and likewise 'F' with False).
     """
     os.chdir(p_data_parsed)
     files = p_data_parsed.glob('cwevent????.csv')
