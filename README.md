@@ -88,6 +88,7 @@ The scripts which wrangle the Lahman and Retrosheet data will:
   * this greatly reduces the amount of memory required or the amount of storage required in a database
   * code is provided to read/write CSV files with persisted data types
 * automate the running of the Retrosheet parsers and tidy their output
+  * the primary "tidying" is converting the output of cwdaily to match that of Lahman by creating batting, pitching and fielding csv files.
 * identify primary keys and sum statistics for the exceptionally few players who had multiple records with the same primary key
   * since 1948, the only duplicate key was produced by cwdaily in which a player had two rows created for one game
 

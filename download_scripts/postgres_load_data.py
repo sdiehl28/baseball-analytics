@@ -127,6 +127,7 @@ def load_retrosheet_tables(engine, data_dir):
     REFERENCES lahman_people(retro_id)
     """
     engine.execute(sql)
+
     create_and_load_table(engine, 'retro_', retro_data / 'pitching.csv.gz',
                           ['player_id', 'game_id'])
     sql = """ALTER TABLE retro_pitching
@@ -135,6 +136,7 @@ def load_retrosheet_tables(engine, data_dir):
     REFERENCES lahman_people(retro_id)
     """
     engine.execute(sql)
+
     create_and_load_table(engine, 'retro_', retro_data / 'fielding.csv.gz',
                           ['player_id', 'game_id', 'pos'])
     sql = """ALTER TABLE retro_fielding
@@ -146,19 +148,19 @@ def load_retrosheet_tables(engine, data_dir):
 
     create_and_load_table(engine, 'retro_', retro_data / 'game.csv.gz',
                           ['game_id'])
+
     create_and_load_table(engine, 'retro_', retro_data / 'team_game.csv.gz',
                           ['team_id', 'game_id'])
-    sql = 'ALTER TABLE retro_team_game ADD YEAR integer'
-    engine.execute(sql)
-    sql = """UPDATE retro_team_game 
-    SET YEAR = CAST(DATE_PART('year', game_start_dt) AS integer)
-    """
-    engine.execute(sql)
+
     sql = """ALTER TABLE retro_team_game
-    ADD CONSTRAINT team_id FOREIGN KEY (team_id, year) 
+    ADD CONSTRAINT retro_team_id FOREIGN KEY (team_id, year) 
     REFERENCES lahman_teams (team_id_retro, year)
     """
     engine.execute(sql)
+
+    create_and_load_table(engine, 'retro_', retro_data / 'event.csv.gz',
+                          ['game_id', 'event_id'])
+
 
 def main():
     """Load the data in Postgres.

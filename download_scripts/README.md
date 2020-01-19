@@ -23,7 +23,7 @@ Scripts with example command line arguments:
 * **./lahman_wrangle.py** -v -log=INFO
   * converts field names to snake_case
   * performs custom parsing of dates
-  * drops fielder columns that have more than 90% missing values
+  * drops fielding columns that have more than 90% missing values
   * optimizes data types
   * persists with optimized data types to `../data/lahman/wrangle`
 * **./retrosheet_download.py** -v -log=INFO
@@ -53,7 +53,7 @@ Scripts with example command line arguments:
   * the results of running this script are published in this github repo at `data/retrosheet` as cwdaily_datadictionary.txt and cwgame_datadictionary.txt
 * **./retrosheet_wrangle.py** -v --log=INFO
   *  data cleanup for non-unique primary key (player_id, game_id)
-     *  between 1955 and 2019 there is only one duplicate primary key
+     *  between 1948 and 2019 there is only one duplicate primary key
   *  custom parsing of game start time
   *  restructure cwdaily output to create batting/pitching/fielding csv files that have a row only if the player has a non-zero batting/pitching/fielding statistic for that game
   *  restructure cwgame output to create stats per team per game (team_game.csv) and stats per game (game.csv)

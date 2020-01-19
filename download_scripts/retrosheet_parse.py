@@ -40,7 +40,7 @@ def get_parser():
 
     parser.add_argument("--run-cwevent", help="verbose output", action="store_true")
     parser.add_argument("--cwevent-fields", type=str, help="cwevent field specification",
-                        default='-f 0,2,3,8,9,10,14,29,36-42,44,45,51 -x 1,2,5,8,11,13,14,45,50,55')
+                        default='-f 0,2,3,8,9,10,14,29,36-42,44,45,51,96 -x 1,2,5,8,11,13,14,45,50,55')
 
     return parser
 

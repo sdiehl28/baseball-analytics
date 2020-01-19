@@ -44,7 +44,7 @@ def data_dir(request):
 def team_game(data_dir):
     filename = data_dir / 'retrosheet' / 'wrangled' / 'team_game.csv.gz'
     team_game = dh.from_csv_with_types(filename)
-    team_game = team_game.query('1974 <= game_start_dt.dt.year <= 2019')
+    team_game = team_game.query('1974 <= game_start.dt.year <= 2019')
     return team_game
 
 
@@ -52,7 +52,7 @@ def team_game(data_dir):
 def game(data_dir):
     filename = data_dir / 'retrosheet' / 'wrangled' / 'game.csv.gz'
     game = dh.from_csv_with_types(filename)
-    game = game.query('1974 <= game_start_dt.dt.year <= 2019')
+    game = game.query('1974 <= game_start.dt.year <= 2019')
     return game
 
 
@@ -60,7 +60,7 @@ def game(data_dir):
 def batting(data_dir):
     filename = data_dir / 'retrosheet' / 'wrangled' / 'batting.csv.gz'
     batting = dh.from_csv_with_types(filename)
-    batting = batting.query('1974 <= game_start_dt.dt.year <= 2019')
+    batting = batting.query('1974 <= game_start.dt.year <= 2019')
     return batting
 
 
@@ -68,7 +68,7 @@ def batting(data_dir):
 def pitching(data_dir):
     filename = data_dir / 'retrosheet' / 'wrangled' / 'pitching.csv.gz'
     pitching = dh.from_csv_with_types(filename)
-    pitching = pitching.query('1974 <= game_start_dt.dt.year <= 2019')
+    pitching = pitching.query('1974 <= game_start.dt.year <= 2019')
     return pitching
 
 
@@ -76,7 +76,7 @@ def pitching(data_dir):
 def fielding(data_dir):
     filename = data_dir / 'retrosheet' / 'wrangled' / 'fielding.csv.gz'
     fielding = dh.from_csv_with_types(filename)
-    fielding = fielding.query('1974 <= game_start_dt.dt.year <= 2019')
+    fielding = fielding.query('1974 <= game_start.dt.year <= 2019')
     return fielding
 
 

@@ -112,8 +112,9 @@ def create_batting(player_game, game_start, p_retrosheet_wrangled):
     b_cols_new['b_hp'] = 'hbp'  # to match Lahman
     batting.rename(columns=b_cols_new, inplace=True)
 
-    # add game_start_dt
-    batting = pd.merge(batting, game_start[['game_id', 'game_start_dt']])
+    # add game_start.dt.year as many queries use year
+    batting = pd.merge(batting, game_start[['game_id', 'game_start']])
+    batting['year'] = batting['game_start'].dt.year
 
     logger.info('Writing and compressing batting.  This could take several minutes ...')
     dh.to_csv_with_types(batting, p_retrosheet_wrangled / 'batting.csv.gz')
@@ -145,8 +146,9 @@ def create_pitching(player_game, game_start, p_retrosheet_wrangled):
     p_cols_new['p_hp'] = 'hbp'  # to match Lahman
     pitching.rename(columns=p_cols_new, inplace=True)
 
-    # add game_start_dt
-    pitching = pd.merge(pitching, game_start[['game_id', 'game_start_dt']])
+    # add game_start.dt.year as many queries use year
+    pitching = pd.merge(pitching, game_start[['game_id', 'game_start']])
+    pitching['year'] = pitching['game_start'].dt.year
 
     logger.info('Writing and compressing pitching.  This could take several minutes ...')
     dh.to_csv_with_types(pitching, p_retrosheet_wrangled / 'pitching.csv.gz')
@@ -205,8 +207,9 @@ def create_fielding(player_game, game_start, p_retrosheet_wrangled):
 
     fielding = pd.concat(dfs, ignore_index=True)
 
-    # add game_start_dt
-    fielding = pd.merge(fielding, game_start[['game_id', 'game_start_dt']])
+    # add game_start.dt.year as many queries use year
+    fielding = pd.merge(fielding, game_start[['game_id', 'game_start']])
+    fielding['year'] = fielding['game_start'].dt.year
 
     dh.optimize_df_dtypes(fielding)
     logger.info('Writing and compressing fielding.  This could take several minutes ...')
@@ -273,14 +276,15 @@ def wrangle_game(game, p_retrosheet_wrangled):
     team_game = team_game.rename(columns=names)
 
     # create new datetime column
-    game_tidy['game_start_dt'] = game_tidy.apply(parse_datetime, axis=1)
-    game_tidy = dh.move_column_after(game_tidy, 'game_id', 'game_start_dt')
+    game_tidy['game_start'] = game_tidy.apply(parse_datetime, axis=1)
+    game_tidy = dh.move_column_after(game_tidy, 'game_id', 'game_start')
 
     # these fields are no longer necessary
     game_tidy = game_tidy.drop(['start_game_tm', 'game_dt', 'game_dy'], axis=1)
 
-    # add the game_start_dt column to team_game to simplify queries
-    team_game = pd.merge(team_game, game_tidy[['game_id', 'game_start_dt']])
+    # add the game_start column to team_game to simplify queries
+    team_game = pd.merge(team_game, game_tidy[['game_id', 'game_start']])
+    team_game['year'] = team_game['game_start'].dt.year
 
     logger.info('Writing and compressing team_game.  This could take several minutes ...')
     dh.optimize_df_dtypes(team_game)
@@ -376,7 +380,7 @@ def wrangle_game(game, p_retrosheet_wrangled):
     dh.to_csv_with_types(game_tidy, p_retrosheet_wrangled / 'game.csv.gz')
 
     # to add game date to other tables
-    return game_tidy[['game_id', 'game_start_dt']]
+    return game_tidy[['game_id', 'game_start']]
 
 
 def parse_datetime(row):

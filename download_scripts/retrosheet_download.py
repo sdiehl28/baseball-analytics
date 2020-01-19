@@ -74,12 +74,13 @@ def reorg_files(raw_dir):
 
     unzip_dir = raw_dir / 'retrosheet-master'
 
-    # move the subdirectories up one directory
-    for dir in os.listdir(unzip_dir):
-        shutil.move(unzip_dir.joinpath(dir).as_posix(), '.')
+    if unzip_dir.exists():
+        # move the subdirectories up one directory
+        for dir in os.listdir(unzip_dir):
+            shutil.move(unzip_dir.joinpath(dir).as_posix(), '.')
 
-    # rm the extract directory
-    shutil.rmtree('retrosheet-master')
+        # rm the extract directory
+        shutil.rmtree('retrosheet-master')
 
 
 def main():

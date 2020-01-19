@@ -61,8 +61,8 @@ def test_download_years(batting):
     """Verify the Retrosheet years 1974 through 2019 inclusive were downloaded.
 
     The data consistency tests have accuracy bounds tested on these years only!"""
-    assert (batting['game_start_dt'].agg(['min', 'max']).dt.year == (1974, 2019)).all()
-    assert batting['game_start_dt'].dt.year.nunique() == (2019 - 1974) + 1
+    assert (batting['year'].agg(['min', 'max']) == (1974, 2019)).all()
+    assert batting['year'].nunique() == (2019 - 1974) + 1
 
 
 def test_lahman_people_pkey(lahman_people):
@@ -199,7 +199,7 @@ def test_lahman_retro_batting_data(batting, lahman_batting):
     """Compare Aggregated Lahman batting data to Aggregated Retrosheet batting data"""
     # columns in common -- these are the columns to compare
     b_cols = set(batting.columns) & set(lahman_batting.columns)
-    b_cols -= {'player_id', 'team_id'}
+    b_cols -= {'player_id', 'team_id', 'year'}
 
     # there are 17 columns in common
     assert len(b_cols) == 17
@@ -222,7 +222,7 @@ def test_lahman_retro_pitching_data(pitching, lahman_pitching):
     """Compare Aggregated Lahman pitching data to Aggregated Retrosheet pitching data"""
     # columns in common -- these are the columns to compare
     p_cols = set(lahman_pitching.columns) & set(pitching.columns)
-    p_cols -= {'player_id', 'team_id'}
+    p_cols -= {'player_id', 'team_id', 'year'}
 
     # there are 21 columns in common
     assert len(p_cols) == 21
@@ -244,7 +244,8 @@ def test_lahman_retro_fielding_data(fielding, lahman_fielding):
     """Compare Aggregated Lahman fielding per position data to
     Aggregated Retrosheet fielding per position data."""
     # find the common columns
-    f_cols = (set(lahman_fielding.columns) & set(fielding.columns)) - {'player_id', 'pos', 'team_id'}
+    f_cols = set(lahman_fielding.columns) & set(fielding.columns)
+    f_cols -= {'player_id', 'pos', 'team_id', 'year'}
     f_cols = list(f_cols)
 
     l_sums = lahman_fielding.groupby('pos')[f_cols].aggregate('sum')
@@ -284,7 +285,7 @@ def test_lahman_retro_fielding_data(fielding, lahman_fielding):
 def test_batting_team_game_data(batting, team_game):
     """Verify Retrosheet batting aggregated by (game_id, team_id)
     is the same as team_game batting stats."""
-    exclude = ['game_id', 'team_id', 'player_id', 'game_start_dt']
+    exclude = ['game_id', 'team_id', 'player_id', 'game_start', 'year']
     cols = set(batting.columns) & set(team_game.columns) - set(exclude)
     cols = list(cols)
 
@@ -336,9 +337,6 @@ def test_batting_lahman_game_data(batting, lahman_teams):
     is the same as Lahman_teams.
 
     This shows that Retrosheet batting and Lahman Teams are consistent with each other."""
-    batting = batting.copy()
-    batting['year'] = batting['game_start_dt'].dt.year
-
     # Add team_id_lahman
     retro_batting = pd.merge(batting, lahman_teams[['team_id', 'year', 'team_id_retro']],
                              left_on=['year', 'team_id'],
@@ -499,8 +497,7 @@ def test_retro_lahman_team_ids(team_game, lahman_teams):
     The logic is analogous test_retro_lahman_player_ids() above."""
 
     # create a Retrosheet dataframe having just the unique <team_id> values
-    retro_team_ids = team_game[['team_id', 'game_start_dt']].copy()
-    retro_team_ids['year'] = retro_team_ids['game_start_dt'].dt.year
+    retro_team_ids = team_game[['team_id', 'year']].copy()
     retro_team_ids = retro_team_ids.drop_duplicates(subset=['team_id', 'year'])
 
     # use an inner join to verify that the mapping is one-to-one and onto
@@ -513,7 +510,7 @@ def test_retro_lahman_team_ids(team_game, lahman_teams):
 
 def test_retro_pitching_batting(pitching, batting):
     """Verify Retrosheet batting stats == pitching stats (allowed)"""
-    exclude = ['game_id', 'team_id', 'player_id', 'g', 'game_start_dt']
+    exclude = ['game_id', 'team_id', 'player_id', 'g', 'game_start', 'year']
     cols = set(pitching.columns) & set(batting.columns) - set(exclude)
     cols = list(cols)
     assert len(cols) == 16
@@ -646,3 +643,8 @@ def test_event(event, team_game):
 
     assert diff.max().max() == 0
     assert diff.min().min() == 0
+
+
+def test_event_pkey(event):
+    """Verify the Retrosheet event primary key."""
+    assert dh.is_unique(event, ['game_id', 'event_id'])

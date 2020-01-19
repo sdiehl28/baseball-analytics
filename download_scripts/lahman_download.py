@@ -79,9 +79,6 @@ def download_data(raw_dir):
         with zipfile.ZipFile(zip_filename, "r") as zip_ref:
             zip_ref.extractall('.')
 
-    msg = ' '.join(os.listdir('.'))
-    logger.info(f'{raw_dir} contents: {msg}')
-
 
 def reorg_files(raw_dir):
     """move the unzipped files to the raw directory and remove the extract directory"""

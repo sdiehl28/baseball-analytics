@@ -48,6 +48,10 @@ def from_csv_with_types(filename, usecols=None, nrows=None):
     p_types = p.parent / types_name
     dates, dtypes = read_types(p_types)
 
+    # only parse dates that are in usecols
+    if dates and usecols:
+        dates = list(set(dates) & set(usecols))
+
     return pd.read_csv(p, parse_dates=dates, dtype=dtypes, usecols=usecols, nrows=nrows)
 
 

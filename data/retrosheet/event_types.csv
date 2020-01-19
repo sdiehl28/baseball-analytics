@@ -10,6 +10,7 @@ event_tx,object
 h_cd,uint8
 outs,uint8
 e,uint8
+event_id,uint8
 team_id,object
 opponent_team_id,object
 inn_runs_ct,uint8
