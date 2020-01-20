@@ -116,6 +116,7 @@ def create_batting(player_game, game_start, p_retrosheet_wrangled):
     batting = pd.merge(batting, game_start[['game_id', 'game_start']])
     batting['year'] = batting['game_start'].dt.year
 
+    dh.optimize_df_dtypes(batting)
     logger.info('Writing and compressing batting.  This could take several minutes ...')
     dh.to_csv_with_types(batting, p_retrosheet_wrangled / 'batting.csv.gz')
 
@@ -150,6 +151,7 @@ def create_pitching(player_game, game_start, p_retrosheet_wrangled):
     pitching = pd.merge(pitching, game_start[['game_id', 'game_start']])
     pitching['year'] = pitching['game_start'].dt.year
 
+    dh.optimize_df_dtypes(pitching)
     logger.info('Writing and compressing pitching.  This could take several minutes ...')
     dh.to_csv_with_types(pitching, p_retrosheet_wrangled / 'pitching.csv.gz')
 
