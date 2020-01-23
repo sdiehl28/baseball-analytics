@@ -114,9 +114,9 @@ def create_batting(player_game, game_start, p_retrosheet_wrangled):
 
     # add game_start.dt.year as many queries use year
     batting = pd.merge(batting, game_start[['game_id', 'game_start']])
-    batting['year'] = batting['game_start'].dt.year
+    batting['year'] = batting['game_start'].dt.year.astype('int16')
 
-    dh.optimize_df_dtypes(batting)
+    dh.optimize_df_dtypes(batting, ignore=['year'])
     logger.info('Writing and compressing batting.  This could take several minutes ...')
     dh.to_csv_with_types(batting, p_retrosheet_wrangled / 'batting.csv.gz')
 
@@ -149,9 +149,9 @@ def create_pitching(player_game, game_start, p_retrosheet_wrangled):
 
     # add game_start.dt.year as many queries use year
     pitching = pd.merge(pitching, game_start[['game_id', 'game_start']])
-    pitching['year'] = pitching['game_start'].dt.year
+    pitching['year'] = pitching['game_start'].dt.year.astype('int16')
 
-    dh.optimize_df_dtypes(pitching)
+    dh.optimize_df_dtypes(pitching, ignore=['year'])
     logger.info('Writing and compressing pitching.  This could take several minutes ...')
     dh.to_csv_with_types(pitching, p_retrosheet_wrangled / 'pitching.csv.gz')
 
@@ -211,9 +211,9 @@ def create_fielding(player_game, game_start, p_retrosheet_wrangled):
 
     # add game_start.dt.year as many queries use year
     fielding = pd.merge(fielding, game_start[['game_id', 'game_start']])
-    fielding['year'] = fielding['game_start'].dt.year
+    fielding['year'] = fielding['game_start'].dt.year.astype('int16')
 
-    dh.optimize_df_dtypes(fielding)
+    dh.optimize_df_dtypes(fielding, ignore=['year'])
     logger.info('Writing and compressing fielding.  This could take several minutes ...')
     dh.to_csv_with_types(fielding, p_retrosheet_wrangled / 'fielding.csv.gz')
 
@@ -286,10 +286,10 @@ def wrangle_game(game, p_retrosheet_wrangled):
 
     # add the game_start column to team_game to simplify queries
     team_game = pd.merge(team_game, game_tidy[['game_id', 'game_start']])
-    team_game['year'] = team_game['game_start'].dt.year
+    team_game['year'] = team_game['game_start'].dt.year.astype('int16')
 
     logger.info('Writing and compressing team_game.  This could take several minutes ...')
-    dh.optimize_df_dtypes(team_game)
+    dh.optimize_df_dtypes(team_game, ignore=['year'])
     dh.to_csv_with_types(team_game, p_retrosheet_wrangled / 'team_game.csv.gz')
 
     # convert designated hitter to True/False and rename
@@ -411,7 +411,7 @@ def parse_datetime(row):
     time = row['start_game_tm']
     day_night = row['daynight_park_cd']
 
-    if time > 0 and time < 900:
+    if 0 < time < 900:
         time += 1200
     elif (900 <= time < 1200) and day_night == 'N':
         time += 1200
@@ -432,6 +432,29 @@ def wrangle_event(p_retrosheet_collected, p_retrosheet_wrangled):
     source = p_retrosheet_collected / 'event_types.csv'
     destination = p_retrosheet_wrangled / 'event_types.csv'
     shutil.copyfile(source, destination)
+
+
+def wrangle_parks(data_dir, retrosheet_wrangle):
+    parks_filename = data_dir / 'retrosheet/raw/misc/parkcode.txt'
+    parks = pd.read_csv(parks_filename, parse_dates=['START', 'END'])
+    cols = [col.lower() for col in parks.columns]
+    parks.columns = cols
+    parks = parks.rename(columns={'parkid': 'park_id'})
+    dh.to_csv_with_types(parks, retrosheet_wrangle / 'parks.csv')
+
+
+def wrangle_teams(data_dir, retrosheet_wrangle):
+    team_dir = data_dir / 'retrosheet/raw/event/regular'
+
+    dfs = []
+    team_files = team_dir.glob('TEAM*')
+    for team in sorted(team_files):
+        year = int(team.name[-4:])
+        df = pd.read_csv(team, header=None, names=['team_id', 'lg_id', 'city', 'name'])
+        df.insert(1, 'year', year)
+        dfs.append(df)
+    retro_teams = pd.concat(dfs, ignore_index=True)
+    dh.to_csv_with_types(retro_teams, retrosheet_wrangle / 'teams.csv')
 
 
 def main():
@@ -455,8 +478,9 @@ def main():
         sh.setLevel(logging.INFO)
         logger.addHandler(sh)
 
-    p_retrosheet_collected = Path(args.data_dir).joinpath('retrosheet/collected').resolve()
-    p_retrosheet_wrangled = Path(args.data_dir).joinpath('retrosheet/wrangled').resolve()
+    data_dir = Path(args.data_dir)
+    p_retrosheet_collected = (data_dir / 'retrosheet/collected').resolve()
+    p_retrosheet_wrangled = (data_dir / 'retrosheet/wrangled').resolve()
 
     # get collected data from parsers
     game = get_game(p_retrosheet_collected)  # cwgame
@@ -470,6 +494,12 @@ def main():
     create_fielding(player_game, game_start, p_retrosheet_wrangled)
 
     wrangle_event(p_retrosheet_collected, p_retrosheet_wrangled)  # cwevent
+
+    # parks.txt is included with the retrosheet data.  It is a csv file.
+    wrangle_parks(data_dir, p_retrosheet_wrangled)
+
+    # TEAM<YYYY> is included in the retrosheet data.  They are csv files.
+    wrangle_teams(data_dir, p_retrosheet_wrangled)
 
     logger.info('Finished')
 
