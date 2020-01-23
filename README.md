@@ -30,6 +30,7 @@ Some initial questions include:
   * How is game length related to pitcher count?  Could this relationship be due to chance?
 * Computing the Park Factor
   * What ESPN, Fangraphs and others got wrong about the park factor for Fenway Park in 2019.
+  * Accounting for park factor on the road.  In some cases, this does make a difference.
 
 These Jupyter Notebooks are in this repo at: [Baseball Analysis](https://github.com/sdiehl28/baseball-analytics/tree/master/baseball_jupyter_nb).
 
