@@ -28,6 +28,8 @@ Some initial questions include:
 * How many more runs per game are there when the DH is used?  Could this difference be due to chance?
 * How has game length and pitcher count increased over the years?
   * How is game length related to pitcher count?  Could this relationship be due to chance?
+* Computing the Park Factor
+  * What ESPN, Fangraphs and others got wrong about the park factor for Fenway Park in 2019.
 
 These Jupyter Notebooks are in this repo at: [Baseball Analysis](https://github.com/sdiehl28/baseball-analytics/tree/master/baseball_jupyter_nb).
 
@@ -45,7 +47,7 @@ The data consistency tests show that the Retrosheet parsers produce outputs that
 
 The data consistency tests show that the Lahman data is almost 100% self consistent.  In other words, when data from one Lahman CSV file is aggregated to the same level as another and compared, the results are almost identical.
 
-The data consistency tests show that the Retrosheet data when aggregated and compared with the Lahman data is:
+The data consistency tests show that the Retrosheet data when aggregated and compared with the Lahman data over the period 1974 through 2019 is:
 
 * for batting stats: within 0.01%
 * for pitching stats: within 0.06%
