@@ -416,8 +416,8 @@ def test_sky_condition_values(game):
 
 def test_game_length_values(game):
     """Verify number of outs is consistent with number of innings."""
-    outs = game['game_length_outs']
-    inns = game['game_length_innings']
+    outs = game['outs_ct']
+    inns = game['inn_ct']
 
     # this is defined by the rules of baseball
     assert ((5 * inns <= outs) & (outs <= 6 * inns)).all()
@@ -425,8 +425,8 @@ def test_game_length_values(game):
 
 def test_game_length_minute_values(game):
     """Verify game length per out is plausible."""
-    outs = game['game_length_outs']
-    mins = game['game_length_minutes']
+    outs = game['outs_ct']
+    mins = game['minutes_game_ct']
     mins_per_out = mins / outs
 
     # these bounds should be wide enough to encompass any future game

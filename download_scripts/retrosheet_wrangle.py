@@ -371,12 +371,6 @@ def wrangle_game(game, p_retrosheet_wrangled):
         game_tidy['sky_park_cd'].map(sky).replace('unknown', np.nan)
     game_tidy.drop('sky_park_cd', axis=1, inplace=True)
 
-    # rename a few fields
-    new_names = {'minutes_game_ct': 'game_length_minutes',
-                 'inn_ct': 'game_length_innings',
-                 'outs_ct': 'game_length_outs'}
-    game_tidy.rename(columns=new_names, inplace=True)
-
     logger.info('Writing and compressing game.  This could take several minutes ...')
     dh.optimize_df_dtypes(game_tidy)
     dh.to_csv_with_types(game_tidy, p_retrosheet_wrangled / 'game.csv.gz')
