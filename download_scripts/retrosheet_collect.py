@@ -66,8 +66,12 @@ def collect_parsed_files(parse_dir, collect_dir, parser, use_datatypes):
                        ignore_index=True, copy=False)
         logger.info(f'Optimized Memory Usage:   {dh.mem_usage(df)}')
     else:
-        # this could use twice the RAM required to hold the DataFrame
-        df = pd.concat((pd.read_csv(f) for f in dailyfiles), ignore_index=True, copy=False)
+        # This could use twice the RAM required to hold the unoptimized DataFrame!
+        # cwgame parser will output the line score (line_tx) like: 001001001
+        # but without double quotes around it, so it gets interpreted as a number.
+        # Specify dtype for line score fields to get around this.
+        df = pd.concat((pd.read_csv(f, dtype={'AWAY_LINE_TX': str, 'HOME_LINE_TX': str})
+                        for f in dailyfiles), ignore_index=True, copy=False)
 
         logger.info(f'Unoptimized Memory Usage: {dh.mem_usage(df)}')
         logger.info('Optimizing Data Types to reduce memory ...')
