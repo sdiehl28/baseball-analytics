@@ -1,8 +1,7 @@
-import pytest
-import zipfile
-
 __author__ = 'Stephen Diehl'
 
+import zipfile
+import re
 import pandas as pd
 import numpy as np
 from .. import data_helper as dh
@@ -648,3 +647,24 @@ def test_event(event, team_game):
 def test_event_pkey(event):
     """Verify the Retrosheet event primary key."""
     assert dh.is_unique(event, ['game_id', 'event_id'])
+
+
+def test_line_score(team_game):
+    """Verify line score total is run total."""
+
+    def line_score_to_runs(row):
+        line_score = row['line_tx']
+
+        # example: 0102(11)0500
+        # capture all digits having
+        # positive lookbehind = (
+        # positive lookahead = )
+        # OR capture one digit at a time
+        runs = 0
+        for value in re.findall(r'(?<=\()\d+(?=\))|\d', line_score):
+            runs += int(value)
+
+        return runs
+
+    runs = team_game.apply(line_score_to_runs, axis=1)
+    assert (runs == team_game['r']).all()
