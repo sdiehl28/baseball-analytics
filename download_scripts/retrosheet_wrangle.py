@@ -243,10 +243,10 @@ def wrangle_game(game, p_retrosheet_wrangled):
     home_team_game = game[['game_id'] + home_cols].copy()
     away_team_game = game[['game_id'] + away_cols].copy()
 
-    home_team_game['at_home'] = True
-    away_team_game['at_home'] = False
-    home_team_game = dh.move_column_after(home_team_game, 'game_id', 'at_home')
-    away_team_game = dh.move_column_after(away_team_game, 'game_id', 'at_home')
+    home_team_game['bat_last'] = True
+    away_team_game['bat_last'] = False
+    home_team_game = dh.move_column_after(home_team_game, 'game_id', 'bat_last')
+    away_team_game = dh.move_column_after(away_team_game, 'game_id', 'bat_last')
 
     # remove leading 'home_' and 'away_' suffix from fields
     home_team_game.rename(columns=lambda col: col[5:] if col.startswith('home_') else col, inplace=True)

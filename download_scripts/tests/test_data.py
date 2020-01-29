@@ -112,9 +112,9 @@ def test_lahman_parks_pkey(data_dir):
     # assert dh.is_unique(parks, ['park_name']
 
 
-def test_team_game_opponent_id_values(team_game):
-    "Verify opponent_team_id in Retrosheet team_game"
-    filt = team_game['at_home'] == False
+def test_game_id(team_game):
+    """Verify 1st 3 characters of game_id are the team batting last."""
+    filt = team_game['bat_last'] == False
     team_game['home_team_id'] = team_game['team_id']
     team_game.loc[filt, 'home_team_id'] = team_game.loc[filt, 'opponent_team_id']
 
