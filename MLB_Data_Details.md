@@ -14,7 +14,7 @@ http://creativecommons.org/licenses/by-sa/3.0/
 
 #### Lahman Data Dictionary
 
-The most recent data dictionary is:  http://www.seanlahman.com/files/database/readme2017.txt  
+The most recent data dictionary is:  http://www.seanlahman.com/files/database/readme2017.txt  It is applicable to the 2019 Lahman data.
 
 This file is also copied to this repo at: `data/lahman/readme2017.txt`
 
