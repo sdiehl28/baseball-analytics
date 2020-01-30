@@ -1,0 +1,17 @@
+index,dtypes
+Season,int64
+Team,object
+Basic (5yr),int64
+3yr,int64
+1yr,int64
+1B,int64
+2B,int64
+3B,int64
+HR,int64
+SO,int64
+BB,int64
+GB,int64
+FB,int64
+LD,int64
+IFFB,int64
+FIP,int64

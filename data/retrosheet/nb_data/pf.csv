@@ -1,0 +1,151 @@
+team_id,year,pf,pf_half,name
+ANA,2015,0.86,0.93,Angels
+ANA,2016,0.91,0.96,Angels
+ANA,2017,0.95,0.97,Angels
+ANA,2018,0.97,0.98,Angels
+ANA,2019,1.01,1.0,Angels
+ARI,2015,1.06,1.03,Diamondbacks
+ARI,2016,1.22,1.11,Diamondbacks
+ARI,2017,1.2,1.1,Diamondbacks
+ARI,2018,1.06,1.03,Diamondbacks
+ARI,2019,0.98,0.99,Diamondbacks
+ATL,2015,0.94,0.97,Braves
+ATL,2016,1.06,1.03,Braves
+ATL,2017,0.98,0.99,Braves
+ATL,2018,1.12,1.06,Braves
+ATL,2019,1.0,1.0,Braves
+BAL,2015,1.21,1.1,Orioles
+BAL,2016,0.95,0.98,Orioles
+BAL,2017,1.03,1.01,Orioles
+BAL,2018,0.98,0.99,Orioles
+BAL,2019,1.09,1.04,Orioles
+BOS,2015,1.19,1.1,Red Sox
+BOS,2016,1.2,1.1,Red Sox
+BOS,2017,1.03,1.01,Red Sox
+BOS,2018,1.08,1.04,Red Sox
+BOS,2019,1.03,1.01,Red Sox
+CHA,2015,0.9,0.95,White Sox
+CHA,2016,0.93,0.96,White Sox
+CHA,2017,1.0,1.0,White Sox
+CHA,2018,0.94,0.97,White Sox
+CHA,2019,0.97,0.98,White Sox
+CHN,2015,0.95,0.98,Cubs
+CHN,2016,0.87,0.94,Cubs
+CHN,2017,1.13,1.07,Cubs
+CHN,2018,1.08,1.04,Cubs
+CHN,2019,0.93,0.97,Cubs
+CIN,2015,1.12,1.06,Reds
+CIN,2016,0.99,0.99,Reds
+CIN,2017,1.02,1.01,Reds
+CIN,2018,1.13,1.06,Reds
+CIN,2019,1.03,1.02,Reds
+CLE,2015,1.26,1.13,Indians
+CLE,2016,1.21,1.1,Indians
+CLE,2017,0.97,0.99,Indians
+CLE,2018,1.12,1.06,Indians
+CLE,2019,0.97,0.99,Indians
+COL,2015,1.44,1.22,Rockies
+COL,2016,1.37,1.18,Rockies
+COL,2017,1.33,1.17,Rockies
+COL,2018,1.27,1.14,Rockies
+COL,2019,1.39,1.2,Rockies
+DET,2015,0.9,0.95,Tigers
+DET,2016,1.02,1.01,Tigers
+DET,2017,1.17,1.08,Tigers
+DET,2018,0.95,0.97,Tigers
+DET,2019,1.11,1.05,Tigers
+HOU,2015,0.93,0.96,Astros
+HOU,2016,0.81,0.9,Astros
+HOU,2017,0.82,0.91,Astros
+HOU,2018,0.99,0.99,Astros
+HOU,2019,1.1,1.05,Astros
+KCA,2015,1.02,1.01,Royals
+KCA,2016,1.17,1.09,Royals
+KCA,2017,0.93,0.96,Royals
+KCA,2018,1.06,1.03,Royals
+KCA,2019,1.07,1.04,Royals
+LAN,2015,0.92,0.96,Dodgers
+LAN,2016,0.81,0.91,Dodgers
+LAN,2017,0.97,0.99,Dodgers
+LAN,2018,0.86,0.93,Dodgers
+LAN,2019,0.9,0.95,Dodgers
+MIA,2015,0.95,0.98,Marlins
+MIA,2016,0.83,0.92,Marlins
+MIA,2017,0.85,0.93,Marlins
+MIA,2018,0.75,0.87,Marlins
+MIA,2019,1.09,1.04,Marlins
+MIL,2015,1.1,1.05,Brewers
+MIL,2016,0.97,0.99,Brewers
+MIL,2017,1.08,1.04,Brewers
+MIL,2018,1.01,1.01,Brewers
+MIL,2019,0.98,0.99,Brewers
+MIN,2015,0.99,1.0,Twins
+MIN,2016,1.04,1.02,Twins
+MIN,2017,1.1,1.05,Twins
+MIN,2018,1.02,1.01,Twins
+MIN,2019,0.98,0.99,Twins
+NYA,2015,1.02,1.01,Yankees
+NYA,2016,1.04,1.02,Yankees
+NYA,2017,1.0,1.0,Yankees
+NYA,2018,1.13,1.06,Yankees
+NYA,2019,0.84,0.92,Yankees
+NYN,2015,0.87,0.94,Mets
+NYN,2016,0.99,0.99,Mets
+NYN,2017,0.86,0.93,Mets
+NYN,2018,0.73,0.87,Mets
+NYN,2019,0.89,0.95,Mets
+OAK,2015,0.94,0.97,Athletics
+OAK,2016,0.83,0.91,Athletics
+OAK,2017,1.1,1.05,Athletics
+OAK,2018,0.84,0.92,Athletics
+OAK,2019,0.89,0.94,Athletics
+PHI,2015,1.04,1.02,Phillies
+PHI,2016,0.84,0.92,Phillies
+PHI,2017,1.07,1.04,Phillies
+PHI,2018,1.04,1.02,Phillies
+PHI,2019,1.05,1.02,Phillies
+PIT,2015,0.93,0.97,Pirates
+PIT,2016,1.01,1.0,Pirates
+PIT,2017,0.95,0.97,Pirates
+PIT,2018,0.88,0.94,Pirates
+PIT,2019,1.0,1.0,Pirates
+SDN,2015,0.93,0.97,Padres
+SDN,2016,1.01,1.01,Padres
+SDN,2017,0.83,0.91,Padres
+SDN,2018,1.04,1.02,Padres
+SDN,2019,0.86,0.93,Padres
+SEA,2015,0.88,0.94,Mariners
+SEA,2016,0.94,0.97,Mariners
+SEA,2017,0.92,0.96,Mariners
+SEA,2018,0.85,0.92,Mariners
+SEA,2019,0.95,0.98,Mariners
+SFN,2015,0.85,0.92,Giants
+SFN,2016,1.01,1.01,Giants
+SFN,2017,0.85,0.92,Giants
+SFN,2018,1.01,1.01,Giants
+SFN,2019,0.8,0.9,Giants
+SLN,2015,0.93,0.97,Cardinals
+SLN,2016,0.92,0.96,Cardinals
+SLN,2017,0.89,0.94,Cardinals
+SLN,2018,0.93,0.96,Cardinals
+SLN,2019,0.92,0.96,Cardinals
+TBA,2015,0.96,0.98,Rays
+TBA,2016,0.89,0.94,Rays
+TBA,2017,0.92,0.96,Rays
+TBA,2018,0.93,0.96,Rays
+TBA,2019,0.89,0.95,Rays
+TEX,2015,1.14,1.07,Rangers
+TEX,2016,1.16,1.08,Rangers
+TEX,2017,1.22,1.11,Rangers
+TEX,2018,1.35,1.18,Rangers
+TEX,2019,1.24,1.12,Rangers
+TOR,2015,0.91,0.95,Blue Jays
+TOR,2016,1.16,1.08,Blue Jays
+TOR,2017,0.95,0.97,Blue Jays
+TOR,2018,0.96,0.98,Blue Jays
+TOR,2019,1.03,1.02,Blue Jays
+WAS,2015,1.0,1.0,Nationals
+WAS,2016,0.96,0.98,Nationals
+WAS,2017,1.06,1.03,Nationals
+WAS,2018,1.13,1.07,Nationals
+WAS,2019,1.1,1.05,Nationals

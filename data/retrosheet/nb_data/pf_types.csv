@@ -1,0 +1,6 @@
+index,dtypes
+team_id,object
+year,int64
+pf,float64
+pf_half,float64
+name,object
