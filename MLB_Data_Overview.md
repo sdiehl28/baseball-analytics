@@ -36,7 +36,8 @@ The field names have been changed as little as possible to remain familiar.  Fie
 
 After data wrangling, the following CSV files exist:
 
-**Lahman**  
+**Lahman**
+
 * Stats per Player per Year:
   * batting.csv
   * pitching.csv
@@ -67,6 +68,8 @@ After data wrangling, the following CSV files exist:
 * Stats per Game:
   * game.csv.gz
 * Postseason stats: to be added soon ...
+
+A script to create Postgres tables with appropriate primary key constraints and load each of the above csv files into these tables is provided.
 
 Where necessary, statistics will be summed so that "primary keys" are unique.  Extremely few records require this summing but as most data processing relies on having a set of fields which uniquely identify a record, this is required.
 

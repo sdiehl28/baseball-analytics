@@ -9,16 +9,16 @@ The data consistency checks in this repo verify that the results of the parsers 
 The parsers generate CSV files which can then be wrangled and analyzed.
 
 * cwevent - creates a play-by-play file with a row per play (aka event)
-  * about 10 fields were missing from the cwevent output that exist in the cwgame output.  These 10 fields were added by writing code to parse the event_tx field.
+  * about 10 fields were missing from the cwevent output that exist in the cwgame output.  I added these 10 fields by writing code to parse the event_tx field
   * these 10 new fields were aggregated to the game level and compared against cwgame output and found to be identical
 * cwdaily - create stats per player per game for batting, fielding and pitching
-  * The data wrangling scripts will split the cwdaily output into three files, one each for batting, fielding and pitching
+  * The data wrangling scripts will split the cwdaily output into three files, one each for batting, fielding and pitching.
 * cwgame - create stats per team per game for batting, fielding and pitching
   * The data wrangling scripts will split the cwgame output into two files, one for team stats per game and one for game stats (e.g. attendance) per game
 
 All possible fields are extracted from the cwdaily and cwgame parsers.  Both parsers are run automatically by the retrosheet_parse.py script. 
 
-The cwevent parser produces a lot of data.  This parser is only run if the user specifies '--run-cwevent' to the retrosheet_parse script.  A default subset of fields is selected.  The user may optionally specify their own subset, or the entire set of fields.  Furthermore, I have created an additional fields not available from the cwevent parser to make play-by-play analysis easier.  These are: so, sb, cs, bk, bb, ibb, hbp, xi, single, double, triple, hr.  These new fields have been verified to tie out exactly with the corresponding fields produced by cwgame.
+The cwevent parser produces a lot of data.  This parser is only run if the user specifies '--run-cwevent' to the retrosheet_parse script.  A default subset of fields is selected.  The user may optionally specify their own subset, or the entire set of fields.  Furthermore, I have created additional fields not available from the cwevent parser to make play-by-play analysis easier.  These are: so, sb, cs, bk, bb, ibb, hbp, xi, single, double, triple, hr.  These new fields have been verified to tie out exactly with the corresponding fields produced by cwgame.
 
 Parser Description: http://chadwick.sourceforge.net/doc/cwtools.html  
 Parser Executables and Source: https://sourceforge.net/projects/chadwick/   

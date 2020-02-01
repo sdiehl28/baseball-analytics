@@ -2,6 +2,8 @@
 
 These scripts download, parse and wrangle the Lahman and Retrosheet data.
 
+An optional script creates Postgres tables with appropriate primary key constraints and loads the csv files into these tables.
+
 All scripts should be run from the download_scripts directory. 
 
 For all scripts:
