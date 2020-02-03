@@ -12,7 +12,7 @@ Another aim of Sabermetrics is to identify metrics that are likely to be predict
 
 Data Science, and science in general, must produce results that are repeatable. See for example: [Reproducible Research](https://en.wikipedia.org/wiki/Reproducibility#Reproducible_research). A problem with many Sabermetric blog posts is that the results cannot be reproduced because the queries that created them are not published. Also, it appears that most sportswriters do not wrangle the data prior to performing their queries, so correct queries must be very complex. Furthermore, many derived features such as "park factor" do not have an agreed-upon formulation. And even when a derived feature is described, it is described in English text that is ambiguous rather than in code or precise mathematical formulation, which is unambiguous.
 
-The emphasis here is on repeatable data analysis. The data is wrangled to simplify the analysis and the data wrangling scripts are provided. Over 50 tests that verify the data wrangling, verify the Retrosheet parsers and determine how consistent the Retrosheet data is with the Lahman data are also provided. These tests can be run with the single command, 'pytest'. The data analysis is published in unambiguous code in the form of Jupyter notebooks.
+The emphasis here is on repeatable data analysis. The data is wrangled to simplify the analysis and the data wrangling scripts are provided. Over 50 tests are also provided to verify the data wrangling, verify the Retrosheet parsers and determine how consistent the Retrosheet data is with the Lahman data. These tests can be run with the single command, 'pytest'. The data analysis is published in unambiguous code in the form of Jupyter notebooks.
 
 ### Data Preparation
 
@@ -22,7 +22,7 @@ A script is also provided to load the wrangled data into Postgres with primary a
 
 ### Data Analysis
 
-Examples of interesting baseball questions are answered using Jupyter Notebooks with Python, Pandas and matplotlib/seaborn plots.
+Examples of baseball analysis questions are answered using Jupyter Notebooks with Python, Pandas and matplotlib/seaborn plots.
 
 Some initial questions include:
 
@@ -35,7 +35,7 @@ Some initial questions include:
 - Computing the Park Factor
 
 - - What did ESPN, Fangraphs, and others get wrong about the park factor for Fenway Park in 2019?
-  - Account for park factor on the road. In some cases, this does make a difference.
+  - Demonstrate that accounting for each team's road schedule will strongly affect their home park factor, for a few teams each year.
 
 These Jupyter Notebooks are in this repo at: [Baseball Analysis](https://github.com/sdiehl28/baseball-analytics/tree/master/baseball_jupyter_nb).
 
