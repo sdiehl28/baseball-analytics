@@ -12,3 +12,4 @@ The links below will display the notebook using nbviewer:
 - [02_Data_Consistency_CSV](https://nbviewer.jupyter.org/github/sdiehl28/baseball-analytics/blob/master/baseball_jupyter_nb/02_Data_Consistency_CSV.ipynb)
 - [03a_ParkFactor_CSV](https://nbviewer.jupyter.org/github/sdiehl28/baseball-analytics/blob/master/baseball_jupyter_nb/03a_ParkFactor_CSV.ipynb)
 - [03b_ParkFactor_CSV](https://nbviewer.jupyter.org/github/sdiehl28/baseball-analytics/blob/master/baseball_jupyter_nb/03b_ParkFactor_CSV.ipynb)
+- [04_LinearWeights_CSV](https://nbviewer.jupyter.org/github/sdiehl28/baseball-analytics/blob/master/baseball_jupyter_nb/04_LinearWeights_CSV.ipynb)
