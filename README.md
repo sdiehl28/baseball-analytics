@@ -27,15 +27,13 @@ Examples of baseball analysis questions are answered using Jupyter Notebooks wit
 Some initial questions include:
 
 - How many more runs per game are there when the DH is used? Could this difference be due to chance?
-
 - How has game length and pitcher count increased over the years?
-
 - - How is game length related to pitcher count? Could this relationship be due to chance?
-
 - Computing the Park Factor
-
 - - What did ESPN, Fangraphs, and others get wrong about the park factor for Fenway Park in 2019?
-  - Demonstrate that accounting for each team's road schedule will strongly affect their home park factor, for a few teams each year.
+  - Demonstrate that accounting for each team's road schedule will strongly affect the home park factor, for a few teams each year.
+- Linear Modeling of Runs per Half Inning
+  - How much does a singe, double, triple and home run contribute to run scoring per half-inning?
 
 These Jupyter Notebooks are in this repo at: [Baseball Analysis](https://github.com/sdiehl28/baseball-analytics/tree/master/baseball_jupyter_nb).
 
