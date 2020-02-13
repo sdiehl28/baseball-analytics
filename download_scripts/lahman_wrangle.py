@@ -14,6 +14,7 @@ import argparse
 from pathlib import Path
 import logging
 import sys
+
 import data_helper as dh
 
 logger = logging.getLogger(__name__)
@@ -103,7 +104,7 @@ def to_date(row, prefix):
     if pd.isna(d):
         d = 1
 
-    return pd.datetime(int(y), int(m), int(d))
+    return pd.to_datetime(f'{int(y)}-{int(m)}-{int(d)}')
 
 
 def wrangle_basic(p_raw, p_wrangled, filename):

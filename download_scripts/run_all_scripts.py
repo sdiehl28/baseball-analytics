@@ -51,7 +51,7 @@ def main():
     run_cmd(cmd)
 
     print('Running retrosheet_parse:')
-    cmd = ['./retrosheet_parse.py', '-v', '--log=INFO', data_dir, start_year, end_year]
+    cmd = ['./retrosheet_parse.py', '-v', '--log=INFO', '--run-cwevent', data_dir, start_year, end_year]
     run_cmd(cmd)
 
     print('Running retrosheet_collect:')
@@ -62,8 +62,10 @@ def main():
     cmd = ['./retrosheet_wrangle.py', '-v', '--log=INFO', data_dir]
     run_cmd(cmd)
 
-    print('All Scripts have run.')
-    print('Run "pytest -v --runslow" --data-dir={data_dir} at command line.')
+    print('Running pytest:')
+    cmd = ['pytest', '-v', data_dir]
+    run_cmd(cmd)
+    print('All scripts have run.')
 
 
 if __name__ == '__main__':

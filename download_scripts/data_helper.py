@@ -164,10 +164,10 @@ def get_dtype_range():
 
     dtype_range = dict(zip(keys, data))
 
-    # these are valid large values, but may not be the largest allowable by Pandas 0.25.x
-    dtype_range['UInt64'][2] = dtype_range['uint64'][2] // 4
-    dtype_range['Int64'][1] = dtype_range['int64'][1] // 2
-    dtype_range['Int64'][2] = dtype_range['int64'][2] // 2
+    # Pandas has different limits than numpy for the following
+    dtype_range['UInt64'][2] = 2**61
+    dtype_range['Int64'][1] = -2**61
+    dtype_range['Int64'][2] = 2**61
 
     return dict(zip(keys, data))
 

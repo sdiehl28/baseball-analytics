@@ -247,13 +247,20 @@ def test_lahman_retro_fielding_data(fielding, lahman_fielding):
     f_cols -= {'player_id', 'pos', 'team_id', 'year'}
     f_cols = list(f_cols)
 
-    l_sums = lahman_fielding.groupby('pos')[f_cols].aggregate('sum')
+    # work-around for Pandas 1.0.1 bugs
+    # sum does not up-cast for nullable integer types
+    # select_dtypes does not distinguish between nullable and non-nullable int types
+    idx = lahman_fielding[f_cols].dtypes.isin([pd.UInt8Dtype(), pd.UInt16Dtype()])
+    for col in lahman_fielding[f_cols].columns[idx]:
+        lahman_fielding[col] = lahman_fielding[col].astype('Int32')
+
+    l_sums = lahman_fielding.groupby('pos')[f_cols].agg('sum')
     l_sums.sort_index(inplace=True)
 
     # there are 7 fielding attributes and 7 fielding positions in Lahman
     assert l_sums.shape == (7, 7)
 
-    r_sums = fielding.groupby('pos')[f_cols].aggregate('sum').astype('int')
+    r_sums = fielding.groupby('pos')[f_cols].agg('sum').astype('int')
 
     # Lahman uses OF for sum of LF, CF, RF
     r_sums.loc['OF'] = r_sums.loc['LF'] + r_sums.loc['CF'] + r_sums.loc['RF']
@@ -429,7 +436,7 @@ def test_game_length_minute_values(game):
     mins_per_out = mins / outs
 
     # these bounds should be wide enough to encompass any future game
-    assert ((mins_per_out.min() > 1) & (mins_per_out.max() < 6)).all()
+    assert mins_per_out.min() > 1 and mins_per_out.max() < 6
 
 
 def test_retro_lahman_batting_players(batting, lahman_people, lahman_batting):
@@ -538,7 +545,7 @@ def test_lahman_pitching_batting(lahman_pitching, lahman_batting):
     b = lahman_batting[cols].agg('sum')
 
     # the biggest difference is less than 0.01%
-    assert (np.abs(1.0 - p / b).max() < 0.0001).all()
+    assert np.abs(1.0 - p / b).max() < 0.0001
 
 
 def test_lahman_batting_teams(lahman_batting, lahman_teams):
@@ -548,6 +555,17 @@ def test_lahman_batting_teams(lahman_batting, lahman_teams):
     cols = set(lahman_batting.columns) & set(lahman_teams.columns) - set(exclude)
     cols = list(cols)
     assert len(cols) == 12
+
+    # work-around for Pandas 1.0.1 bugs
+    # sum does not up-cast for nullable integer types
+    # select_dtypes does not distinguish between nullable and non-nullable int types
+    idx = lahman_batting[cols].dtypes.isin([pd.UInt8Dtype(), pd.UInt16Dtype()])
+    for col in lahman_batting[cols].columns[idx]:
+        lahman_batting[col] = lahman_batting[col].astype('Int32')
+
+    idx = lahman_teams[cols].dtypes.isin([pd.UInt8Dtype(), pd.UInt16Dtype()])
+    for col in lahman_teams[cols].columns[idx]:
+        lahman_teams[col] = lahman_teams[col].astype('Int32')
 
     b = lahman_batting[key + cols].groupby(key).agg('sum').reset_index()
 
