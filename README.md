@@ -111,7 +111,13 @@ At this time, the wrangled data is not provided in this repo, only the scripts t
 
 ## Development Environment
 
-The scripts and Jupyter Notebooks were testing using Python 3.7 in a full [Anaconda](https://www.anaconda.com/distribution/) 2019.10 environment. Note that the [open-source parsers](https://sourceforge.net/projects/chadwick/) for Retrosheet must be installed to run the scripts. See: [Retrosheet Parsers](https://github.com/sdiehl28/baseball-analytics/blob/master/RetrosheetParsers.md).
+Clone the repo: `git clone https://github.com/sdiehl28/baseball-analytics.git`
+
+Active your conda environment.  If creating a new conda environment, run `conda install anaconda`.  If using Postgres, also run `conda install psycopg2`
+
+The scripts and Jupyter Notebooks were testing using Python 3.7 and Pandas 1.0.1 in a full [Anaconda](https://www.anaconda.com/distribution/) 2019.10 environment.
+
+The [open-source parsers](https://sourceforge.net/projects/chadwick/) for Retrosheet must be installed to run the scripts. See: [Retrosheet Parsers](https://github.com/sdiehl28/baseball-analytics/blob/master/RetrosheetParsers.md).
 
 ## Additional Information
 
