@@ -6,13 +6,13 @@ The free and open-source baseball data sets from Lahman and Retrosheet are downl
 
 ## Sabermetrics
 
-[Sabermetrics](https://en.wikipedia.org/wiki/Sabermetrics) is a term coined before the advent of modern software tools for data analysis and fast personal computers. One aim is to create metrics that make it easy for people to quickly grasp how much a player contributes to his team's wins. In modern terminology, this is an example of explanatory modeling.
+[Sabermetrics](https://en.wikipedia.org/wiki/Sabermetrics) is a term coined before the advent of modern software tools for data analysis and fast personal computers. One aim is to create metrics that make it easy for people to quickly grasp how much a player contributes to his team's wins. In data science terminology, this is an example of explanatory modeling.
 
-Another aim of Sabermetrics is to identify metrics that are likely to be predictive. In modern terminology, this is an example of predictive modeling in which a domain expert uses feature engineering to create inputs (Sabermetrics) to improve predictive accuracy.
+Another aim of Sabermetrics is to identify metrics that are likely to be predictive. In data science terminology, this is an example of predictive modeling in which a domain expert uses feature engineering to create inputs (Sabermetrics) to improve predictive accuracy.
 
-Data Science, and science in general, must produce results that are repeatable. See for example: [Reproducible Research](https://en.wikipedia.org/wiki/Reproducibility#Reproducible_research). A problem with many Sabermetric blog posts is that the results cannot be reproduced because the queries that created them are not published. Also, it appears that most sportswriters do not wrangle the data prior to performing their queries, so correct queries must be very complex. Furthermore, many derived features such as "park factor" do not have an agreed-upon formulation. And even when a derived feature is described, it is described in English text that is ambiguous rather than in code or precise mathematical formulation, which is unambiguous.
+Data Science, and science in general, must produce results that are repeatable. See for example: [Reproducible Research](https://en.wikipedia.org/wiki/Reproducibility#Reproducible_research). A problem with many Sabermetric blog posts is that the results cannot be reproduced because the queries that created them are not published.
 
-The emphasis here is on repeatable data analysis. The data is wrangled to simplify the analysis and the data wrangling scripts are provided. Over 50 tests are also provided to verify the data wrangling, verify the Retrosheet parsers and determine how consistent the Retrosheet data is with the Lahman data. These tests can be run with the single command, 'pytest'. The data analysis is published in unambiguous code in the form of Jupyter notebooks.
+The emphasis here is on repeatable data analysis. The scripts to download the data are provided.  The data is wrangled to simplify the analysis and the data wrangling scripts are provided. Over 50 tests are also provided to verify the data wrangling, verify the Retrosheet parsers and determine how consistent the Retrosheet data is with the Lahman data. These tests can be run with the single command, 'pytest'. The data analysis is published in unambiguous code in the form of Jupyter notebooks.
 
 ### Data Preparation
 
@@ -57,7 +57,7 @@ The data consistency tests show that the Retrosheet data when aggregated and com
 - for pitching stats: within 0.06%
 - for fielding stats: within 0.8%
 
-For a detailed description of many of the data consistency tests, see my Jupyter notebook at: [Data Consistency](https://nbviewer.jupyter.org/github/sdiehl28/baseball-analytics/blob/master/baseball_jupyter_nb/02_Data_Consistency_CSV.ipynb)
+For a detailed description of many of the data consistency tests, see my Jupyter notebook [Data Consistency](https://nbviewer.jupyter.org/github/sdiehl28/baseball-analytics/blob/master/baseball_jupyter_nb/02_Data_Consistency_CSV.ipynb)
 
 ### Ongoing
 
@@ -105,7 +105,7 @@ The scripts which wrangle the Lahman and Retrosheet data will:
 
 - identify primary keys and sum statistics for the exceptionally few players who had multiple records with the same primary key
 
-- - since 1948, the only duplicate key was produced by cwdaily in which a player had two rows created for one game
+  - since 1948, the only duplicate key was produced by cwdaily in which a player had two rows created for one game
 
 At this time, the wrangled data is not provided in this repo, only the scripts to create it are provided.
 
