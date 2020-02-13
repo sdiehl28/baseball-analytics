@@ -109,8 +109,6 @@ The scripts which wrangle the Lahman and Retrosheet data will:
 
 At this time, the wrangled data is not provided in this repo, only the scripts to create it are provided.
 
-If you have any questions, you may send me an email with the word "baseball" in the subject to: [sdiehl28@gmail.com](mailto:sdiehl28@gmail.com)
-
 ## Development Environment
 
 The scripts and Jupyter Notebooks were testing using Python 3.7 in a full [Anaconda](https://www.anaconda.com/distribution/) 2019.10 environment. Note that the [open-source parsers](https://sourceforge.net/projects/chadwick/) for Retrosheet must be installed to run the scripts. See: [Retrosheet Parsers](https://github.com/sdiehl28/baseball-analytics/blob/master/RetrosheetParsers.md).
