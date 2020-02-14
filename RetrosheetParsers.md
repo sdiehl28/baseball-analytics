@@ -1,6 +1,15 @@
 ## Retrosheet Parsers
 
-The open source parsers created by Dr. T. L. Turocy to parse the Retrosheet play-by-play data are excellent.   
+The open source parsers created by Dr. T. L. Turocy to parse the Retrosheet play-by-play data are excellent. 
+
+These parsers must be installed and on the path for the Python scripts to make use of them.
+
+Parser Description: http://chadwick.sourceforge.net/doc/cwtools.html  
+Parser Executables and Source: https://sourceforge.net/projects/chadwick/   
+
+At the time of this writing, version 0.7.2 is the latest version.  Executable versions of the parsers are available for Windows.  Source code is available for Linux and MacOS.  See [How to Build Retrosheet Parsers on Linux](#how-to-build-retrosheet-parsers-on-linux)
+
+## Retrosheet Play-by-Play Data
 
 Retrosheet has 98% of all play-by-play data since 1954 and 100% of all play-by-play data since 1974.  Making use of this data would be very difficult without the parsers.
 
@@ -19,11 +28,6 @@ The parsers generate CSV files which can then be wrangled and analyzed.
 All possible fields are extracted from the cwdaily and cwgame parsers.  Both parsers are run automatically by the retrosheet_parse.py script. 
 
 The cwevent parser produces a lot of data.  This parser is only run if the user specifies '--run-cwevent' to the retrosheet_parse script.  A default subset of fields is selected.  The user may optionally specify their own subset, or the entire set of fields.  Furthermore, I have created additional fields not available from the cwevent parser to make play-by-play analysis easier.  These are: so, sb, cs, bk, bb, ibb, hbp, xi, single, double, triple, hr.  These new fields have been verified to tie out exactly with the corresponding fields produced by cwgame.
-
-Parser Description: http://chadwick.sourceforge.net/doc/cwtools.html  
-Parser Executables and Source: https://sourceforge.net/projects/chadwick/   
-
-At the time of this writing, version 0.7.2 is the latest version.  Executable versions of the parsers are available for Windows.  Source code is available for Linux and MacOS.
 
 #### Parsed CSV Files
 
