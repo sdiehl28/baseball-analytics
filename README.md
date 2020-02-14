@@ -2,29 +2,33 @@
 
 ## Overview
 
-The free and open-source baseball data sets from Lahman and Retrosheet are downloaded, parsed, wrangled, and analyzed.
+Scripts are provided which download, parse, and wrangle the Lahman and Restrosheet open-source data to produce a set of tidy csv files that can be analyzed in Python and Pandas, or R.  There is also an optional script to load the data into Postgres.
+
+Examples of data analysis are provided using using Python and Pandas in Jupyter Notebooks.
+
+The value of publishing the scripts and the analysis is that the results are repeatable.  The precise data used and the precise data processing, are made available for anyone to use, modify and evaluate.
+
+The value of wrangling the data is that the analysis is much easier and the RAM and storage requirements are much less.
 
 ## Data Science and Sabermetrics
 
 [Sabermetrics](https://en.wikipedia.org/wiki/Sabermetrics) was created before the advent of modern software tools for data analysis and fast personal computers. One aim is to create metrics that make it easy for people to quickly grasp how much a baseball player contributes to his team's wins. In data science terminology, this is an example of explanatory modeling.
 
-Another aim of Sabermetrics is to identify metrics that are likely to be predictive. In data science terminology, this is an example of predictive modeling in which a domain expert uses feature engineering to create inputs (Sabermetrics) to improve predictive accuracy.
+Another aim of Sabermetrics is to identify metrics that are likely to be useful in a predictive model.  In data science terminology, a baseball domain expert uses feature engineering to create inputs (Sabermetrics) to improve predictive accuracy.
 
 Data Science, and science in general, must produce results that can be repeated by others. See [Reproducible Research](https://en.wikipedia.org/wiki/Reproducibility#Reproducible_research). A problem with many Sabermetric blog posts is that the results cannot be repeated because the code use to perform the analysis, and the data itself, are not made public.
 
 The emphasis here is on repeatable data analysis. The scripts to download the data are provided. The data is wrangled to simplify the analysis, and the data wrangling scripts are provided. Over 50 tests are also provided to verify the data wrangling, verify the Retrosheet parsers, and determine how consistent the Retrosheet data is with the Lahman data. These tests can be run with the single command, 'pytest'. The data analysis is published in unambiguous code in the form of Jupyter notebooks.
 
-### Data Preparation
+### Data Preparation Scripts
 
-The Python scripts prepare the data for analysis, including running the open-source [Retrosheet Parsers](https://github.com/sdiehl28/baseball-analytics/blob/master/RetrosheetParsers.md). These scripts are located in this repo at: [download_scripts](https://github.com/sdiehl28/baseball-analytics/tree/master/download_scripts).
-
-A script is also provided to load the wrangled data into Postgres with primary and foreign key constraints. The use of Postgres is optional.
+The Python scripts prepare the data for analysis, including running the open-source [Retrosheet Parsers](https://github.com/sdiehl28/baseball-analytics/blob/master/RetrosheetParsers.md). These scripts are at [download_scripts](https://github.com/sdiehl28/baseball-analytics/tree/master/download_scripts).
 
 ### Data Analysis
 
-Examples of baseball analysis questions are answered using Jupyter Notebooks with Python, Pandas and matplotlib/seaborn plots.
+Examples of baseball analysis are presented using Jupyter Notebooks with Python, Pandas and matplotlib/seaborn plots.
 
-Some initial questions include:
+Some initial analysis includes:
 
 - How many more runs per game are there when the DH is used? Could this difference be due to chance?
 - How has game length and pitcher count increased over the years?
@@ -32,6 +36,7 @@ Some initial questions include:
 - Computing the Park Factor
 - - What did ESPN, Fangraphs, and others get wrong about the park factor for Fenway Park in 2019?
   - Demonstrate that accounting for each team's road schedule will strongly affect the home park factor, for a few teams each year.
+  - Compute a game-weighted Park Factor for the road, for each team.
 - Linear Modeling of Runs per Half Inning
   - How much does a singe, double, triple and home run contribute to run scoring per half-inning?
 
@@ -47,7 +52,7 @@ Some examples:
 - when the Retrosheet data is aggregated to the same level as the Lahman data and compared, the results should be close
 - fields which should uniquely identify a row in a CSV file, actually do.
 
-The data consistency tests show that the [Retrosheet parsers](https://github.com/sdiehl28/baseball-analytics/blob/master/RetrosheetParsers.md), when run against the Retrosheet data, are 100% self-consistent. In other words, when the data from one Retrosheet parser is aggregated to the same level as another Retrosheet parser and compared, the results are identical.
+The data consistency tests show that the [Retrosheet parsers](https://github.com/sdiehl28/baseball-analytics/blob/master/RetrosheetParsers.md), are 100% self-consistent. In other words, when the data from one Retrosheet parser is aggregated to the same level as another Retrosheet parser and compared, the results are identical.
 
 The data consistency tests show that the Lahman data is almost 100% self-consistent. In other words, when data from one Lahman CSV file is aggregated to the same level as another and compared, the results are almost identical.
 
@@ -109,6 +114,12 @@ The scripts which wrangle the Lahman and Retrosheet data will:
 
 At this time, the wrangled data is not provided in this repo, only the scripts to create it are provided.
 
+## Additional Information
+
+For more information about the Lahman and Retrosheet data sets and how they were wrangled, see: [MLB Data Overview](https://github.com/sdiehl28/baseball-analytics/blob/master/MLB_Data_Overview.md)
+
+For the data sources and their licenses see: [MLB Data Details](https://github.com/sdiehl28/baseball-analytics/blob/master/MLB_Data_Details.md)
+
 ## Development Environment
 
 Clone the repo: `git clone https://github.com/sdiehl28/baseball-analytics.git`
@@ -119,8 +130,3 @@ The scripts and Jupyter Notebooks were testing using Python 3.7 and Pandas 1.0.1
 
 The [open-source parsers](https://sourceforge.net/projects/chadwick/) for Retrosheet must be installed to run the scripts. See: [Retrosheet Parsers](https://github.com/sdiehl28/baseball-analytics/blob/master/RetrosheetParsers.md).
 
-## Additional Information
-
-For more information about the Lahman and Retrosheet data sets and how they were wrangled, see: [MLB Data Overview](https://github.com/sdiehl28/baseball-analytics/blob/master/MLB_Data_Overview.md)
-
-For the data sources and their licenses see: [MLB Data Details](https://github.com/sdiehl28/baseball-analytics/blob/master/MLB_Data_Details.md)
