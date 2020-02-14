@@ -2,7 +2,7 @@
 
 ## Overview
 
-Scripts are provided which download, parse, and wrangle the Lahman and Restrosheet open-source data to produce a set of tidy csv files that can be analyzed in Python and Pandas, or R.  There is also an optional script to load the data into Postgres.
+Scripts are provided which download, parse, and wrangle the Lahman and Retrosheet open-source data to produce a set of tidy csv files that can be analyzed in Python and Pandas, or R.  There is also an optional script to load the data into Postgres.
 
 Examples of data analysis are provided using using Python and Pandas in Jupyter Notebooks.
 
@@ -79,7 +79,7 @@ The two best sources of free baseball data are:
 
 The Lahman data is tidy and is therefore easy to analyze with Pandas or SQL, however the data is per season rather than per game. Finding a team's win streaks, a player's best month for hitting, and similar is not possible with the Lahman data.
 
-The raw Retrosheet data is play-by-play data and is not in CSV format. The Retrosheet parsers perform the following:
+The raw Retrosheet data is play-by-play data and is not in CSV format. Three Retrosheet parsers are automatically run to perform the following:
 
 - **cwevent** produces a CSV file with a row per play (aka event)
 - **cwdaily** produces a CSV file with a row per player per game
