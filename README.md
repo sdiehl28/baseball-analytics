@@ -36,7 +36,7 @@ Some initial analysis includes:
 - Computing the Park Factor
 - - What did ESPN, Fangraphs, and others get wrong about the park factor for Fenway Park in 2019?
   - Demonstrate that accounting for each team's road schedule will strongly affect the home park factor, for a few teams each year.
-  - Compute a game-weighted Park Factor for the road, for each team.
+  - Compute the game-weighted average Park Factor on the road, for each team, for several years.
 - Linear Modeling of Runs per Half Inning
   - How much does a singe, double, triple and home run contribute to run scoring per half-inning?
 
@@ -50,11 +50,11 @@ Some examples:
 
 - the number of home runs hit by batters should equal the number of home runs allowed by pitchers
 - when the Retrosheet data is aggregated to the same level as the Lahman data and compared, the results should be close
-- fields which should uniquely identify a row in a CSV file, actually do.
+- fields which should uniquely identify a row in a csv file, actually do.
 
 The data consistency tests show that the [Retrosheet parsers](https://github.com/sdiehl28/baseball-analytics/blob/master/RetrosheetParsers.md), are 100% self-consistent. In other words, when the data from one Retrosheet parser is aggregated to the same level as another Retrosheet parser and compared, the results are identical.
 
-The data consistency tests show that the Lahman data is almost 100% self-consistent. In other words, when data from one Lahman CSV file is aggregated to the same level as another and compared, the results are almost identical.
+The data consistency tests show that the Lahman data is almost 100% self-consistent. In other words, when data from one Lahman csv file is aggregated to the same level as another and compared, the results are almost identical.
 
 The data consistency tests show that the Retrosheet data when aggregated and compared with the Lahman data over the period 1974 through 2019 is:
 
@@ -70,20 +70,24 @@ Additional examples of baseball data analysis are continually being added.
 
 Retrosheet postseason data will soon be parsed and wrangled. All Retrosheet regular season data has been parsed and wrangled.
 
+## Tidy Data Definition
+
+Data is [tidy](https://en.wikipedia.org/wiki/Tidy_data) if:
+
+1. Each variable forms a column.
+2. Each observation forms a row.
+3. Each type of observational unit forms a table or csv file.
+
 ## MLB Data Wrangling
 
-The two best sources of free baseball data are:
+Two excellent sources of free baseball data are:
 
 - Lahman
 - Retrosheet
 
-The Lahman data is tidy and is therefore easy to analyze with Pandas or SQL, however the data is per season rather than per game. Finding a team's win streaks, a player's best month for hitting, and similar is not possible with the Lahman data.
+The Lahman data is tidy and is therefore easy to analyze, however the data is per season rather than per game. Finding a team's win streaks, a player's best month for hitting, and similar is not possible with the Lahman data.
 
-The raw Retrosheet data is play-by-play data and is not in CSV format. Three Retrosheet parsers are automatically run to perform the following:
-
-- **cwevent** produces a CSV file with a row per play (aka event)
-- **cwdaily** produces a CSV file with a row per player per game
-- **cwgame** produces a CSV file with a row per game
+The raw Retrosheet data is play-by-play data and is not in csv format. Three Retrosheet parsers are automatically run and their output is wrangled to create tidy csv files.
 
 Having both Lahman and Retrosheet data allows for queries such as what was the longest hitting streak for all players who earned in the top 10% of salary that year.
 
@@ -91,18 +95,18 @@ The purpose of data wrangling is to make data analysis easier and more efficient
 
 The scripts which wrangle the Lahman and Retrosheet data will:
 
-- ensure that for all CSV files in both datasets, the same 50+ field names are used to represent the same information
+- ensure that for all csv files in both datasets, the same 50+ field names are used to represent the same information
 
-- - for example, if a batter hits a "hr", then the opposing pitcher gave up a "hr" and "hr" is the field name used in the batting and pitching CSV files for both Lahman and Retrosheet
+- - for example, if a batter hits a "hr", then the opposing pitcher gave up a "hr" and "hr" is the field name used in the batting and pitching csv files for both Lahman and Retrosheet
 
 - ensure that field names conform to official baseball abbreviations as much as possible
 
 - - with the caveat that all field names must be valid Python identifiers and valid SQL column names
 
-- determine the most efficient data type, for both Pandas and SQL, and persist that data type for each field in a corresponding CSV file
+- determine the most efficient data type, for both Pandas and SQL, and persist that data type for each field in a corresponding csv file
 
 - - this greatly reduces the amount of memory required and the amount of storage required in a database
-  - code is provided to read/write CSV files with persisted data types
+  - code is provided to read/write csv files with persisted data types
 
 - automate the running of the Retrosheet parsers and tidy their output
 

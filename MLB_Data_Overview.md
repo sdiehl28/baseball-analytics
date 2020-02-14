@@ -6,12 +6,6 @@ The Lahman data is tidy.  The latest description of each csv file has been copie
 
 As of December 2019, Lahman has data through the end of the 2019 season.  
 
-Data is tidy if:
-
-1. Each variable forms a column.
-2. Each observation forms a row.
-3. Each type of observational unit forms a table or csv file.
-
 ### Retrosheet Overview
 
 The Retrosheet data is not tidy nor is it in CSV format.  Retrosheet has all play-by-play data for every MLB game since 1974.  Data is available since 1918 with older years having somewhat more missing data.  Open source parsers from Dr. T. L. Turocy will be used to parse and summarize the play-by-play data.
