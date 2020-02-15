@@ -1,34 +1,46 @@
 ## MLB Data Overview
 
+### Tidy Data Definition
+
+Data is [tidy](https://en.wikipedia.org/wiki/Tidy_data) if:
+
+1. Each variable forms a column.
+2. Each observation forms a row.
+3. Each type of observational unit forms a table or csv file.
+
+The above is nearly identical to the database term "3rd normal form".  Arguably the last rule above is not required for data analysis, but it saves space and helps to ensure data consistency.
+
+The benefit of making the data tidy is that data analysis is much easier.
+
 ### Lahman Overview
 
-The Lahman data is tidy.  The latest description of each csv file has been copied from the Lahman website to the `data/lahman` directory in this repo and is called readme2017.txt.  Loosely speaking, a description of data might be called "readme" or "data dictionary" or "code book".
+The Lahman data is tidy.  The description of these csv files is in the `data/lahman` directory and is called readme2017.txt.  It was copied from the Lahman website and it is accurate for 2018 and 2019 as well.
+
+A description of data might be called a "data dictionary" or a "code book" or simply just a "readme.txt".
 
 As of December 2019, Lahman has data through the end of the 2019 season.  
 
 ### Retrosheet Overview
 
-The Retrosheet data is not tidy nor is it in CSV format.  Retrosheet has all play-by-play data for every MLB game since 1974.  Data is available since 1918 with older years having somewhat more missing data.  Open source parsers from Dr. T. L. Turocy will be used to parse and summarize the play-by-play data.
-
-The description of the column headings for the parser generated csv files has been created and copied to `data/retrosheet` as cwdaily_datadictionary.txt and cwgame_datadictionary.txt.
+The Retrosheet data is not tidy nor is it in csv format, rather it is in a custom text format.  Reading this format is most easily done using the open-source parsers by Dr. T. L.  Turocy which convert the Retrosheet text files into csv files with a header row.
 
 As of December 2019, Retrosheet has data through the 2019 season.
 
 ### Field Names
 
-The field names in both datasets are based on standard baseball abbreviations.  See for example: https://en.wikipedia.org/wiki/Baseball_statistics.
+The field names in both datasets are based on standard baseball abbreviations.  See for example https://en.wikipedia.org/wiki/Baseball_statistics.
 
 The field names have been changed as little as possible to remain familiar.  Field name changes include:
 
-* columns in different CSV files with the same meaning, now have the same column name
+* columns in different csv files with the same meaning, now have the same column name
 * CamelCase is converted to snake_case
 * '2B' and '3B' are changed to 'double' and 'triple' to make them valid identifiers
 * Retrosheet's 'gdp' is changed to 'gidp' to match Lahman
 * Retrosheet's 'hp' is changed to 'hbp' to match Lahman 
 
-### Data Wrangling
+### CSV Files Created
 
-After data wrangling, the following CSV files exist:
+After data wrangling, the following csv files exist:
 
 **Lahman**
 
@@ -65,11 +77,39 @@ After data wrangling, the following CSV files exist:
 
 A script to create Postgres tables with appropriate primary key constraints and load each of the above csv files into these tables is provided.
 
-Where necessary, statistics will be summed so that "primary keys" are unique.  Extremely few records require this summing but as most data processing relies on having a set of fields which uniquely identify a record, this is required.
+### Unique Identifiers (Primary Keys)
 
-Pandas datatypes will be optimized to save space and more accurately describe the attribute.  For example, the number of hits in a game is always between 0 and 255, so a uint8 can be used rather than an int64.  Likewise, for integer fields with missing values, the new Pandas Int64 (and similar) can be used instead of requiring a float datatype.  Similarly, the database table create statements for optional use with a database, use data types optimized to reduce storage.
+When performing data analysis, it is essential to know what field(s) uniquely identify a row in a csv file (or table).  It turns out that cwgame generates the equivalent of two entries for the "box score" one time since 1948.  These two entries were summed appropriately so that the expected unique identifiers work properly.
 
-Datatype optimizations per column are persisted to disk for each corresponding csv file with the suffix `_types.csv`.  The Python functions **from_csv_with_types()** and **to_csv_with_types()** have been written to  allow persistence of data to/from csv files without losing data type information.
+Not have unique identifiers greatly complicates performing data analysis corrected.
+
+### Data Types
+
+There are several reasons to pay close attention to the data types used by Pandas and/or Postgres:
+
+* the data type provides information about the field
+* the data type helps to ensure correct code
+* use the smallest appropriate data type saves memory and database storage
+
+For example, the default value for an integer in Pandas is 'int64', and yet the maximum number of hits in a game can be saved in just 8 bits with a 'uint64'.  Pandas nullable integer data types are also made use of.
+
+Data type optimization per column per csv file are persisted to disk by writing a corresponding csv files with the suffice _types.csv.  I have written python function which then read the csv back into a dataframe using the optimized persisted data types.
+
+## Data Wrangling
+
+The scripts which wrangle the Lahman and Retrosheet data will:
+
+* ensure that the same field name has the same meaning across all csv files for both Lahman and Retrosheet
+* ensure that the field names conform to official baseball abbreviations as much as possible
+  * with the caveat that all field names must be valid Python identifiers and valid SQL column names
+* determine the most efficient data type, for both Pandas and Postgres tables, and persist that data type for each corresponding csv file
+* automate the running of 3 Retrosheet parsers and tidy the output
+* translate numeric codes into text so they can be understood
+* identify the different ways in which missing data is represented and create the appropriate value in Pandas
+* translate unusual date and time representations to appropriate data and time Pandas data types
+* normalize the data
+  * for example, every player does not play every fielding position in every game, and yet that is how the output of the cwgame parsers presents the data.  As such, that output is almost all zeros.  A better representation is to create a row for each player for each fielding position they actually played  in a game.
+* and more ...
 
 ### Baseball Player Roles
 

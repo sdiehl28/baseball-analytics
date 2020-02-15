@@ -2,9 +2,9 @@
 
 ## Overview
 
-Scripts are provided which download, parse, and wrangle the Lahman and Retrosheet open-source data to produce a set of tidy csv files that can be analyzed in Python and Pandas, or R.  There is also an optional script to load the data into Postgres.
+Scripts are provided which download, parse, and wrangle the Lahman and Retrosheet data to produce a set of tidy csv files that can be analyzed in Python and Pandas, or R.  There is also an optional script to load the data into Postgres.
 
-Examples of data analysis are provided using using Python and Pandas in Jupyter Notebooks.
+Examples of data analysis are provided using Python and Pandas in Jupyter Notebooks.
 
 The value of publishing the scripts and the analysis is that the results are repeatable.  The precise data used and the precise data processing, are made available for anyone to use, modify and evaluate.
 
@@ -42,19 +42,25 @@ Some initial analysis includes:
 
 These Jupyter Notebooks are in this repo at: [Baseball Analysis](https://github.com/sdiehl28/baseball-analytics/tree/master/baseball_jupyter_nb).
 
-### Data Validation
+### Data Validation and Wrangling Validation
 
-pytest is used to automate data integrity and data consistency testing. More than 50 tests check more than 100 attributes. The data is checked for all years between 1974 and 2019, as this is the period for which there is no missing Retrosheet data.
+There is no way to know the accuracy of the Retrosheet play-by-play data, but it is assumed to be quite accurate given the large number of volunteers who have worked on it for decades.
 
-Some examples:
+The Lahman data was originally gathered at the season level independently of the Retrosheet data and is therefore inconsistent with Retrosheet in some cases.  For the last few years it appears the Lahman seasonal data is derived from the Retrosheet data so there are no new discrepancies.  Lahman also includes data not in Retrosheet, such as player's salaries.
 
-- the number of home runs hit by batters should equal the number of home runs allowed by pitchers
-- when the Retrosheet data is aggregated to the same level as the Lahman data and compared, the results should be close
-- fields which should uniquely identify a row in a csv file, actually do.
+The following data checks can be made:
 
-The data consistency tests show that the [Retrosheet parsers](https://github.com/sdiehl28/baseball-analytics/blob/master/RetrosheetParsers.md), are 100% self-consistent. In other words, when the data from one Retrosheet parser is aggregated to the same level as another Retrosheet parser and compared, the results are identical.
+* how close is the Retrosheet data to the Lahman data
+* how consistent is the data produced by three Retrosheet parsers with each other
+* how consistent is the data in the Lahman tables
 
-The data consistency tests show that the Lahman data is almost 100% self-consistent. In other words, when data from one Lahman csv file is aggregated to the same level as another and compared, the results are almost identical.
+Performing these checks on the wrangled data also verifies the wrangling (data restructuring) code did not change the data.
+
+pytest is used to automate more than 50 tests which check more than 100 attributes. The data is checked for all years between 1974 and 2019, as this is the period for which there is no missing Retrosheet data.
+
+The data consistency tests show that the [Retrosheet parsers](https://github.com/sdiehl28/baseball-analytics/blob/master/RetrosheetParsers.md), are 100% self-consistent. In other words, when the data from one Retrosheet parser is aggregated to the same level as another Retrosheet parser and compared, the results are identical.  This shows that there are no errors in the parsers, and no errors in my restructuring of the parser output.
+
+The data consistency tests show that the Lahman data is almost 100% self-consistent. For example, when the data in batting is aggregated to the team level and compared with the batting data in teams, the results are almost identical.
 
 The data consistency tests show that the Retrosheet data when aggregated and compared with the Lahman data over the period 1974 through 2019 is:
 
@@ -69,54 +75,6 @@ For a detailed description of many of the data consistency tests, see my Jupyter
 Additional examples of baseball data analysis are continually being added.
 
 Retrosheet postseason data will soon be parsed and wrangled. All Retrosheet regular season data has been parsed and wrangled.
-
-## Tidy Data Definition
-
-Data is [tidy](https://en.wikipedia.org/wiki/Tidy_data) if:
-
-1. Each variable forms a column.
-2. Each observation forms a row.
-3. Each type of observational unit forms a table or csv file.
-
-## MLB Data Wrangling
-
-Two excellent sources of free baseball data are:
-
-- Lahman
-- Retrosheet
-
-The Lahman data is tidy and is therefore easy to analyze, however the data is per season rather than per game. Finding a team's win streaks, a player's best month for hitting, and similar is not possible with the Lahman data.
-
-The raw Retrosheet data is play-by-play data and is not in csv format. Three Retrosheet parsers are automatically run and their output is wrangled to create tidy csv files.
-
-Having both Lahman and Retrosheet data allows for queries such as what was the longest hitting streak for all players who earned in the top 10% of salary that year.
-
-The purpose of data wrangling is to make data analysis easier and more efficient. The 50+ data consistency tests would have been much more difficult to write had the data not been wrangled first.
-
-The scripts which wrangle the Lahman and Retrosheet data will:
-
-- ensure that for all csv files in both datasets, the same 50+ field names are used to represent the same information
-
-- - for example, if a batter hits a "hr", then the opposing pitcher gave up a "hr" and "hr" is the field name used in the batting and pitching csv files for both Lahman and Retrosheet
-
-- ensure that field names conform to official baseball abbreviations as much as possible
-
-- - with the caveat that all field names must be valid Python identifiers and valid SQL column names
-
-- determine the most efficient data type, for both Pandas and SQL, and persist that data type for each field in a corresponding csv file
-
-- - this greatly reduces the amount of memory required and the amount of storage required in a database
-  - code is provided to read/write csv files with persisted data types
-
-- automate the running of the Retrosheet parsers and tidy their output
-
-- - the majority of data tidying is to restructure the output of cwdaily to match that of Lahman by creating batting, pitching and fielding csv files per player per game.
-
-- identify primary keys and sum statistics for the exceptionally few players who had multiple records with the same primary key
-
-  - since 1948, the only duplicate key was produced by cwdaily in which a player had two rows created for one game
-
-At this time, the wrangled data is not provided in this repo, only the scripts to create it are provided.
 
 ## Additional Information
 
