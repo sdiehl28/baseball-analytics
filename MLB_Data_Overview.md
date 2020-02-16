@@ -81,7 +81,7 @@ A script to create Postgres tables with appropriate primary key constraints and 
 
 When performing data analysis, it is essential to know what field(s) uniquely identify a row in a csv file (or table).  It turns out that cwgame generates the equivalent of two entries for the "box score" one time since 1948.  These two entries were summed appropriately so that the expected unique identifiers work properly.
 
-Not have unique identifiers greatly complicates performing data analysis corrected.
+Not having unique identifiers greatly complicates data analysis.
 
 ### Data Types
 
@@ -91,7 +91,7 @@ There are several reasons to pay close attention to the data types used by Panda
 * the data type helps to ensure correct code
 * use the smallest appropriate data type saves memory and database storage
 
-For example, the default value for an integer in Pandas is 'int64', and yet the maximum number of hits in a game can be saved in just 8 bits with a 'uint64'.  Pandas nullable integer data types are also made use of.
+For example, the default value for an integer in Pandas is 'int64', and yet the maximum number of hits in a game can be saved in just 8 bits with a 'uint8'.  Pandas nullable integer data types are also made use of.
 
 Data type optimization per column per csv file are persisted to disk by writing a corresponding csv files with the suffice _types.csv.  I have written python function which then read the csv back into a dataframe using the optimized persisted data types.
 
